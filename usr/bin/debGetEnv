@@ -1,0 +1,54 @@
+#!/bin/busybox ash
+# (c) Robert Shingledecker 2012
+. /etc/init.d/tc-functions
+useBusybox
+
+zsyncDebianIndex()
+{
+	getMirror "$BUILD"
+	MIRROR="${MIRROR%/tcz}"
+	cd "$TCEDIR"
+	if zsync -i "$TCEDIR"/"$DEBINX" "$MIRROR"/"$DEBINX".zsync 2>/dev/null
+	then
+		rm -f "$DEBINX".zs-old
+	else
+		wget -O "$TCEDIR"/"$DEBINX" "$MIRROR"/"$DEBINX"
+	fi
+	cd - > /dev/null
+}
+
+unset DEBINX MIRROR
+TCEDIR=/etc/sysconfig/tcedir
+BUILD="$1"
+[ -z "$BUILD" ] && BUILD=`getBuild`
+case $BUILD in
+armv6 )
+	DEBINX=debian-wheezy-all_wheezy_main_armhf_Packages
+	zsyncDebianIndex
+	MIRROR=http://archive.raspbian.org/raspbian
+	;;
+armv7 )
+	DEBINX=debian_wheezy_main_armhf_Packages
+	zsyncDebianIndex
+	MIRROR=http://ftp.us.debian.org/debian
+	;;
+x86 )
+	DEBINX=debian_wheezy_main_i386_Packages
+	zsyncDebianIndex
+	MIRROR=http://ftp.us.debian.org/debian
+	;;
+esac
+if [ -z "$MIRROR" ]
+then
+	echo "$BUILD is not currently supported."
+	exit 1
+else
+	echo "$MIRROR" > /tmp/debmirror
+fi
+if [ -z "$DEBINX" ]
+then
+	echo "No Package Index Available"
+	exit 1
+else
+	echo "$DEBINX" > /tmp/debinx
+fi

@@ -1,0 +1,187 @@
+#!/bin/busybox ash
+# (c) Robert Shingledecker 2013
+#
+. /etc/init.d/tc-functions
+useBusybox
+checknotroot
+PROG_NAME=$(basename $0)
+KERNELVER=$(uname -r)
+unset BOOTING ONDEMAND SUPPRESS
+FORCE="n"  # Overwrite system files default to no. Use -f to force overwrite.
+SAVED_DIR=`pwd`
+
+#ONBOOTNAME="$(getbootparam lst 2>/dev/null)"
+[ -n "$ONBOOTNAME" ] || ONBOOTNAME="onboot.lst"
+
+[ -f /tmp/.installed ] || touch /tmp/.installed
+
+abort(){
+	echo "Version `version`";
+	echo "Usage: ${PKG_NAME}"
+	echo " Example:"
+	echo "  loadsce nano"
+	exit 2
+}
+
+abort_to_saved_dir(){
+	cd "$SAVED_DIR"
+	exit 1
+}
+
+while getopts bdsf OPTION
+do
+	case ${OPTION} in
+		b) BOOTING=TRUE ;;
+		s) SUPPRESS=TRUE ;;
+		f) FORCE="y" ;;
+		d) DEBUG=TRUE ;;
+		*) abort ;;
+	esac
+done
+shift `expr $OPTIND - 1`
+
+startupscript_check() {
+	APPSSS_D="/tmp/tcloop/${APPNAME}/usr/local/tce.installed"
+	if [ -d "$APPSSS_D" ]
+	then
+		for SS in $(ls "$APPSSS_D" )
+		do
+			if [ ! -e "$TCEINSTALLED"/"$SS" ]
+			then
+				[ -x "$APPSSS_D"/"$SS" ] && echo "$TCEINSTALLED"/"$SS" >> /tmp/ss$$.lst
+			fi
+		done
+	else
+		touch "$TCEINSTALLED"/${APPNAME}
+	fi
+}
+
+update_system() {
+	if [ "$BOOTING" ]; then
+		[ "$MODULES" ] && sudo touch /etc/sysconfig/newmodules
+	else
+		if [ "$MODULES" ]; then
+			sudo depmod -a 2>/dev/null
+			sudo /sbin/udevadm trigger
+		fi
+		sudo /sbin/ldconfig 2>/dev/null
+	fi
+	if [ -s /tmp/ss$$.lst ]; then
+		if [ "$BOOTING" ] ; then
+			cat /tmp/ss$$.lst >> /tmp/setup.lst
+		else
+			for SS in $(cat /tmp/ss$$.lst)
+			do
+				APP=`basename "$SS"`
+				if ! grep "^$APP:" /tmp/.installed >/dev/null; then
+					if [ "$DEBUG" == "TRUE" ]; then
+					  echo "$APP:" >> /var/log/sce.log
+					  sudo $SS >> /var/log/sce.log 2>&1
+					else
+					  sudo $SS >> /dev/null 2>&1
+					fi
+					echo "$APP:" >> /tmp/.installed
+					
+				fi
+			done
+		   FREEDESKTOP="/tmp/tcloop/"$APPNAME"/usr/share/applications"
+		   if [ "$(ls -A $FREEDESKTOP 2>/dev/null)" ]; then
+		    	for F in $(ls "$FREEDESKTOP"/*.desktop | grep -v "tinycore-"| grep -Ev '(~[1-9][1-9]*)'.desktop); do
+		     		if ! grep "OnlyShowIn" "$F" > /dev/null 2>&1 && ! grep "NoDisplay=true" "$F" > /dev/null 2>&1; then
+		       			EXTNAME="${F%.desktop}"
+		      			EXTNAME="${EXTNAME##*/}"
+		       			desktop.sh "$EXTNAME" >/dev/null
+		     		fi
+		    	done
+		   fi
+		   
+		   FREEDESKTOP="/tmp/tcloop/"$APPNAME"/usr/local/share/applications"
+		   if [ "$(ls -A $FREEDESKTOP 2>/dev/null)" ]; then
+		    	for F in $(ls "$FREEDESKTOP"/*.desktop | grep -v "tinycore-"| grep -Ev '(~[1-9][1-9]*)'.desktop); do
+		     		if ! grep "OnlyShowIn" "$F" > /dev/null 2>&1 && ! grep "NoDisplay=true" "$F" > /dev/null 2>&1; then
+		       				EXTNAME="${F%.desktop}"
+		       				EXTNAME="${EXTNAME##*/}"
+		       				desktop.sh "$EXTNAME" >/dev/null
+		     		fi
+		    	done
+		   fi
+		   
+		fi
+		rm /tmp/ss$$.lst
+	fi
+}
+
+install(){
+	unset MODULES EMPTYEXT
+
+	if [ "$LANG" != "C" ]; then
+		LOCALEEXT="${1%.sce}-locale.sce"
+		[ -f "$LOCALEEXT" ] && install "$LOCALEEXT"
+	fi
+
+	THISAPP="$1"
+	APPNAME=$(getbasefile "$THISAPP" 1)
+
+	[ -d /tmp/tcloop/"$APPNAME" ] || sudo mkdir -p /tmp/tcloop/"$APPNAME"
+	awk -v appname="/tmp/tcloop/$APPNAME" ' { if ( $2 == appname )  exit 1 }' /etc/mtab
+	[ "$?" == 1 ] || sudo mount "$THISAPP" /tmp/tcloop/"$APPNAME" -t squashfs -o loop,ro,bs=4096 2>&1
+	[ "$?" == 0 ] || abort_to_saved_dir
+	[ -z "`ls /tmp/tcloop/${APPNAME}`" ] && EMPTYEXT=1
+	[ "`find /tmp/tcloop/${APPNAME} -mindepth 1 -maxdepth 2 | wc -l`" -le 1 ] && EMPTYEXT=1
+
+	if [ -z "$EMPTYEXT" ]; then
+		startupscript_check
+		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/usr / 2>/dev/null
+		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/bin / 2>/dev/null
+		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/sbin / 2>/dev/null
+		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/lib / 2>/dev/null
+		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/dev / 2>/dev/null
+		yes "$FORCE" | sudo cp -ai /tmp/tcloop/"$APPNAME"/etc / 2>/dev/null
+		yes "$FORCE" | sudo cp -ai /tmp/tcloop/"$APPNAME"/var / 2>/dev/null
+		[ ! -z "`find /tmp/tcloop/"$APPNAME" -type f -name *.ko.gz`" ] && MODULES=TRUE
+		update_system "$THISAPP" "$APPNAME"
+		if [ ! "$BOOTING" ]; then
+			[ -s /etc/sysconfig/desktop ] && desktop.sh "$APPNAME"
+		fi
+	else
+		umount -d /tmp/tcloop/"$APPNAME"
+		update_system "$THISAPP" "$APPNAME"
+	fi
+	[ "$BOOTING" ] && [ "$SHOWAPPS" ] && echo -n "${YELLOW}$APPNAME ${NORMAL}"
+}
+
+# Main
+TCEDIR=/etc/sysconfig/tcedir
+[ -d "$TCEDIR" ] || exit 1
+[ -n "$1" ] || exit 1
+[ -f /etc/sysconfig/showapps ] && SHOWAPPS=TRUE && SUPPRESS=TRUE
+TCEINSTALLED=/usr/local/tce.installed
+
+
+for TARGETAPP in $@; do
+	APPNAME=${TARGETAPP%%.sce}
+	if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
+	APPNAME="${APPNAME/-KERNEL/-${KERNELVER}}"
+	TARGETAPP="${TARGETAPP/-KERNEL.sce/-${KERNELVER}.sce}"
+
+	if [ -f /usr/local/tce.installed/"${APPNAME##/*/}" ]; then
+		echo "$APPNAME is already installed!"
+		continue
+	fi
+	if [ -f "$TCEDIR"/sce/"$TARGETAPP" ]; then
+		TARGETAPP="$TCEDIR"/sce/"$TARGETAPP"
+	else
+		echo "$TARGETAPP not found!"
+		abort_to_saved_dir
+	fi
+	FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
+	EXTENSION=`basename "$TARGETAPP"`
+	install "$TARGETAPP"
+	[ "$SUPPRESS" ] || echo "$TARGETAPP: OK"
+
+	cd "$SAVED_DIR"
+done # Finish the for-loop for multiple extensions
+
+[ "$BOOTING" ] && exit 0
+[ $(which "$DESKTOP"_restart) ] && "$DESKTOP"_restart 2>/dev/null
+exit 0

@@ -1,0 +1,46 @@
+#!/bin/busybox ash
+# (c) Robert Shingledecker 2012
+. /etc/init.d/tc-functions
+useBusybox
+TCEDIR=/etc/sysconfig/tcedir
+
+getDeps() {
+	awk -v package="Package: $1" -v location="/tmp/work/$1" '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+			
+				if ( f[1] == "Depends" ) {
+					jmax = split(f[2],item,",")
+					for (j=1; j<=jmax; j++) { 
+						kmax = split(item[j],deps," ")
+						print( deps[1] )
+					}
+				}
+				if ( f[1] == "Filename" )
+					print f[2] > location
+			}
+		
+		}
+		
+	} ' < "$DEBINX"
+}
+
+[ -s /tmp/debinx ] || debGetEnv "$2"
+read DEBINX < /tmp/debinx
+DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+
+if [ -z "$1" ]
+then
+	echo "you must specify a search target."
+	exit 1
+fi
+
+DEPS="$(getDeps $1)"
+[ -z "$DEPS" ] && exit 1
+echo "$DEPS"

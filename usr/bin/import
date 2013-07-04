@@ -1,0 +1,79 @@
+#!/bin/busybox ash
+# (c) Robert Shingledecker 2012
+. /etc/init.d/tc-functions
+useBusybox
+checknotroot
+BUILD=`getBuild`
+
+mksce() {
+	if [ "$FLAGS" ]
+	then
+		sudo deb2sce "$FLAGS" "$1"             
+	else
+		sudo deb2sce "$1"             
+	fi
+
+}
+
+[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
+[ -f /tmp/.depfile ] && sudo rm /tmp/.depfile
+[ -f /tmp/.pkgextrafiles ] && sudo rm /tmp/.pkgextrafiles
+[ -f /tmp/select.ans    ] && sudo rm /tmp/select.ans   
+[ -f /tmp/.targetfile    ] && sudo rm /tmp/.targetfile
+
+read IMPORTMIRROR < /opt/tcemirror
+PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
+IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
+wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEPS 2>/dev/null || exit 1
+wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit 1
+wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILT 2>/dev/null || exit 1
+unset FLAGS PACKAGELIST
+while getopts bof OPTION
+do
+	case ${OPTION} in
+		b) FLAGS="$FLAGS"b ;;
+		o) FLAGS="$FLAGS"o ;;
+		f) PACKAGELIST=TRUE ;;
+		*) exit 1 ;;
+	esac
+done
+shift `expr $OPTIND - 1`
+[ "$FLAGS" ] && FLAGS="-$FLAGS"
+
+TARGET="$1"
+if [ "$PACKAGELIST" ]; then
+  TARGETFILE=`readlink -f "$TARGET"`
+  cat $TARGETFILE > /tmp/.targetfile
+  TARGET=`basename $TARGET`
+fi
+
+if [ -z "$TARGET" ]
+then
+	echo -n "Enter starting characters of package sought: "
+	read TARGET
+fi
+
+[ -n "$TARGET" ] || exit 1
+
+[ -s /tmp/debinx ] || sudo debGetEnv "$2"
+
+read DEBINX < /tmp/debinx
+DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+if [ "$PACKAGELIST" ] && [ -f "$TARGETFILE" ]; then
+  echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?"
+  read ans                   
+  [ "$ans" == "y" ] || exit 0                          
+  mksce "$TARGET" 
+elif sudo grep "^Package: $TARGET" "$DEBINX" || sudo grep "$TARGET" /tmp/.depfile; then
+  { sudo grep "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep "$TARGET" /tmp/.depfile | cut -f1 -d: ; } | sort | select "Select Package for $1" "-"
+  read DEB < /tmp/select.ans                                                                           
+  [ "$DEB" == "q" ] && exit 1                                                                          
+  echo -n "Do you want to import $DEB? (y/N): "                        
+  read ans                                                             
+  [ "$ans" == "y" ] || exit 1                                           
+  mksce "$DEB"                                                           
+else
+ echo ""$TARGET" is not available as a package.  Exiting..."
+ exit 1
+fi
+

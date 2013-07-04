@@ -1,0 +1,183 @@
+#!/bin/busybox ash
+# (c) Robert Shingledecker 2012
+. /etc/init.d/tc-functions
+useBusybox
+checkroot
+BUILD=`getBuild`
+TCEDIR=/etc/sysconfig/tcedir
+
+setupStartupScript() {
+	[ -d usr/local/tce.installed ] || mkdir -p usr/local/tce.installed
+	chmod 775 usr/local/tce.installed
+	chown root.staff usr/local/tce.installed
+}
+
+
+fetchDeb() {
+	wget ${MIRROR}/${1}
+	if [ "$?" != 0 ]
+	then
+		echo "failed on download of $1"
+		echo "$1" >> /tmp/import.log
+		selectDeb ${1}
+	fi
+}
+
+selectDeb() {
+	FULLPATH=${1}
+	SELECT_PATH="${FULLPATH%/*}"
+	PKG="${1##*/}"
+	wget -q -O - "$MIRROR"/"$SELECT_PATH" | awk 'BEGIN{FS=" href="}{print $2}' | awk 'BEGIN{FS="\""}{print $2}' | grep "^${PKG%%_*}" | grep ".deb$" | select "Select Package for ${PKG}" "-"
+	read DEB < /tmp/select.ans
+	if [ "$DEB" != "q" ]
+	then
+		fetchDeb ${SELECT_PATH}/${DEB}
+	fi
+}
+
+
+cleanup() {
+	rm -rf /tmp/work
+	chmod 777 /tmp
+	chmod 775 /usr/local/tce.installed
+	chmod 775 /usr/local/tce.icons 2>/dev/null
+	chgrp staff /usr/local/tce.installed
+	chgrp staff /usr/local/tce.icons 2>/dev/null
+}
+
+# Main
+unset ONBOOT ONDEMAND FILE
+while getopts bo OPTION
+do
+	case ${OPTION} in
+		b) ONBOOT=TRUE ;;
+		o) ONDEMAND=TRUE ;;
+		*) exit 1 ;;
+	esac
+done
+shift `expr $OPTIND - 1`
+
+if [ -z "$1" ]
+then
+	echo "you must specify a target."
+	exit 1
+fi
+TARGET="$1"
+
+debGetEnv "$2" || exit 1
+read DEBINX < /tmp/debinx
+echo "Using Package Index: $DEBINX"
+read MIRROR < /tmp/debmirror
+echo "Using Debian Mirror: $MIRROR"
+echo
+unset META
+RESULTS="$(debQuery "$TARGET")"
+if [ ! "$RESULTS" ]
+then
+
+ if [ -s /tmp/.targetfile ]; then
+  echo "$TARGET is from custom list"
+  META="$TARGET"
+
+ elif sudo grep -q "$TARGET:" /tmp/.depfile; then
+  echo "$TARGET is a meta package"
+  META="$TARGET"
+ else
+  echo "$TARGET is not a standard or meta package, exiting.."
+  cleanup 
+  exit 1
+ fi
+fi
+
+
+echo -n "Proceed to create $TARGET.sce? (y/N): "
+read ans
+[ "$ans" == "y" ] || exit 1
+
+> /var/log/sce.log
+[ -d "$TCEDIR"/sce ] || mkdir "$TCEDIR"/sce
+[ -d "$TCEDIR"/import ] || mkdir "$TCEDIR"/import
+cd "$TCEDIR"/import
+#[ -f exclude.lst ] || gzip -dc /tmp/deb2sce.xlst.gz > exclude.lst
+
+[ -d "$TARGET" ] || mkdir "$TARGET"
+cd "$TARGET"
+> /tmp/import.log	
+
+if [ -s /tmp/.targetfile ]; then
+    for I in `cat /tmp/.targetfile`; do 
+      debGetDeps "$I"
+    done
+else
+    debGetDeps "$TARGET"
+fi
+HERE=`pwd`
+for DEBINFO in `ls -t /tmp/work`; do
+	 
+	
+	 
+	 read FULLPATH < /tmp/work/"$DEBINFO"
+	 if [ "$FULLPATH" != "" ]; then
+	 	fetchDeb "$FULLPATH"
+	 	THISDEB="${FULLPATH##*/}"
+		sudo debExtract "$THISDEB"
+		if [ "$?" != "0" ]; then
+		  echo "Failure to extract "$THISDEB", exiting.."
+		  cleanup
+		  exit 1
+		fi
+		sudo rm "$THISDEB"
+	 elif grep "^${DEBINFO}.tar.gz" /tmp/.pkgprebuilt >/dev/null; then
+	 	read IMPORTMIRROR < /opt/tcemirror                                                                             
+	 	PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
+		IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
+	 	wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz -c "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
+		wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt -c "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt	
+		wget -O /tmp/"${DEBINFO}.deb2sce" -cq "$PREBUILTMIRROR"/"${DEBINFO}.deb2sce" 2>/dev/null		
+		if [ -f /tmp/"${DEBINFO}.deb2sce" ]
+		then
+			echo Merging Tiny Core custom start script for ${DEBINFO}: "${DEBINFO}.deb2sce"
+			setupStartupScript
+			cat /tmp/"${DEBINFO}.deb2sce" > usr/local/tce.installed/"${DEBINFO}"
+			chmod -R 775 usr/local/tce.installed/
+			chown -R root.staff usr/local/tce.installed/
+			rm /tmp/"${DEBINFO}.deb2sce"
+		fi
+  	 	cd "$TCEDIR"/import
+		if md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
+  	 	then
+			echo "Merging "${DEBINFO}":"
+    	   		tar xf "$TCEDIR"/import/"${DEBINFO}".tar.gz -C "$TCEDIR"/import/"$TARGET"
+           		rm "$TCEDIR"/import/"${DEBINFO}".tar.gz
+ 	 	
+		else
+			echo "md5sum failed for "${DEBINFO}".tar.gz, exiting.."
+			cleanup
+			exit 1
+		fi	
+		cd "$TCEDIR"/import/"$TARGET"
+	 fi
+done
+
+
+
+cd ..
+sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/*
+mksquashfs "$TARGET" "$TARGET".sce
+if [ "$?" == "0" ]
+then
+	mv "$TARGET".sce "$TCEDIR"/sce/.
+	sudo rm -rf "$TARGET"
+	if [ "$ONBOOT" ]
+	then
+		if ! grep -wq "$TARGET" "$TCEDIR"/sceboot.lst
+		then
+			echo "$TARGET" >> "$TCEDIR"/sceboot.lst
+		fi
+	fi
+	echo "Done."
+else
+	echo "Failed."
+fi
+
+cleanup
