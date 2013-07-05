@@ -168,7 +168,9 @@ for TARGETAPP in $@; do
 		echo "$APPNAME is already installed!"
 		continue
 	fi
-	if [ -f "$TCEDIR"/sce/"$TARGETAPP" ]; then
+	if [ -f "$TARGETAPP" ]; then
+		:
+	elif [ -f "$TCEDIR"/sce/"$TARGETAPP" ]; then
 		TARGETAPP="$TCEDIR"/sce/"$TARGETAPP"
 	else
 		echo "$TARGETAPP not found!"
