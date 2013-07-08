@@ -111,6 +111,10 @@ if [ -s /tmp/.targetfile ]; then
 else
     debGetDeps "$TARGET"
 fi
+if [ -f /tmp/.importsecure ]; then
+   mkdir -p usr/local/importmd5sum
+fi
+
 HERE=`pwd`
 for DEBINFO in `ls -t /tmp/work`; do
 	 
@@ -125,6 +129,10 @@ for DEBINFO in `ls -t /tmp/work`; do
 		  echo "Failure to extract "$THISDEB", exiting.."
 		  cleanup
 		  exit 1
+		fi
+		if [ -f /tmp/.importsecure ] && [ -f /tmp/"$DEBINFO".md5sum ]; then
+			echo ""$DEBINFO": `cat /tmp/"$DEBINFO".md5sum`" >> usr/local/importmd5sum/"$TARGET".md5sum
+			rm /tmp/"$DEBINFO".md5sum
 		fi
 		sudo rm "$THISDEB"
 	 elif grep "^${DEBINFO}.tar.gz" /tmp/.pkgprebuilt >/dev/null; then
@@ -159,7 +167,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 fi
 done
 
-
+rm /tmp/.importsecure
 
 cd ..
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/*
