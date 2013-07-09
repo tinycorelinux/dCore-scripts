@@ -5,7 +5,7 @@ useBusybox
 TCEDIR=/etc/sysconfig/tcedir
 
 getDeps() {
-	awk -v package="Package: $1" -v location="/tmp/work/$1" '
+	awk -v package="Package: $1" -v location="/tmp/work/$1" -v FILE="/tmp/.importsecure" -v md5sum="/tmp/$1.md5sum" '
 	BEGIN {
 		RS=""
 		FS="\n"
@@ -24,6 +24,10 @@ getDeps() {
 				}
 				if ( f[1] == "Filename" )
 					print f[2] > location
+				if ( FILE exist ){
+				   if ( f[1] == "MD5sum" )
+					print f[2] > md5sum
+						     }
 			}
 		
 		}

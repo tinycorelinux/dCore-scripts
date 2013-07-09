@@ -15,6 +15,8 @@ mksce() {
 
 }
 
+
+[ -f /tmp/.importsecure ] && sudo rm /tmp/.importsecure
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 [ -f /tmp/.depfile ] && sudo rm /tmp/.depfile
 [ -f /tmp/.pkgextrafiles ] && sudo rm /tmp/.pkgextrafiles
@@ -28,9 +30,10 @@ wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEPS 2>/dev/null || exit 1
 wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit 1
 wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILT 2>/dev/null || exit 1
 unset FLAGS PACKAGELIST
-while getopts bof OPTION
+while getopts bofs OPTION
 do
 	case ${OPTION} in
+		s) SECURE=TRUE ;;
 		b) FLAGS="$FLAGS"b ;;
 		o) FLAGS="$FLAGS"o ;;
 		f) PACKAGELIST=TRUE ;;
@@ -45,6 +48,10 @@ if [ "$PACKAGELIST" ]; then
   TARGETFILE=`readlink -f "$TARGET"`
   cat $TARGETFILE > /tmp/.targetfile
   TARGET=`basename $TARGET`
+fi
+
+if [ "$SECURE" == "TRUE" ]; then
+	touch /tmp/.importsecure
 fi
 
 if [ -z "$TARGET" ]
