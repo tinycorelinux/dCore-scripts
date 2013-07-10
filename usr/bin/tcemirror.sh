@@ -8,7 +8,7 @@ MIRRORS="/usr/local/share/mirrors"
 [ -f "$LOCAL" ] && cat "$LOCAL" > "$TMP"
 [ -f "$MIRRORS" ] && cat "$MIRRORS" >> "$TMP"
 if [ ! -s "$TMP" ]; then
-   echo "Requires mirrors.tcz extension or /opt/localmirrors"
+   echo "Requires mirrors.sce extension or /opt/localmirrors"
    exit 1
 fi
 select "Tiny Core Linux - Mirror Selection" "$TMP"
