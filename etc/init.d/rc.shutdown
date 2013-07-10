@@ -22,7 +22,7 @@ echo "Terminating $K5_SKIP all processes."
 killall5 -9 $K5_SKIP
 echo -n "${NORMAL}"
 
-# Unmount all tcz extensions that were mounted into /tmp/tcloop via loopback 
+# Unmount all sce extensions that were mounted into /tmp/tcloop via loopback 
 for loop in $(mount | awk '/\/tmp\/tcloop/{print substr($1,10,3)}'|sort -nr); do umount -d /dev/loop"$loop" 2>/dev/null; done
 # Unmount all scm extensions that were mounted into /apps via loopback 
 for loop in $(mount | awk '/\/apps/{print substr($1,10,3)}'|sort -nr); do umount -d /dev/loop"$loop" 2>/dev/null; done
@@ -30,12 +30,12 @@ for loop in $(mount | awk '/\/apps/{print substr($1,10,3)}'|sort -nr); do umount
 if [ -s /tmp/audit_marked.lst ]; then
    echo "${BLUE}Removing requested extensions:"
    ONBOOTNAME="$(getbootparam lst 2>/dev/null)"
-   [ -n "$ONBOOTNAME" ] || ONBOOTNAME="onboot.lst"
+   [ -n "$ONBOOTNAME" ] || ONBOOTNAME="sceboot.lst"
    for F in `cat /tmp/audit_marked.lst`; do
       echo "${YELLOW}$F"
       rm -f "$F"*
       FROMDIR=`dirname "$F"` && TCEDIR=${FROMDIR%/*}
-      EXTN=`basename "$F"`; APP=${EXTN%.tcz}
+      EXTN=`basename "$F"`; APP=${EXTN%.sce}
       LIST="$TCEDIR"/copy2ram.lst; ONBOOT="${TCEDIR}/${ONBOOTNAME}"; XWBAR="$TCEDIR"/xwbar.lst
       if grep -w "$EXTN" "$LIST" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$LIST"; fi
       if grep -w "$EXTN" "$ONBOOT" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$ONBOOT"; fi
