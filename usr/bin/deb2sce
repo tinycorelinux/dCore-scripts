@@ -183,6 +183,7 @@ then
 			echo "$TARGET" >> "$TCEDIR"/sceboot.lst
 		fi
 	fi
+	[ "$ONDEMAND" ] && ondemand "$TARGET"
 	echo "Done."
 else
 	echo "Failed."
