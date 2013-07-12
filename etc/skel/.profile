@@ -13,10 +13,11 @@ ONDEMAND=/etc/sysconfig/tcedir/ondemand
 PS1='\u@\h:\w\$ '
 PAGER='less -EM'
 MANPAGER='less -isR'
+LANG=en_US.UTF8
 
 `which editor >/dev/null` && EDITOR=editor || EDITOR=vi
 
-export PS1 PAGER FILEMGR EDITOR MANPAGER
+export PS1 PAGER LANG EDITOR MANPAGER
 
 export BACKUP=1
 [ "`id -un`" = "`cat /etc/sysconfig/tcuser`" ] && echo "$BACKUP" | sudo tee /etc/sysconfig/backup >/dev/null 2>&1
