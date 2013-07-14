@@ -76,17 +76,22 @@ if [ ! "$RESULTS" ]
 then
 
  if [ -s /tmp/.targetfile ]; then
-  echo "$TARGET is from custom list"
+  echo "$TARGET is from your own custom package list."
   META="$TARGET"
 
- elif sudo grep -q "$TARGET:" /tmp/.depfile; then
-  echo "$TARGET is a meta package"
+ elif sudo grep -q "$TARGET:" /tmp/.depfile && ! sudo grep -q "$TARGET.tar.gz" /tmp/.pkgprebuilt; then
+  echo "$TARGET is a meta package of related Debian ones."
+  META="$TARGET"
+ elif sudo grep -q "$TARGET:" /tmp/.depfile && sudo grep -q "$TARGET.tar.gz" /tmp/.pkgprebuilt; then
+  echo "$TARGET is a dCore premade package"
   META="$TARGET"
  else
-  echo "$TARGET is not a standard or meta package, exiting.."
+  echo "$TARGET is not a standard Debian, dCore precompiled, or meta package, exiting.."
   cleanup 
   exit 1
  fi
+else
+ echo "$TARGET is a standard Debian package."
 fi
 
 
