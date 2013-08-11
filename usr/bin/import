@@ -26,9 +26,9 @@ mksce() {
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
-wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEPS 2>/dev/null || exit 1
+wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEP 2>/dev/null || exit 1
 wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit 1
-wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILT 2>/dev/null || exit 1
+wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null || exit 1
 unset FLAGS PACKAGELIST
 while getopts bofs OPTION
 do
@@ -71,8 +71,8 @@ if [ "$PACKAGELIST" ] && [ -f "$TARGETFILE" ]; then
   read ans                   
   [ "$ans" == "y" ] || exit 0                          
   mksce "$TARGET" 
-elif sudo grep "^Package: $TARGET" "$DEBINX" || sudo grep "$TARGET" /tmp/.depfile > /dev/null 2>&1; then
-  { sudo grep "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep "$TARGET" /tmp/.depfile | cut -f1 -d: ; } | sort | uniq | select "Select Package for $1" "-"
+elif sudo grep "^Package: $TARGET" "$DEBINX" || sudo grep "$TARGET" /tmp/.pkgprebuilt > /dev/null 2>&1; then
+  { sudo grep "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: ; } | sort | uniq | select "Select Package for $1" "-"
   read DEB < /tmp/select.ans                                                                           
   [ "$DEB" == "q" ] && exit 1                                                                          
   echo -n "Do you want to import $DEB? (y/N): "                        
