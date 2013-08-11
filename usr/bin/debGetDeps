@@ -19,6 +19,7 @@ getDeps()
 	touch /tmp/work/"$PKG"
 	DEPLIST=`debGetPkgList $PKG 2>/dev/null`
 	[ -s /tmp/.depfile ] &&  DEPLIST="$DEPLIST `grep $PKG: /tmp/.depfile | cut -f2 -d:`"
+	[ -s /tmp/.pkgprebuilt ] && DEPLIST="$DEPLIST `grep $PKG: /tmp/.pkgprebuilt | cut -f2 -d:`"
 	for D in $DEPLIST; do getDeps $D; done
 }
 
