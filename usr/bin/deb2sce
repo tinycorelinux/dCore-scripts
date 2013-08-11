@@ -79,10 +79,10 @@ then
   echo "$TARGET is from your own custom package list."
   META="$TARGET"
 
- elif sudo grep -q "$TARGET:" /tmp/.depfile && ! sudo grep -q "$TARGET.tar.gz" /tmp/.pkgprebuilt; then
+ elif sudo grep -q "$TARGET:" /tmp/.depfile && ! sudo grep -q "$TARGET:" /tmp/.pkgprebuilt; then
   echo "$TARGET is a meta package of related Debian ones."
   META="$TARGET"
- elif sudo grep -q "$TARGET:" /tmp/.depfile && sudo grep -q "$TARGET.tar.gz" /tmp/.pkgprebuilt; then
+ elif ! sudo grep -q "$TARGET:" /tmp/.depfile && sudo grep -q "$TARGET:" /tmp/.pkgprebuilt; then
   echo "$TARGET is a dCore premade package"
   META="$TARGET"
  else
@@ -140,13 +140,16 @@ for DEBINFO in `ls -t /tmp/work`; do
 			rm /tmp/"$DEBINFO".md5sum
 		fi
 		sudo rm "$THISDEB"
-	 elif grep "^${DEBINFO}.tar.gz" /tmp/.pkgprebuilt >/dev/null; then
+	 elif grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null; then
 	 	read IMPORTMIRROR < /opt/tcemirror                                                                             
 	 	PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
 		IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
-	 	wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz -c "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
-		wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt -c "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt	
-		wget -O /tmp/"${DEBINFO}.deb2sce" -cq "$PREBUILTMIRROR"/"${DEBINFO}.deb2sce" 2>/dev/null		
+		[ -f "$TCEDIR"/import/"${DEBINFO}".tar.gz ] && rm "$TCEDIR"/import/"${DEBINFO}".tar.gz
+	 	wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
+		[ -f "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt ] && rm "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt
+		wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt -q "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt	
+		[ -f /tmp/"${DEBINFO}.deb2sce" ] && rm /tmp/"${DEBINFO}.deb2sce"
+		wget -O /tmp/"${DEBINFO}.deb2sce" -q "$PREBUILTMIRROR"/"${DEBINFO}.deb2sce" 2>/dev/null		
 		if [ -f /tmp/"${DEBINFO}.deb2sce" ]
 		then
 			echo Merging Tiny Core custom start script for ${DEBINFO}: "${DEBINFO}.deb2sce"
@@ -159,6 +162,10 @@ for DEBINFO in `ls -t /tmp/work`; do
   	 	cd "$TCEDIR"/import
 		if md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
   	 	then
+		  if [ -f /tmp/.importsecure ]; then
+			echo "${DEBINFO}: `cat "${DEBINFO}".tar.gz.md5.txt | cut -f1 -d" "`" >> "$TCEDIR"/import/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum
+			
+		  fi
 			echo "Merging "${DEBINFO}":"
     	   		tar xf "$TCEDIR"/import/"${DEBINFO}".tar.gz -C "$TCEDIR"/import/"$TARGET"
            		rm "$TCEDIR"/import/"${DEBINFO}".tar.gz
@@ -172,7 +179,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 fi
 done
 
-rm /tmp/.importsecure
+[ -f /tmp/.importsecure ] && rm /tmp/.importsecure
 
 cd ..
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/*
