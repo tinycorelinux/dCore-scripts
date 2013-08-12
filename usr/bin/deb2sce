@@ -144,15 +144,17 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 	read IMPORTMIRROR < /opt/tcemirror                                                                             
 	 	PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
 		IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
-		[ -f "$TCEDIR"/import/"${DEBINFO}".tar.gz ] && rm "$TCEDIR"/import/"${DEBINFO}".tar.gz
-	 	wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
-		[ -f "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt ] && rm "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt
-		wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt -q "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt	
-		[ -f /tmp/"${DEBINFO}.deb2sce" ] && rm /tmp/"${DEBINFO}.deb2sce"
-		wget -O /tmp/"${DEBINFO}.deb2sce" -q "$PREBUILTMIRROR"/"${DEBINFO}.deb2sce" 2>/dev/null		
+		if wget -sq "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz; then
+		  [ -f "$TCEDIR"/import/"${DEBINFO}".tar.gz ] && rm "$TCEDIR"/import/"${DEBINFO}".tar.gz
+	 	  wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
+		  [ -f "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt ] && rm "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt
+		  wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt -q "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt	
+		fi
+		  [ -f /tmp/"${DEBINFO}.deb2sce" ] && rm /tmp/"${DEBINFO}.deb2sce"
+		  wget -O /tmp/"${DEBINFO}.deb2sce" -q "$PREBUILTMIRROR"/"${DEBINFO}.deb2sce" 2>/dev/null		
 		if [ -f /tmp/"${DEBINFO}.deb2sce" ]
 		then
-			echo Merging Tiny Core custom start script for ${DEBINFO}: "${DEBINFO}.deb2sce"
+			echo "Merging Tiny Core custom start script for ${DEBINFO}: "${DEBINFO}.deb2sce""
 			setupStartupScript
 			cat /tmp/"${DEBINFO}.deb2sce" > usr/local/tce.installed/"${DEBINFO}"
 			chmod -R 775 usr/local/tce.installed/
@@ -160,17 +162,17 @@ for DEBINFO in `ls -t /tmp/work`; do
 			rm /tmp/"${DEBINFO}.deb2sce"
 		fi
   	 	cd "$TCEDIR"/import
-		if md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
+		if [ -f "${DEBINFO}".tar.gz.md5.txt ] && md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
   	 	then
 		  if [ -f /tmp/.importsecure ]; then
 			echo "${DEBINFO}: `cat "${DEBINFO}".tar.gz.md5.txt | cut -f1 -d" "`" >> "$TCEDIR"/import/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum
 			
 		  fi
 			echo "Merging "${DEBINFO}":"
-    	   		tar xf "$TCEDIR"/import/"${DEBINFO}".tar.gz -C "$TCEDIR"/import/"$TARGET"
-           		rm "$TCEDIR"/import/"${DEBINFO}".tar.gz
- 	 	
-		else
+    	   		  tar xf "$TCEDIR"/import/"${DEBINFO}".tar.gz -C "$TCEDIR"/import/"$TARGET"
+           		  rm "$TCEDIR"/import/"${DEBINFO}".tar.gz
+		elif [ -f "${DEBINFO}".tar.gz.md5.txt ] && ! md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
+		then
 			echo "md5sum failed for "${DEBINFO}".tar.gz, exiting.."
 			cleanup
 			exit 1
@@ -182,7 +184,7 @@ done
 [ -f /tmp/.importsecure ] && rm /tmp/.importsecure
 
 cd ..
-sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/*
+sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1
 mksquashfs "$TARGET" "$TARGET".sce
 if [ "$?" == "0" ]
 then
