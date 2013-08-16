@@ -137,7 +137,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 		fi
 		if [ -f /tmp/.importsecure ] && [ -f /tmp/"$DEBINFO".md5sum ]; then
 			echo ""$DEBINFO": `cat /tmp/"$DEBINFO".md5sum`" >> usr/local/importmd5sum/"$TARGET".md5sum
-			rm /tmp/"$DEBINFO".md5sum
+			sudo rm /tmp/"$DEBINFO".md5sum
 		fi
 		sudo rm "$THISDEB"
 	 elif grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null; then
