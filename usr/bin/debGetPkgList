@@ -24,7 +24,7 @@ getDeps() {
 				}
 				if ( f[1] == "Filename" )
 					print f[2] > location
-				if ( FILE exist ){
+				if ( system("test -f /tmp/.importsecure") == 0 ) {
 				   if ( f[1] == "MD5sum" )
 					print f[2] > md5sum
 						     }
