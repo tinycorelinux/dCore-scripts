@@ -88,8 +88,8 @@ if [ -f "$CFG"/postinst ]; then
 	SCRIPT='/usr/local/postinst/'${BASENAME}' configure'
 	setupStartupScript
 	echo "${SCRIPT}" >> "$PKG/usr/local/tce.installed/${BASENAME}"
-	chmod 775 "$PKG/usr/local/tce.installed/${BASENAME}"
-	chown root.staff "$PKG/usr/local/tce.installed/"
+	chmod -R 775 "$PKG/usr/local/tce.installed/${BASENAME}"
+	chown -R root:staff "$PKG/usr/local/tce.installed/"
 fi
 
 #	cd pkg
