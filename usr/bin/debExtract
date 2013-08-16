@@ -88,13 +88,13 @@ if [ -f "$CFG"/postinst ]; then
 	SCRIPT='/usr/local/postinst/'${BASENAME}' configure'
 	setupStartupScript
 	echo "${SCRIPT}" >> "$PKG/usr/local/tce.installed/${BASENAME}"
-	chmod -R 775 "$PKG/usr/local/tce.installed/${BASENAME}"
-	chown -R root:staff "$PKG/usr/local/tce.installed/"
+	chmod 775 "$PKG/usr/local/tce.installed/${BASENAME}"
+	chown -R root.staff "$PKG/usr/local/tce.installed/"
 fi
 
 #	cd pkg
 echo -n "Merging $BASENAME: "
-find . -depth | cpio -pmd "$HERE" 2>&1 > /dev/null
-	
+#find . -depth | cpio -pmd "$HERE" 2>&1 > /dev/null
+(tar -cf - .) | (cd "$HERE" && tar -xpf -)	
 cd "$HERE"
 rm -r "$PKGDIR"
