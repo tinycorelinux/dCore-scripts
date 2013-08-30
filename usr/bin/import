@@ -71,7 +71,7 @@ if [ "$PACKAGELIST" ] && [ -f "$TARGETFILE" ]; then
   read ans                   
   [ "$ans" == "y" ] || exit 0                          
   mksce "$TARGET" 
-elif sudo grep "^Package: $TARGET" "$DEBINX" || sudo grep "$TARGET" /tmp/.depfile || sudo grep "$TARGET:" /tmp/.pkgprebuilt   > /dev/null 2>&1; then
+elif sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep "$TARGET" /tmp/.depfile > /dev/null 2>&1 || sudo grep "$TARGET:" /tmp/.pkgprebuilt > /dev/null 2>&1; then
   { sudo grep "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep "$TARGET" /tmp/.depfile | cut -f1 -d: ; sudo grep "$TARGET:" /tmp/.pkgprebuilt | cut -f1 -d: ; } | sort | uniq | select "Select Package for $1" "-"
   read DEB < /tmp/select.ans                                                                           
   [ "$DEB" == "q" ] && exit 1                                                                          
