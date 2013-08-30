@@ -71,28 +71,29 @@ read MIRROR < /tmp/debmirror
 echo "Using Debian Mirror: $MIRROR"
 echo
 unset META
-RESULTS="$(debQuery "$TARGET")"
-if [ ! "$RESULTS" ]
-then
+#RESULTS="$(debQuery "$TARGET")"
+#if [ ! "$RESULTS" ]
+if sudo grep -q "$TARGET:" /tmp/.pkgprebuilt; then
+  echo "$TARGET is a dCore premade package"
+  META="$TARGET"
 
- if [ -s /tmp/.targetfile ]; then
+elif [ -s /tmp/.targetfile ]; then
   echo "$TARGET is from your own custom package list."
   META="$TARGET"
 
- elif sudo grep -q "$TARGET:" /tmp/.depfile && ! sudo grep -q "$TARGET:" /tmp/.pkgprebuilt; then
+elif sudo grep -q "$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "$DEBINX"; then
   echo "$TARGET is a meta package of related Debian ones."
   META="$TARGET"
- elif ! sudo grep -q "$TARGET:" /tmp/.depfile && sudo grep -q "$TARGET:" /tmp/.pkgprebuilt; then
-  echo "$TARGET is a dCore premade package"
-  META="$TARGET"
- else
+elif sudo grep "^Package: $TARGET" "$DEBINX"; then
+ echo "$TARGET is a standard Debian package."
+
+else
   echo "$TARGET is not a standard Debian, dCore precompiled, or meta package, exiting.."
   cleanup 
   exit 1
- fi
-else
- echo "$TARGET is a standard Debian package."
 fi
+
+
 
 
 echo -n "Proceed to create $TARGET.sce? (y/N): "
@@ -126,21 +127,8 @@ for DEBINFO in `ls -t /tmp/work`; do
 	
 	 
 	 read FULLPATH < /tmp/work/"$DEBINFO"
-	 if [ "$FULLPATH" != "" ]; then
-	 	fetchDeb "$FULLPATH"
-	 	THISDEB="${FULLPATH##*/}"
-		sudo debExtract "$THISDEB"
-		if [ "$?" != "0" ]; then
-		  echo "Failure to extract "$THISDEB", exiting.."
-		  cleanup
-		  exit 1
-		fi
-		if [ -f /tmp/.importsecure ] && [ -f /tmp/"$DEBINFO".md5sum ]; then
-			echo ""$DEBINFO": `cat /tmp/"$DEBINFO".md5sum`" >> usr/local/importmd5sum/"$TARGET".md5sum
-			sudo rm /tmp/"$DEBINFO".md5sum
-		fi
-		sudo rm "$THISDEB"
-	 elif grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null; then
+
+	 if grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null; then
 	 	read IMPORTMIRROR < /opt/tcemirror                                                                             
 	 	PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
 		IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
@@ -178,6 +166,23 @@ for DEBINFO in `ls -t /tmp/work`; do
 			exit 1
 		fi	
 		cd "$TCEDIR"/import/"$TARGET"
+
+
+	 elif [ "$FULLPATH" != "" ]; then
+	 	fetchDeb "$FULLPATH"
+	 	THISDEB="${FULLPATH##*/}"
+		sudo debExtract "$THISDEB"
+		if [ "$?" != "0" ]; then
+		  echo "Failure to extract "$THISDEB", exiting.."
+		  cleanup
+		  exit 1
+		fi
+		if [ -f /tmp/.importsecure ] && [ -f /tmp/"$DEBINFO".md5sum ]; then
+			echo ""$DEBINFO": `cat /tmp/"$DEBINFO".md5sum`" >> usr/local/importmd5sum/"$TARGET".md5sum
+			sudo rm /tmp/"$DEBINFO".md5sum
+		fi
+		sudo rm "$THISDEB"
+
 	 fi
 done
 
