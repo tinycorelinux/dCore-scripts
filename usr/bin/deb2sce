@@ -66,6 +66,7 @@ TARGET="$1"
 
 debGetEnv "$2" || exit 1
 read DEBINX < /tmp/debinx
+DEBINX="/etc/sysconfig/tcedir/$DEBINX"
 echo "Using Package Index: $DEBINX"
 read MIRROR < /tmp/debmirror
 echo "Using Debian Mirror: $MIRROR"
@@ -81,10 +82,10 @@ elif [ -s /tmp/.targetfile ]; then
   echo "$TARGET is from your own custom package list."
   META="$TARGET"
 
-elif sudo grep -q "$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "$DEBINX"; then
+elif sudo grep -q "$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
   echo "$TARGET is a meta package of related Debian ones."
   META="$TARGET"
-elif sudo grep "^Package: $TARGET" "$DEBINX"; then
+elif sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
  echo "$TARGET is a standard Debian package."
 
 else
