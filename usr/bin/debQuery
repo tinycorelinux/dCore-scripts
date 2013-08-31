@@ -37,6 +37,6 @@ fi
 
 [ -s /tmp/debinx ] || debGetEnv "$2"
 read DEBINX < /tmp/debinx
-read MIRROR < /tmp/debmirror
+read MIRROR < /opt/debmirror
 
 query "$1"
