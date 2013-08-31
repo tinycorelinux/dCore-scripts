@@ -17,6 +17,16 @@ zsyncDebianIndex()
 	cd - > /dev/null
 }
 
+test_mirror() 
+{
+if wget -s "$MIRROR" > /dev/null 2>&1; then
+  echo "Using mirror: "$MIRROR""
+else
+  echo ""$MIRROR" is not available, exiting.."  
+  exit 1
+fi 
+}
+
 unset DEBINX MIRROR
 TCEDIR=/etc/sysconfig/tcedir
 BUILD="$1"
@@ -25,30 +35,40 @@ case $BUILD in
 armv6 )
 	DEBINX=debian-wheezy-all_wheezy_main_armhf_Packages
 	zsyncDebianIndex
-	MIRROR=http://archive.raspbian.org/raspbian
+	MIRROR1=http://archive.raspbian.org/raspbian
+	MIRROR=`cat /opt/debmirror`
 	;;
 armv7 )
 	DEBINX=debian_wheezy_main_armhf_Packages
 	zsyncDebianIndex
-	MIRROR=http://ftp.us.debian.org/debian
+	MIRROR1=http://ftp.us.debian.org/debian
+	MIRROR=`cat /opt/debmirror`
 	;;
 x86 )
 	DEBINX=debian_wheezy_main_i386_Packages
 	zsyncDebianIndex
-	MIRROR=http://ftp.us.debian.org/debian
+	MIRROR1=http://ftp.us.debian.org/debian
+	MIRROR=`cat /opt/debmirror`
 	;;
 esac
-if [ -z "$MIRROR" ]
-then
-	echo "$BUILD is not currently supported."
-	exit 1
-else
-	echo "$MIRROR" > /tmp/debmirror
-fi
+
+
+
+
+
+
 if [ -z "$DEBINX" ]
 then
 	echo "No Package Index Available"
 	exit 1
 else
 	echo "$DEBINX" > /tmp/debinx
+fi
+
+if [ ! -z `cat /opt/debmirror` > /dev/null 2>&1 ]
+then
+  test_mirror
+else
+  echo "$MIRROR1" > /opt/debmirror
+  test_mirror
 fi
