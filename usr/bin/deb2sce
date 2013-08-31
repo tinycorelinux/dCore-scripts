@@ -68,7 +68,7 @@ debGetEnv "$2" || exit 1
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/$DEBINX"
 echo "Using Package Index: $DEBINX"
-read MIRROR < /tmp/debmirror
+read MIRROR < /opt/debmirror
 echo "Using Debian Mirror: $MIRROR"
 echo
 unset META
