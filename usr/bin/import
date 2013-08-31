@@ -15,6 +15,11 @@ mksce() {
 
 }
 
+exit_tcnet() {
+	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
+	exit 1
+}
+
 
 [ -f /tmp/.importsecure ] && sudo rm /tmp/.importsecure
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
@@ -26,9 +31,9 @@ mksce() {
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
-wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEP 2>/dev/null || exit 1
-wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit 1
-wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null || exit 1
+wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEP 2>/dev/null || exit_tcnet
+wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit_tcnet
+wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null || exit_tcnet
 unset FLAGS PACKAGELIST
 while getopts bofs OPTION
 do
