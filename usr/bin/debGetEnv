@@ -51,6 +51,7 @@ fi
 # Test mirror
 if wget -s "$MIRROR" > /dev/null 2>&1; then
 	echo "Using mirror: "$MIRROR""
+	echo "$MIRROR" > /opt/debmirror
 else
 	echo ""$MIRROR" is not available, exiting.."  
 exit 1
