@@ -14,7 +14,7 @@ setupStartupScript() {
 
 
 fetchDeb() {
-	wget ${MIRROR}/${1}
+	sudo wget -O "$DEBS"/"$THISDEB"  ${MIRROR}/${1}
 	if [ "$?" != 0 ]
 	then
 		echo "failed on download of $1"
@@ -75,27 +75,24 @@ unset META
 #RESULTS="$(debQuery "$TARGET")"
 #if [ ! "$RESULTS" ]
 if sudo grep -q "$TARGET:" /tmp/.pkgprebuilt; then
-  echo "$TARGET is a dCore premade package"
-  META="$TARGET"
+	echo "$TARGET is a dCore premade package"
+	META="$TARGET"
 
 elif [ -s /tmp/.targetfile ]; then
-  echo "$TARGET is from your own custom package list."
-  META="$TARGET"
+	echo "$TARGET is from your own custom package list."
+	META="$TARGET"
 
 elif sudo grep -q "$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
-  echo "$TARGET is a meta package of related Debian ones."
-  META="$TARGET"
+	echo "$TARGET is a meta package of related Debian ones."
+	META="$TARGET"
 elif sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
- echo "$TARGET is a standard Debian package."
+	echo "$TARGET is a standard Debian package."
 
 else
-  echo "$TARGET is not a standard Debian, dCore precompiled, or meta package, exiting.."
-  cleanup 
-  exit 1
+	echo "$TARGET is not a standard Debian, dCore precompiled, or meta package, exiting.."
+	cleanup 
+	exit 1
 fi
-
-
-
 
 echo -n "Proceed to create $TARGET.sce? (y/N): "
 read ans
@@ -103,7 +100,9 @@ read ans
 
 > /var/log/sce.log
 [ -d "$TCEDIR"/sce ] || mkdir "$TCEDIR"/sce
-[ -d "$TCEDIR"/import ] || mkdir "$TCEDIR"/import
+[ -d "$TCEDIR"/import/debs ] || mkdir -p "$TCEDIR"/import/debs
+DEBS="$TCEDIR"/import/debs
+
 cd "$TCEDIR"/import
 #[ -f exclude.lst ] || gzip -dc /tmp/deb2sce.xlst.gz > exclude.lst
 
@@ -112,20 +111,19 @@ cd "$TARGET"
 > /tmp/import.log	
 
 if [ -s /tmp/.targetfile ]; then
-    for I in `cat /tmp/.targetfile`; do 
-      debGetDeps "$I"
-    done
+	for I in `cat /tmp/.targetfile`; do 
+		debGetDeps "$I"
+	done
 else
-    debGetDeps "$TARGET"
+	debGetDeps "$TARGET"
 fi
+
 if [ -f /tmp/.importsecure ]; then
-   mkdir -p usr/local/importmd5sum
+	mkdir -p usr/local/importmd5sum
 fi
 
 HERE=`pwd`
 for DEBINFO in `ls -t /tmp/work`; do
-	 
-	
 	 
 	 read FULLPATH < /tmp/work/"$DEBINFO"
 
@@ -168,11 +166,10 @@ for DEBINFO in `ls -t /tmp/work`; do
 		fi	
 		cd "$TCEDIR"/import/"$TARGET"
 
-
 	 elif [ "$FULLPATH" != "" ]; then
-	 	fetchDeb "$FULLPATH"
 	 	THISDEB="${FULLPATH##*/}"
-		sudo debExtract "$THISDEB"
+	 	[ -f ../debs/"$THISDEB" ] || fetchDeb "$FULLPATH"
+		sudo debExtract "$DEBS"/"$THISDEB"
 		if [ "$?" != "0" ]; then
 		  echo "Failure to extract "$THISDEB", exiting.."
 		  cleanup
@@ -180,10 +177,8 @@ for DEBINFO in `ls -t /tmp/work`; do
 		fi
 		if [ -f /tmp/.importsecure ] && [ -f /tmp/"$DEBINFO".md5sum ]; then
 			echo ""$DEBINFO": `cat /tmp/"$DEBINFO".md5sum`" >> usr/local/importmd5sum/"$TARGET".md5sum
-			sudo rm /tmp/"$DEBINFO".md5sum
+ 			sudo rm /tmp/"$DEBINFO".md5sum
 		fi
-		sudo rm "$THISDEB"
-
 	 fi
 done
 

@@ -16,7 +16,7 @@ PKG="$PKGDIR"/pkg
 CFG="$PKGDIR"/cfg
 FILE="$1"
 BASENAME="${FILE%%_*}"
-
+BASENAME="${BASENAME##/*/}"
 
 setupStartupScript() {
 	[ -d "$PKG"/usr/local/tce.installed ] || mkdir -p "$PKG/usr/local/tce.installed/"
@@ -93,7 +93,7 @@ if [ -f "$CFG"/postinst ]; then
 fi
 
 #	cd pkg
-echo -n "Merging $BASENAME: "
+echo "Merging $BASENAME "
 #find . -depth | cpio -pmd "$HERE" 2>&1 > /dev/null
 (tar -cf - .) | (cd "$HERE" && tar -xpf -)	
 cd "$HERE"
