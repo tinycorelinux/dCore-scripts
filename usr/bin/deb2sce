@@ -35,10 +35,28 @@ selectDeb() {
 	fi
 }
 
+getMd5sum() {
+	awk -v package="Package: $1" -v FIELD="$1: "  '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+				if ( f[1] == "MD5sum" )
+					print f[2] 
+			}
+		
+		}
+		
+	} ' < "$DEBINX"
+}
 
 cleanup() {
 	rm -rf /tmp/work
-	chmod 1777 /tmp
+	chmod 777 /tmp
 	chmod 775 /usr/local/tce.installed
 	chmod 775 /usr/local/tce.icons 2>/dev/null
 	chgrp staff /usr/local/tce.installed
@@ -132,10 +150,24 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 	PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
 		IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
 		if wget -sq "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz; then
-		  [ -f "$TCEDIR"/import/"${DEBINFO}".tar.gz ] && rm "$TCEDIR"/import/"${DEBINFO}".tar.gz
-	 	  wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
-		  [ -f "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt ] && rm "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt
-		  wget -O "$TCEDIR"/import/"${DEBINFO}".tar.gz.md5.txt -q "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt	
+		cd "$DEBS"
+		  if [ -f "${DEBINFO}".tar.gz ]; then
+			[ -f "${DEBINFO}".tar.gz.md5.txt ] && rm "${DEBINFO}".tar.gz.md5.txt
+			wget -O "${DEBINFO}".tar.gz.md5.txt "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt > /dev/null 2>&1
+		
+				if ! md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null 2>&1; then
+					echo "Fetching updated "${DEBINFO}".tar.gz.."
+					rm "${DEBINFO}".tar.gz*
+					wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
+					wget -O "${DEBINFO}".tar.gz.md5.txt "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt
+				fi
+			
+		  else
+		  	[ -f "${DEBINFO}".tar.gz ] && rm "$DEBS"/"${DEBINFO}".tar.gz
+			[ -f "${DEBINFO}".tar.gz.md5.txt ] && rm "$DEBS"/"${DEBINFO}".tar.gz.md5.txt
+			wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
+			wget -O "${DEBINFO}".tar.gz.md5.txt "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt
+		  fi
 		fi
 		  [ -f /tmp/"${DEBINFO}.deb2sce" ] && rm /tmp/"${DEBINFO}.deb2sce"
 		  wget -O /tmp/"${DEBINFO}.deb2sce" -q "$PREBUILTMIRROR"/"${DEBINFO}.deb2sce" 2>/dev/null		
@@ -148,17 +180,17 @@ for DEBINFO in `ls -t /tmp/work`; do
 			chown -R root.staff usr/local/tce.installed/
 			rm /tmp/"${DEBINFO}.deb2sce"
 		fi
-  	 	cd "$TCEDIR"/import
-		if [ -f "${DEBINFO}".tar.gz.md5.txt ] && md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
+
+		if md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
   	 	then
 		  if [ -f /tmp/.importsecure ]; then
 			echo "${DEBINFO}: `cat "${DEBINFO}".tar.gz.md5.txt | cut -f1 -d" "`" >> "$TCEDIR"/import/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum
 			
 		  fi
 			echo "Merging "${DEBINFO}":"
-    	   		  tar xf "$TCEDIR"/import/"${DEBINFO}".tar.gz -C "$TCEDIR"/import/"$TARGET"
-           		  rm "$TCEDIR"/import/"${DEBINFO}".tar.gz
-		elif [ -f "${DEBINFO}".tar.gz.md5.txt ] && ! md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
+    	   		tar xf "${DEBINFO}".tar.gz -C "$TCEDIR"/import/"$TARGET"
+           		  
+		elif [ -f "${DEBINFO}".tar.gz.md5.txt ] && ! md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null 2>&1
 		then
 			echo "md5sum failed for "${DEBINFO}".tar.gz, exiting.."
 			cleanup
@@ -168,7 +200,15 @@ for DEBINFO in `ls -t /tmp/work`; do
 
 	 elif [ "$FULLPATH" != "" ]; then
 	 	THISDEB="${FULLPATH##*/}"
-	 	[ -f ../debs/"$THISDEB" ] || fetchDeb "$FULLPATH"
+	 	if [ -f ../debs/"$THISDEB" ]; then
+			if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
+				rm "$DEBS"/"$THISDEB"
+				echo "Fetching updated "$THISDEB".."
+				fetchDeb "$FULLPATH"		
+			fi
+		else
+			fetchDeb "$FULLPATH"
+		fi
 		sudo debExtract "$DEBS"/"$THISDEB"
 		if [ "$?" != "0" ]; then
 		  echo "Failure to extract "$THISDEB", exiting.."
