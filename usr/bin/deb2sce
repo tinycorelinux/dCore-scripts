@@ -56,7 +56,7 @@ getMd5sum() {
 
 cleanup() {
 	rm -rf /tmp/work
-	chmod 777 /tmp
+	chmod 1777 /tmp
 	chmod 775 /usr/local/tce.installed
 	chmod 775 /usr/local/tce.icons 2>/dev/null
 	chgrp staff /usr/local/tce.installed
