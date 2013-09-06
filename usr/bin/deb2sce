@@ -7,9 +7,9 @@ BUILD=`getBuild`
 TCEDIR=/etc/sysconfig/tcedir
 
 setupStartupScript() {
-	[ -d usr/local/tce.installed ] || mkdir -p usr/local/tce.installed
-	chmod 775 usr/local/tce.installed
-	chown root.staff usr/local/tce.installed
+	[ -d "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed ] || mkdir -p "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed
+	chmod 775 "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed
+	chown root.staff "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed
 }
 
 
@@ -175,9 +175,9 @@ for DEBINFO in `ls -t /tmp/work`; do
 		then
 			echo "Merging Tiny Core custom start script for ${DEBINFO}: "${DEBINFO}.deb2sce""
 			setupStartupScript
-			cat /tmp/"${DEBINFO}.deb2sce" > usr/local/tce.installed/"${DEBINFO}"
-			chmod -R 775 usr/local/tce.installed/
-			chown -R root.staff usr/local/tce.installed/
+			cat /tmp/"${DEBINFO}.deb2sce" > "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed/"${DEBINFO}"
+			chmod -R 775 "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed/
+			chown -R root.staff "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed/
 			rm /tmp/"${DEBINFO}.deb2sce"
 		fi
 
