@@ -28,6 +28,54 @@ abort_to_saved_dir(){
 	exit 1
 }
 
+choose(){
+	TMP=/tmp/select.$$
+	SCE=/tmp/sce.$$
+	MOUNTED=/tmp/mounted.$$
+	ls -1 /etc/sysconfig/tcedir/sce/*.sce|awk 'BEGIN{FS="/"}{size=length($6)-4; print substr($6,0,size)}' > "$SCE"
+	mount | awk '$3 ~ /tcloop/{print substr($3,13)}' > "$MOUNTED"
+
+	cat "$SCE" "$MOUNTED" "$MOUNTED" | sort | uniq -u > "$TMP"
+
+	rm "$SCE"
+	rm "$MOUNTED"
+
+	if [ ! -s "$TMP" ]; then
+		echo "Nothing found to load."
+		exit 1
+	fi
+	select "dCore - Select SCE to load" "$TMP"
+	TARGETAPP="$(cat  /tmp/select.ans)"
+	rm "$TMP"
+	[ "$TARGETAPP" == "q" ] && exit 0
+	echo "Loading $TARGETAPP"
+
+}
+
+processAPP(){
+	APPNAME=${TARGETAPP%%.sce}
+	if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
+	APPNAME="${APPNAME/-KERNEL/-${KERNELVER}}"
+	TARGETAPP="${TARGETAPP/-KERNEL.sce/-${KERNELVER}.sce}"
+
+	if [ -f /usr/local/tce.installed/"${APPNAME##/*/}" ]; then
+		echo "$APPNAME is already installed!"
+		continue
+	fi
+	if [ -f "$TARGETAPP" ]; then
+		:
+	elif [ -f "$TCEDIR"/sce/"$TARGETAPP" ]; then
+		TARGETAPP="$TCEDIR"/sce/"$TARGETAPP"
+	else
+		echo "$TARGETAPP not found!"
+		abort_to_saved_dir
+	fi
+	FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
+	EXTENSION=`basename "$TARGETAPP"`
+	install "$TARGETAPP"
+	[ "$SUPPRESS" ] || echo "$TARGETAPP: OK"
+}
+
 while getopts bdsf OPTION
 do
 	case ${OPTION} in
@@ -153,36 +201,19 @@ install(){
 # Main
 TCEDIR=/etc/sysconfig/tcedir
 [ -d "$TCEDIR" ] || exit 1
-[ -n "$1" ] || exit 1
+[ -n "$1" ] || choose
 [ -f /etc/sysconfig/showapps ] && SHOWAPPS=TRUE && SUPPRESS=TRUE
 TCEINSTALLED=/usr/local/tce.installed
 
-
-for TARGETAPP in $@; do
-	APPNAME=${TARGETAPP%%.sce}
-	if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
-	APPNAME="${APPNAME/-KERNEL/-${KERNELVER}}"
-	TARGETAPP="${TARGETAPP/-KERNEL.sce/-${KERNELVER}.sce}"
-
-	if [ -f /usr/local/tce.installed/"${APPNAME##/*/}" ]; then
-		echo "$APPNAME is already installed!"
-		continue
-	fi
-	if [ -f "$TARGETAPP" ]; then
-		:
-	elif [ -f "$TCEDIR"/sce/"$TARGETAPP" ]; then
-		TARGETAPP="$TCEDIR"/sce/"$TARGETAPP"
-	else
-		echo "$TARGETAPP not found!"
-		abort_to_saved_dir
-	fi
-	FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
-	EXTENSION=`basename "$TARGETAPP"`
-	install "$TARGETAPP"
-	[ "$SUPPRESS" ] || echo "$TARGETAPP: OK"
-
-	cd "$SAVED_DIR"
-done # Finish the for-loop for multiple extensions
+if [ -n "$TARGETAPP" ]
+then
+	processAPP
+else
+	for TARGETAPP in $@; do
+		processAPP
+	done # Finish the for-loop for multiple extensions
+fi
+cd "$SAVED_DIR"
 
 [ "$BOOTING" ] && exit 0
 if [ -n "$DISPLAY" ]
