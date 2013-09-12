@@ -169,17 +169,6 @@ for DEBINFO in `ls -t /tmp/work`; do
 			wget -O "${DEBINFO}".tar.gz.md5.txt "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt
 		  fi
 		fi
-		  [ -f /tmp/"${DEBINFO}.deb2sce" ] && rm /tmp/"${DEBINFO}.deb2sce"
-		  wget -O /tmp/"${DEBINFO}.deb2sce" -q "$PREBUILTMIRROR"/"${DEBINFO}.deb2sce" 2>/dev/null		
-		if [ -f /tmp/"${DEBINFO}.deb2sce" ]
-		then
-			echo "Merging Tiny Core custom start script for ${DEBINFO}: "${DEBINFO}.deb2sce""
-			setupStartupScript
-			cat /tmp/"${DEBINFO}.deb2sce" > "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed/"${DEBINFO}"
-			chmod -R 775 "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed/
-			chown -R root.staff "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed/
-			rm /tmp/"${DEBINFO}.deb2sce"
-		fi
 
 		if md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
   	 	then
