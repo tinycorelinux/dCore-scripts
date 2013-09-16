@@ -18,7 +18,6 @@ addUser(){
 	/bin/adduser -s /bin/sh -G staff -D "$USER"
 	echo "$USER":tcuser | /usr/sbin/chpasswd -m
 	echo -e "$USER\tALL=NOPASSWD: ALL" >> /etc/sudoers
-	setupHome
 }
 
 ### END functions
