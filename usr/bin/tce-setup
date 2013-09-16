@@ -77,14 +77,12 @@ process_gz() {
 		[ -s "$STARTSCRIPT" ] && sh "$STARTSCRIPT"
 	done
 	cd -
-	setupHome
 }
 process_sce() {
 	while read S
 	do
 		su "$USER" -c "loadsce -b "$S""
 	done < "$SCELIST"
-#	setupHome
 }
 process_CD() {
 	CD="/mnt/${DEV#/dev/}"
@@ -170,3 +168,4 @@ if [ -s /tmp/setup.lst ]; then
 fi
 
 setupHome
+
