@@ -264,12 +264,14 @@ setupHome(){
 		echo "$ITEM" >> "$LIST"
 	fi
    done
-   [ -s "$LIST" ] || exit 0
-   tar -C /etc/skel -T "$LIST" -cf - | tar -C /home/"$USER" -xf -
-   while read ITEM
+   if [ -s "$LIST" ]
+   then
+      tar -C /etc/skel -T "$LIST" -cf - | tar -C /home/"$USER" -xf -
+      while read ITEM
 	do chown -R "$USER".staff /home/"$USER"/"${ITEM%%/*}"
-   done < "$LIST"
-   rm "$LIST"
+      done < "$LIST"
+   fi
+   rm "$LIST" 2>/dev/null
 }
 
 merge() {
