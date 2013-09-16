@@ -247,9 +247,29 @@ checkX() {
 }
 
 setupHome(){
-   yes n | cp -ai /etc/skel/. /home/"$USER"/ 2>/dev/null
-   chown -Rh "$USER".staff /home/"$USER"
-   chmod g+s,o-rwx /home/"$USER"
+   read USER < /etc/sysconfig/tcuser
+   if [ ! -d /home/"$USER" ]
+   then
+      mkdir -p /home/"$USER"/.X.d
+      chown -R "$USER".staff /home/"$USER/"
+      chmod -R g+s,o-rwx /home/"$USER/"
+   fi
+   LIST=`mktemp`
+   > "$LIST"
+   for S in `find /etc/skel -type f`
+   do
+	ITEM="${S#/etc/skel/}"
+	if [ ! -e /home/"$USER"/"$ITEM" ] 
+	then
+		echo "$ITEM" >> "$LIST"
+	fi
+   done
+   [ -s "$LIST" ] || exit 0
+   tar -C /etc/skel -T "$LIST" -cf - | tar -C /home/"$USER" -xf -
+   while read ITEM
+	do chown -R "$USER".staff /home/"$USER"/"${ITEM%%/*}"
+   done < "$LIST"
+   rm "$LIST"
 }
 
 merge() {
