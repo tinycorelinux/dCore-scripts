@@ -201,7 +201,9 @@ install(){
 # Main
 TCEDIR=/etc/sysconfig/tcedir
 [ -d "$TCEDIR" ] || exit 1
-[ -n "$1" ] || choose
+if [ -z "$1" ] && [ -z "$BOOTING" ]; then
+	choose
+fi
 [ -f /etc/sysconfig/showapps ] && SHOWAPPS=TRUE && SUPPRESS=TRUE
 TCEINSTALLED=/usr/local/tce.installed
 
