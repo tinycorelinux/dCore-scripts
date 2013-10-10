@@ -248,9 +248,10 @@ checkX() {
 
 setupHome(){
    read USER < /etc/sysconfig/tcuser
-   if [ ! -d /home/"$USER" ]
+   if [ ! -d /home/"$USER" ] || [ "`ls -la /home/${USER} | wc -l`" -le 3 ]  
    then
       mkdir -p /home/"$USER"/.X.d
+      mkdir -p /home/"$USER"/.local/bin
       chown -R "$USER".staff /home/"$USER/"
       chmod -R g+s,o-rwx /home/"$USER/"
    fi
