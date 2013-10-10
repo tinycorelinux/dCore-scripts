@@ -244,6 +244,8 @@ else
 	USER="tc"
 fi
 echo "$USER" > /etc/sysconfig/tcuser
+mkdir -p /home/"$USER"
+
 if [ -n "$SUPERUSER" ]; then
 	touch /etc/sysconfig/superuser
 fi
