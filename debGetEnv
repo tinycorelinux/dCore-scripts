@@ -1,0 +1,60 @@
+#!/bb/ash
+# (c) Robert Shingledecker 2012
+. /etc/init.d/tc-functions
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
+zsyncDebianIndex()
+{
+	getMirror "$BUILD"
+	MIRROR="${MIRROR%/tcz}"
+	cd "$TCEDIR"
+	if zsync -i "$TCEDIR"/"$DEBINX" "$MIRROR"/"$DEBINX".zsync 2>/dev/null
+	then
+		rm -f "$DEBINX".zs-old
+	else
+		wget -O "$TCEDIR"/"$DEBINX" "$MIRROR"/"$DEBINX"
+	fi
+	cd - > /dev/null
+}
+
+unset DEBINX MIRROR
+TCEDIR=/etc/sysconfig/tcedir
+BUILD="$1"
+[ -z "$BUILD" ] && BUILD=`getBuild`
+case $BUILD in
+armv6 )
+	DEBINX=debian-wheezy-all_wheezy_main_armhf_Packages
+	zsyncDebianIndex
+	MIRROR1=http://archive.raspbian.org/raspbian
+	;;
+armv7 )
+	DEBINX=debian_wheezy_main_armhf_Packages
+	zsyncDebianIndex
+	MIRROR1=http://ftp.us.debian.org/debian
+	;;
+x86 )
+	DEBINX=debian_wheezy_main_i386_Packages
+	zsyncDebianIndex
+	MIRROR1=http://ftp.us.debian.org/debian
+	;;
+esac
+read MIRROR 2>/dev/null < /opt/debmirror 2>/dev/null || MIRROR="$MIRROR1"
+
+if [ -z "$DEBINX" ]
+then
+	echo "No Package Index Available"
+	exit 1
+else
+	echo "$DEBINX" > /tmp/debinx
+fi
+
+# Test mirror
+if wget -s "$MIRROR" > /dev/null 2>&1; then
+	echo "Using mirror: "$MIRROR""
+	echo "$MIRROR" > /opt/debmirror
+else
+	echo ""$MIRROR" is not available, exiting.."  
+exit 1
+fi 

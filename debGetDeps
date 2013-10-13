@@ -1,0 +1,40 @@
+#!/bb/ash
+# getDeps is based on concepts from tce-tree.sh - Copyright 2010 Brian Smith
+# Licensed under GPLv2 License
+# getDeps morphed from tree.sh by Robert Shingledecker - Nov 2012
+. /etc/init.d/tc-functions
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
+TCEDIR="/etc/sysconfig/tcedir"
+BUILD=`getBuild`
+
+
+getDeps()
+{
+        PKG=${1}
+	[ -e /tmp/work/"$PKG" ] && return
+#	grep -wq "$PKG" "$TCEDIR"/import/exclude.lst && return
+	
+	echo "$PKG"
+	touch /tmp/work/"$PKG"
+	if grep $PKG: /tmp/.pkgprebuilt > /dev/null 2>&1; then
+	  DEPLIST="$DEPLIST `grep $PKG: /tmp/.pkgprebuilt | cut -f2 -d:`"
+	else
+	  DEPLIST=`debGetPkgList $PKG 2>/dev/null`
+	  [ -s /tmp/.depfile ] &&  DEPLIST="$DEPLIST `grep $PKG: /tmp/.depfile | cut -f2 -d:`"
+	fi
+	for D in $DEPLIST; do getDeps $D; done
+}
+
+TARGET="$1"
+if [ -n "$TARGET" ]; then
+	[ ! -d /tmp/work ] && mkdir /tmp/work
+        getDeps "$TARGET"
+        echo
+else
+        echo ""
+        echo "Specify package in command line:"
+        echo ""
+fi

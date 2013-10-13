@@ -1,0 +1,12 @@
+#!/bb/ash
+. /etc/init.d/tc-functions
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
+[ -n "$1" ] || exit 1
+DEVINFO="$(blkid $1)"
+UUID="${DEVINFO##*UUID=}"
+UUID="${UUID%%[    ]*}"
+UUID="$(echo "$UUID"|tr -d '"')"
+echo "$UUID"
