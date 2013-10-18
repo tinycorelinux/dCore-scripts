@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bb/ash
 TARGET=`cat /etc/sysconfig/backup_device`
 [ -n "$TARGET" ] || exit 1
 echo "Backup device is set to: "$TARGET""
