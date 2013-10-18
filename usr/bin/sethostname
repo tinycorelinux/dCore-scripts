@@ -1,9 +1,9 @@
-#!/bin/busybox ash
+#!/bb/ash
 # Set hostname
 # Originally a function contributed by henk.1955 
 # Now callable via /opt/bootsync.sh when no boot host= is specified.
 . /etc/init.d/tc-functions
-useBusybox
+
 HOSTNAME="$(getbootparam host 2>/dev/null)"
 [ -n "$HOSTNAME" ] || HOSTNAME="$1"
 [ -n "$HOSTNAME" ] || HOSTNAME="box"
