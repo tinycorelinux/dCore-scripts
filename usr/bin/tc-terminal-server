@@ -1,7 +1,9 @@
-#!/bin/busybox ash
+#!/bb/ash
 # Woven together by Curaga (2008)
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 
 ROOTFS=core
 
