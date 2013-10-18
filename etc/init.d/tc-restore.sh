@@ -1,11 +1,12 @@
-#!/bin/busybox ash
+#!/bb/ash
 # (c) Robert Shingledecker 2003-2012
 # Called from tc-config
 # A non-interactive script to restore configs, directories, etc defined by the user
 # in the file .filetool.lst
 . /etc/init.d/tc-functions
-useBusybox
 
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 TCE="$1"
 DEVICE=""
 MYDATA=mydata
