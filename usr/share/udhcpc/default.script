@@ -1,4 +1,7 @@
-#!/bin/sh
+#!/bb/ash
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 
 # udhcpc script edited by Tim Riker <Tim@Rikers.org>
 
@@ -10,11 +13,11 @@ RESOLV_CONF="/etc/resolv.conf"
 
 case "$1" in
 	deconfig)
-		/sbin/ifconfig $interface 0.0.0.0
+		/bb/ifconfig $interface 0.0.0.0
 		;;
 
 	renew|bound)
-		/sbin/ifconfig $interface $ip $BROADCAST $NETMASK
+		/bb/ifconfig $interface $ip $BROADCAST $NETMASK
 
 		if [ -n "$router" ] ; then
 			echo "deleting routers"
