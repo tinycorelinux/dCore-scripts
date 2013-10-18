@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bb/ash
 # (c) Robert Shingledecker 2012
 # Wait for network to come up and then set time
 CNT=0

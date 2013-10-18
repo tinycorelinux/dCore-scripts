@@ -1,6 +1,6 @@
 # Command Line, proc might not be mounted
-[ -f /proc/cmdline ] || /bin/mount /proc
-CMDLINE=""; CMDLINE=" $(cat /proc/cmdline)"
+[ -f /proc/cmdline ] || /bb/mount /proc
+CMDLINE=""; CMDLINE=" $(/bb/cat /proc/cmdline)"
 # ANSI COLORS
 CRE="$(echo -e '\r\033[K')"
 RED="$(echo -e '\033[1;31m')"
@@ -226,14 +226,14 @@ usleep_progress() {
 }
 
 checkroot() {
- if [ `/usr/bin/id -u` -ne 0 ]; then
+ if [ `/bb/id -u` -ne 0 ]; then
    echo "Need root privileges." >&2
    exit 1
  fi
 }
  
 checknotroot() {
- if [ `/usr/bin/id -u` -eq 0 ]; then
+ if [ `/bb/id -u` -eq 0 ]; then
    echo "Don't run this as root." >&2
    exit 1
  fi
@@ -248,7 +248,7 @@ checkX() {
 
 setupHome(){
    read USER < /etc/sysconfig/tcuser
-   if [ ! -d /home/"$USER" ] || [ "`ls -la /home/${USER} | wc -l`" -le 3 ]  
+   if [ ! -d /home/"$USER" ] || [ "`ls -la /home/${USER} | wc -l`" -le 3 ]
    then
       mkdir -p /home/"$USER"/.X.d
       mkdir -p /home/"$USER"/.local/bin
