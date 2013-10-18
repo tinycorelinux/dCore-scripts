@@ -1,9 +1,11 @@
-#!/bin/busybox ash
+#!/bb/ash
 # (c) Robert Shingledecker 2011
 # Use exit code to get Windows partition if any.
 # exit code of 0 means none found.
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 PARTNO="$(fdisk -l 2>/dev/null | grep "^/dev/$1" | awk '
 {  
    type = substr($0,52,2)
