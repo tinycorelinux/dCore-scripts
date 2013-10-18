@@ -1,6 +1,9 @@
-#!/bin/busybox ash
+#!/bb/ash
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
 version="1.00"
 scriptName="getTime.sh"
 #
