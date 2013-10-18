@@ -1,7 +1,8 @@
-#!/bin/busybox ash
+#!/bb/ash
 # (c) Robert Shingledecker 2013
 #
 . /etc/init.d/tc-functions
+
 useBusybox
 checknotroot
 PROG_NAME=$(basename $0)
