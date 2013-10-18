@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bb/ash
 NOAUTOLOGIN=/etc/sysconfig/noautologin
 if [ -f "$NOAUTOLOGIN" ]; then
 	if [ -s "$NOAUTOLOGIN" ]; then
@@ -7,8 +7,8 @@ if [ -f "$NOAUTOLOGIN" ]; then
 	fi
 else
 	if [ ! -f /etc/sysconfig/superuser ]; then 
-		clear
+#		clear
 		TCUSER="$(cat /etc/sysconfig/tcuser)"
-		exec /bin/login -f "$TCUSER"
+		exec /bb/login -f "$TCUSER"
 	fi
 fi
