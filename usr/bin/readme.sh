@@ -1,9 +1,12 @@
-#!/bin/busybox ash
+#!/bb/ash
 . /etc/init.d/tc-functions
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 BUILD=`getBuild`
 MIRROR=`cat /opt/tcemirror`
 VER=`getMajorVer`
-useBusybox
+
 [ -f /tmp/README-"$1".txt ] && rm /tmp/README-"$1".txt
 if wget -s "$MIRROR"/"$VER".x/"$BUILD"/README/README-"$1".txt > /dev/null 2>&1; then
    wget -q "$MIRROR"/"$VER".x/"$BUILD"/README/README-"$1".txt -O /tmp/README-"$1".txt 
