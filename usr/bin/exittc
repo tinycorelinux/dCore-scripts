@@ -1,2 +1,2 @@
-#!/bin/sh
+#!/bb/ash
 [ -n "$XPID" ] && sudo kill "$XPID"
