@@ -1,4 +1,4 @@
-#!/bin/busybox ash
+#!/bb/ash
 # From concepts of deb2tcz by Jason Williams
 # Enhanced for Arm ports by Robert Shingledecker
 # postinst / TC customization script support by Brian Smith
@@ -6,7 +6,10 @@
 # Usage: $ debExtract packagename.deb
 
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
 checkroot
 BUILD=`getBuild`
 TCEDIR=/etc/sysconfig/tcedir
