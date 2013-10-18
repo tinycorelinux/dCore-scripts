@@ -1,10 +1,11 @@
-#!/bin/busybox ash
+#!/bb/ash
 # RC Script for Tiny Core Linux
 # (c) Robert Shingledecker 2004-2012
 # Several modifications for speed by Curaga
 . /etc/init.d/tc-functions
-useBusybox
 
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 USER="tc"
 TCEDIR="/tmp/tce"
 TCLOOP="/tmp/tcloop"
@@ -15,8 +16,8 @@ KERNEL="$(uname -r)"
 
 addUser(){
 	echo "${GREEN}Adding user ${YELLOW} $USER ${NORMAL}"
-	/bin/adduser -s /bin/sh -G staff -D "$USER"
-	echo "$USER":tcuser | /usr/sbin/chpasswd -m
+	/bb/adduser -s /bb/sh -G staff -D "$USER"
+	echo "$USER":tcuser | /bb/chpasswd -m
 	echo -e "$USER\tALL=NOPASSWD: ALL" >> /etc/sudoers
 }
 
@@ -105,7 +106,7 @@ echo -n "${BLUE}Starting udev daemon for hotplug support...${NORMAL}"
 /sbin/udevd --daemon 2>&1 >/dev/null
 #/sbin/udevadm trigger --action=add 2>/dev/null >/dev/null &
 /sbin/udevadm trigger --action=add 2>&1 >/dev/null &
-rotdash $!
+/usr/bin/rotdash $!
 echo "${GREEN}Done.${NORMAL}"
 
 [ -n "$WAITUSB" ] && (
@@ -152,8 +153,8 @@ fi
 
 if [ -n "$SYSLOG" ]; then
 	 [ -z "$RSYSLOG" ] || SOPTS=" -L -R $RSYSLOG "
-	 /sbin/syslogd ${SOPTS} && echo "${GREEN}syslog started.${NORMAL}"
-	 /sbin/klogd && echo "${GREEN}klog started."
+	 /bb/syslogd ${SOPTS} && echo "${GREEN}syslog started.${NORMAL}"
+	 /bb/klogd && echo "${GREEN}klog started."
 fi
 
 [ -n "$LANGUAGE" ] || LANGUAGE="C"
@@ -182,11 +183,11 @@ fi
 if [ -n "$HOST" ]; then
 	sethostname
 else
-	/bin/hostname -F /etc/hostname
+	/bb/hostname -F /etc/hostname
 fi
 
-/sbin/ifconfig lo 127.0.0.1 up
-/sbin/route add 127.0.0.1 lo &
+/bb/ifconfig lo 127.0.0.1 up
+/bb/route add 127.0.0.1 lo &
 
 if [ -n "$AOE" ]; then
 	IFACE=$( echo $AOE | awk -F: '{ print $1 }')
@@ -353,10 +354,10 @@ if [ -n "$TCVD" ]; then
 	PARTITION="${TCVD_DEVICE##/dev/}"
 	find_mountpoint "$PARTITION"
 	if [ -n "$MOUNTPOINT" ]; then
-		[ "$MOUNTED" == "yes" ] || /bin/mount "$MOUNTPOINT"
+		[ "$MOUNTED" == "yes" ] || /bb/mount "$MOUNTPOINT"
 		usleep_progress
 		if [ -f "$MOUNTPOINT"/"$TCVD_LOOPFILE" ]; then
-			[ -d /mnt/tcvd ] || /bin/mkdir /mnt/tcvd
+			[ -d /mnt/tcvd ] || /bb/mkdir /mnt/tcvd
 			ln -sf "$MOUNTPOINT"/"$TCVD_LOOPFILE" /dev/tcvd
 			printf "/dev/tcvd \t/mnt/tcvd \text2\tloop\t0 0 #Added by TC\n" >> /etc/fstab
 			sync
@@ -464,7 +465,7 @@ if [ -n "$NOSWAP" ]; then
 	echo "${BLUE}Ignoring swap partition(s) seek as requested.${NORMAL}"
 else
 	wait $fstab_pid
-	/sbin/swapon -a 2>/dev/null
+	/bb/swapon -a 2>/dev/null
 	if [ "$?" == 0 ]; then echo "${GREEN}Possible swap partition(s) enabled.${NORMAL}"; fi
 fi
 
@@ -485,7 +486,7 @@ if [ -n "$RESUME" ]; then
 	rm -f /etc/sysconfig/tc.resume 2>/dev/null
 	RESUME=`basename $RESUME`
 	SWAP_SIZE=$(cat /proc/swaps | grep "$RESUME" | awk '{print $3}')
-	[ -z "$SWAP_SIZE" ] && /sbin/swapon /dev/"$RESUME" &&  SWAP_SIZE=$(cat /proc/swaps | grep "$RESUME" | awk '{print $3}')
+	[ -z "$SWAP_SIZE" ] && /bb/swapon /dev/"$RESUME" &&  SWAP_SIZE=$(cat /proc/swaps | grep "$RESUME" | awk '{print $3}')
 	[ -z "$SWAP_SIZE" ] && exit 1
 	MEM_SIZE=$(cat /proc/meminfo | awk '/MemTotal/{print $2}')
 	if [ $SWAP_SIZE -gt $MEM_SIZE ]; then
@@ -518,9 +519,9 @@ if [ -n "$SHOWAPPS" ]; then
 else
 	echo -n "$MSSG"
 	/usr/bin/tce-setup "booting" > /dev/null 2>&1 & 
-	rotdash $!
+	/usr/bin/rotdash $!
 	[ -n "$ISOFILE" ] && /usr/bin/fromISOfile "$ISOFILE" > /dev/null 2>&1 &
-	rotdash $!
+	/usr/bin/rotdash $!
 	echo "${GREEN}Done.${NORMAL}"
 	if [ -s /tmp/aberr ]; then
 		echo "${RED}Warning! Errors occured during the loading of the extensions.${YELLOW}"
@@ -532,7 +533,7 @@ fi
 [ -n "$KEYMAP" ] || KEYMAP="us"
 if [ -f "/usr/share/kmap/$KEYMAP.kmap" ]; then
 	echo -n "${GREEN}Setting keymap to ${MAGENTA}$KEYMAP"
-	/sbin/loadkmap < /usr/share/kmap/$KEYMAP.kmap
+	/bb/loadkmap < /usr/share/kmap/$KEYMAP.kmap
 	echo "KEYMAP=$KEYMAP" > /etc/sysconfig/keymap
 	echo "${GREEN} Done.${NORMAL}"
 fi
