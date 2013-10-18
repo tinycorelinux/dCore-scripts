@@ -1,6 +1,8 @@
-#!/bin/busybox ash
+#!/bb/ash
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 
 TARGET="$1"
 [ -z "$TARGET" ] && exit 1
