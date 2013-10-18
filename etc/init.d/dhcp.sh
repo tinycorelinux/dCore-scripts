@@ -1,7 +1,10 @@
-#!/bin/sh
+#!/bb/ash
 # The DHCP portion is now separated out, in order to not slow the boot down
 # only to wait for slow network cards
 . /etc/init.d/tc-functions
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 
 # This waits until all devices have registered
 /sbin/udevadm settle --timeout=5
@@ -12,7 +15,7 @@ for DEVICE in $NETDEVICES; do
   if [ "$?" != 0 ]; then
 #   echo -e "\n${GREEN}Network device ${MAGENTA}$DEVICE${GREEN} detected, DHCP broadcasting for IP.${NORMAL}"
     trap 2 3 11
-    /sbin/udhcpc -b -i $DEVICE -x hostname:$(/bin/hostname) -p /var/run/udhcpc.$DEVICE.pid >/dev/null 2>&1 &
+    /bb/udhcpc -b -i $DEVICE -x hostname:$(/bb/hostname) -p /var/run/udhcpc.$DEVICE.pid >/dev/null 2>&1 &
     trap "" 2 3 11
     sleep 1
   fi
