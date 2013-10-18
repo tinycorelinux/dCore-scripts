@@ -1,8 +1,10 @@
-#!/bin/busybox ash
+#!/bb/ash
 # /etc/init.d/rc.shutdown - used by /etc/inittab to shutdown the system.
 #
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 
 clear 
 # Sync all filesystems.
