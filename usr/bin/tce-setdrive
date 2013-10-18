@@ -1,8 +1,10 @@
-#!/bin/busybox ash
+#!/bb/ash
 # (c) Robert Shingledecker 2010
 # After boot setup for TCE directory and backup
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 
 MYDATA=mydata
 [ -r /etc/sysconfig/mydata ] && read MYDATA < /etc/sysconfig/mydata
