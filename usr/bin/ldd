@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bb/ash
 
 for file in $@; do
   case $file in
