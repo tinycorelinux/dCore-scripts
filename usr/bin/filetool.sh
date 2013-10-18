@@ -1,4 +1,4 @@
-#!/bin/busybox ash
+#!/bb/ash
 # Original script by Robert Shingledecker
 # (c) Robert Shingledecker 2003-2012
 # A simple script to save/restore configs, directories, etc defined by the user
@@ -6,7 +6,10 @@
 # Added ideas from WDef for invalid device check and removal of bfe password upon failure
 # Added comparerestore and dry run (Brian Smith)
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
 CMDLINE="$(cat /proc/cmdline)"
 
 MYDATA=mydata
