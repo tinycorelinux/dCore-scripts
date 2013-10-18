@@ -1,15 +1,15 @@
-#!/bin/sh
+#!/bb/ash
 # RC Script for Tiny Core Linux
 # (c) Robert Shingledecker 2004-2012
 
 # Mount /proc.
-[ -f /proc/cmdline ] || /bin/mount /proc
+[ -f /proc/cmdline ] || /bb/mount /proc
 
 # Remount rootfs rw.
-/bin/mount -o remount,rw /
+/bb/mount -o remount,rw /
 
 # Mount system devices from /etc/fstab.
-/bin/mount -a
+/bb/mount -a
 
 /etc/init.d/tc-config
 
