@@ -1,7 +1,10 @@
-#!/bin/busybox ash
+#!/bb/ash
 # (c) Robert Shingledecker 2012
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
 checkroot
 BUILD=`getBuild`
 TCEDIR=/etc/sysconfig/tcedir
