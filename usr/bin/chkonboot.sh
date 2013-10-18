@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bb/ash
 . /etc/init.d/tc-functions
 BOOTLIST=`getbootparam lst` || BOOTLIST="onboot.lst"
 TCEDIR=/etc/sysconfig/tcedir
