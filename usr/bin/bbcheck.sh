@@ -1,6 +1,9 @@
-#!/bin/busybox ash
+#!/bb/ash
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
 busybox | sed '1,/functions:$/d' \
 | tr -d ' \t\n' | tr ',' '\n' | while read F ; do
   L=$(which $F)
