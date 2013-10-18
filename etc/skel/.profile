@@ -28,7 +28,7 @@ if [ -f "$HOME/.ashrc" ]; then
    . "$HOME/.ashrc"
 fi
 
-TERMTYPE=`/usr/bin/tty`
+TERMTYPE=`/bb/tty`
 [ ${TERMTYPE:5:3} == "tty" ] && (
 [ ! -f /usr/local/tce.installed/xorg ] ||
 [ -f /etc/sysconfig/text ] ||
