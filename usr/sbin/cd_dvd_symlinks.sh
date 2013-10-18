@@ -1,9 +1,12 @@
-#!/bin/busybox ash
+#!/bb/ash
 #(c) Robert Shingledecker 2009
 # awk script to find and add symlinks for cdrom and dvd devices
 # typically called from /etc/udev/rules.d/75-cd-dvd.rules
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
 awk '
 BEGIN {
   c=0
