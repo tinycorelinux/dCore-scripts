@@ -1,6 +1,9 @@
-#!/bin/busybox ash
+#!/bb/ash
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
 [ -n "$1" ] || exit 1
 DEVINFO="$(blkid -s LABEL $1)"
 [ -z "$DEVINFO" ] && exit 1
