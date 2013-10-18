@@ -1,6 +1,9 @@
-#!/bin/busybox ash
+#!/bb/ash
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
 cd /tmp
 SEARCH="NAME"
 if [ "$1" == "-t" ]; then
