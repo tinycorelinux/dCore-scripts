@@ -1,9 +1,11 @@
-#!/bin/busybox ash
+#!/bb/ash
 # (c) Robert Shingledecker 2009
 # $1 is title, $2 is file to read from, $3 is offset 0 or 1 (1 default)
 #
 . /etc/init.d/tc-functions
-useBusybox
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 #
 [ -z "$2" ] && exit 1
 FILEIN="$2"
