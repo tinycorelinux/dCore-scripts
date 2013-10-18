@@ -1,8 +1,7 @@
-#!/bin/busybox ash
+#!/bb/ash
 . /etc/init.d/tc-functions
-useBusybox
 
-PATH="/bin:/sbin:/usr/bin:/usr/sbin"
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
 umask 022
 
