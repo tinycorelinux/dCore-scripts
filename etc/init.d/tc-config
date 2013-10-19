@@ -299,6 +299,27 @@ get_app() {
 	)
 }
 
+# Preload drivers needed for tce/opt/home on lvm/RAID etc
+if [ -n "$PRETCE" ]; then
+	PKG=sce ; LOADER=loadsce ; LIST=sceboot.lst
+	RAM=/tmp/tce
+	CPTOFS=""
+	if [ "$PRETCE" == "RAM" ] ; then
+		SRC=$RAM
+	else
+		PPATH=${PRETCE%%/*}
+		mkdir -p /mnt/$PPATH
+		mount /dev/$PPATH /mnt/$PPATH
+		SRC=/mnt/$PRETCE
+		[ -x $SRC/onpre.sh ] && cp $SRC/onpre.sh /tmp
+	fi
+	while read NAME OPT
+	do
+		su "$USER" -c "/usr/bin/$LOADER $SRC/$PKG/$NAME"
+	done < $SRC/$LIST
+	[ -x /tmp/onpre.sh ] && /tmp/onpre.sh
+fi
+
 # First process tftp and http entries
 modprobe -q squashfs 2>/dev/null
 [ -n "$TFTPLIST" ] && get_app "TFTP" $TFTPLIST
@@ -311,7 +332,8 @@ if [ -n "$NFSMOUNT" ]; then
 	[ "$OPTS" == "no-ping" ] && NOPING=1 || NOPING=0
 	[ -z "$DHCP_RAN" ] && wait4Server $SERVER $NOPING
 	wait $fstab_pid
-	echo "${SERVER}:${DIR} /mnt/nfs nfs defaults,nolock 0 0" >> /etc/fstab
+	[ -x /bin/mount ] && NOLOCK="" || NOLOCK=",nolock"
+	echo "${SERVER}:${DIR} /mnt/nfs nfs defaults${NOLOCK} 0 0" >> /etc/fstab
 	[ $SHOWAPPS ] && echo "Mounting ${SERVER}:${DIR}"
 	mkdir /mnt/nfs
 	mount /mnt/nfs >/dev/null 2>&1
@@ -364,30 +386,6 @@ if [ -n "$TCVD" ]; then
 		fi
 	fi
 fi  
-
-# Preload drivers needed for tce/opt/home on lvm/RAID etc
-if [ -n "$PRETCE" ]; then
-	PKG=sce ; LOADER=loadsce ; LIST=sceboot.lst
-	RAM=/tmp/tce
-	CPTOFS=""
-	if [ "$PRETCE" == "RAM" ] ; then
-		SRC=$RAM
-	else
-		PPATH=${PRETCE%%/*}
-		mkdir -p /mnt/$PPATH
-		mount /dev/$PPATH /mnt/$PPATH
-		SRC=/mnt/$PRETCE
-	fi
-	while read NAME OPT
-	do
-		if [ "$OPT" == "-d" ] ; then
-			( su "$USER" -c "/usr/bin/$LOADER $FL $SRC/$PKG/$NAME" ) &
-			sleep 5
-		else
-			su "$USER" -c "/usr/bin/$LOADER $SRC/$PKG/$NAME"
-		fi
-	done < $SRC/$LIST
-fi
 
 unset HOME_SETUP
 if [ -n "$MYHOME" ]; then
