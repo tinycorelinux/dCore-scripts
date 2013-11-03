@@ -1,2 +1,0 @@
-#!/bb/ash
-cat /proc/cmdline

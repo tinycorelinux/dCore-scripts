@@ -1,8 +1,0 @@
-#!/bb/ash
-. /etc/init.d/tc-functions
-
-PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
-export PATH
-
-fold -w78 $1 | sed s'/$//' > /dev/lp0
-echo -ne \\f > /dev/lp0
