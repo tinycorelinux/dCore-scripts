@@ -190,7 +190,7 @@ install(){
 		[ ! -z "`find /tmp/tcloop/"$APPNAME" -type f -name *.ko.gz`" ] && MODULES=TRUE
 		update_system "$THISAPP" "$APPNAME"
 		if [ ! "$BOOTING" ]; then
-			[ -s /etc/sysconfig/desktop ] && desktop.sh "$APPNAME"
+			[ -s /etc/sysconfig/desktop ] && desktop.sh "$APPNAME" > /dev/null
 		fi
 	else
 		umount -d /tmp/tcloop/"$APPNAME"
