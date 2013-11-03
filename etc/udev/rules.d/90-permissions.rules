@@ -1,0 +1,3 @@
+SUBSYSTEM=="usb",GROUP="staff"
+SUBSYSTEM=="usb",MODE="0664"
+
