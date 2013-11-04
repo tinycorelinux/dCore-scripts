@@ -7,7 +7,7 @@ if [ -f "$NOAUTOLOGIN" ]; then
 	fi
 else
 	if [ ! -f /etc/sysconfig/superuser ]; then 
-#		clear
+		clear
 		TCUSER="$(cat /etc/sysconfig/tcuser)"
 		exec /bb/login -f "$TCUSER"
 	fi
