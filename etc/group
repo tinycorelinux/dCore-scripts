@@ -1,0 +1,17 @@
+root:x:0:
+lp:x:7:lp
+nogroup:x:65534:
+staff:x:50:tc
+messagebus:x:1000:
+libuuid:x:1002:libuuid
+shadow:x:42:
+utempter:x:1001:
+tty:x:5:
+disk:x:6:
+kmem:x:15:
+dialout:x:20:tc
+cdrom:x:24:
+floppy:x:25:
+tape:x:26:
+audio:x:29:
+video:x:44:
