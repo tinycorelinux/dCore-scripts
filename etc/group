@@ -15,3 +15,9 @@ floppy:x:25:
 tape:x:26:
 audio:x:29:
 video:x:44:
+netdev:x:114:
+pulse:x:116:
+colord:x:109:
+Debian-gdm:x:119:
+bluetooth:x:115:
+avahi:x:113:
