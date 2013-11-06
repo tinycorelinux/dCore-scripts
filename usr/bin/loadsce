@@ -180,6 +180,7 @@ install(){
 
 	if [ -z "$EMPTYEXT" ]; then
 		startupscript_check
+		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/opt / 2>/dev/null
 		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/usr / 2>/dev/null
 		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/bin / 2>/dev/null
 		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/sbin / 2>/dev/null
