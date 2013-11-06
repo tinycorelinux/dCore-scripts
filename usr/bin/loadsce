@@ -176,7 +176,7 @@ install(){
 	[ "$?" == 1 ] || sudo mount "$THISAPP" /tmp/tcloop/"$APPNAME" -t squashfs -o loop,ro,bs=4096 2>&1
 	[ "$?" == 0 ] || abort_to_saved_dir
 	[ -z "`ls /tmp/tcloop/${APPNAME}`" ] && EMPTYEXT=1
-	[ "`find /tmp/tcloop/${APPNAME} -mindepth 1 -maxdepth 2 | wc -l`" -le 1 ] && EMPTYEXT=1
+	[ "`sudo find /tmp/tcloop/${APPNAME} -mindepth 1 -maxdepth 2 | wc -l`" -le 1 ] && EMPTYEXT=1
 
 	if [ -z "$EMPTYEXT" ]; then
 		startupscript_check
@@ -188,7 +188,7 @@ install(){
 		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/dev / 2>/dev/null
 		yes "$FORCE" | sudo cp -ai /tmp/tcloop/"$APPNAME"/etc / 2>/dev/null
 		yes "$FORCE" | sudo cp -ai /tmp/tcloop/"$APPNAME"/var / 2>/dev/null
-		[ ! -z "`find /tmp/tcloop/"$APPNAME" -type f -name *.ko.gz`" ] && MODULES=TRUE
+		[ ! -z "`sudo find /tmp/tcloop/"$APPNAME" -type f -name *.ko.gz`" ] && MODULES=TRUE
 		update_system "$THISAPP" "$APPNAME"
 		if [ ! "$BOOTING" ]; then
 			[ -s /etc/sysconfig/desktop ] && desktop.sh "$APPNAME" > /dev/null
