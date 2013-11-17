@@ -2,7 +2,7 @@ root:x:0:
 lp:x:7:lp
 nogroup:x:65534:
 staff:x:50:tc
-messagebus:x:1000:
+messagebus:x:1000:messagebus
 libuuid:x:1002:libuuid
 shadow:x:42:
 utempter:x:1001:
@@ -21,3 +21,4 @@ colord:x:109:
 Debian-gdm:x:119:
 bluetooth:x:115:
 avahi:x:113:
+plugdev:x:101:
