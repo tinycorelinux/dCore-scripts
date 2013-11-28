@@ -139,9 +139,7 @@ else
 	debGetDeps "$TARGET"
 fi
 
-if [ -f /tmp/.importsecure ]; then
-	mkdir -p usr/local/importmd5sum
-fi
+mkdir -p usr/local/importmd5sum
 
 HERE=`pwd`
 for DEBINFO in `ls -t /tmp/work`; do
@@ -174,14 +172,10 @@ for DEBINFO in `ls -t /tmp/work`; do
 		fi
 
 		if md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
-  	 	then
-		  if [ -f /tmp/.importsecure ]; then
-			echo "${DEBINFO}: `cat "${DEBINFO}".tar.gz.md5.txt | cut -f1 -d" "`" >> "$TCEDIR"/import/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum
-			
-		  fi
+  	 	then		 
+			echo "${DEBINFO}: `cat "${DEBINFO}".tar.gz.md5.txt | cut -f1 -d" "`" >> "$TCEDIR"/import/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum		  
 			echo "Merging "${DEBINFO}":"
-    	   		tar xf "${DEBINFO}".tar.gz -C "$TCEDIR"/import/"$TARGET"
-           		  
+    	   		tar xf "${DEBINFO}".tar.gz -C "$TCEDIR"/import/"$TARGET"        		  
 		elif [ -f "${DEBINFO}".tar.gz.md5.txt ] && ! md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null 2>&1
 		then
 			echo "md5sum failed for "${DEBINFO}".tar.gz, exiting.."
@@ -207,14 +201,13 @@ for DEBINFO in `ls -t /tmp/work`; do
 		  cleanup
 		  exit 1
 		fi
-		if [ -f /tmp/.importsecure ] && [ -f /tmp/"$DEBINFO".md5sum ]; then
-			echo ""$DEBINFO": `cat /tmp/"$DEBINFO".md5sum`" >> usr/local/importmd5sum/"$TARGET".md5sum
- 			sudo rm /tmp/"$DEBINFO".md5sum
-		fi
+		
+		echo ""$DEBINFO": `getMd5sum "$DEBINFO"`" >> usr/local/importmd5sum/"$TARGET".md5sum
+ 					
 	 fi
 done
 
-[ -f /tmp/.importsecure ] && rm /tmp/.importsecure
+
 
 cd ..
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1

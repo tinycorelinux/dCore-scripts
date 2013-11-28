@@ -41,7 +41,7 @@ unset FLAGS PACKAGELIST
 while getopts bofs OPTION
 do
 	case ${OPTION} in
-		s) SECURE=TRUE ;;
+#		s) SECURE=TRUE ;;
 		b) FLAGS="$FLAGS"b ;;
 		o) FLAGS="$FLAGS"o ;;
 		f) PACKAGELIST=TRUE ;;
@@ -58,9 +58,9 @@ if [ "$PACKAGELIST" ]; then
   TARGET=`basename $TARGET`
 fi
 
-if [ "$SECURE" == "TRUE" ]; then
-	touch /tmp/.importsecure
-fi
+#if [ "$SECURE" == "TRUE" ]; then
+#	touch /tmp/.importsecure
+#fi
 
 if [ -z "$TARGET" ]
 then
