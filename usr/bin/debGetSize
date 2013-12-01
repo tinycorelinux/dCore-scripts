@@ -1,0 +1,169 @@
+#!/bin/sh
+. /etc/init.d/tc-functions
+
+> /tmp/.importarchsize
+> /tmp/.importdsize
+> /tmp/.importisize
+BUILD=`getBuild`
+DEBDIR="/etc/sysconfig/tcedir/import/debs"
+UNPACKDIR=/etc/sysconfig/tcedir/import/
+read DEBINX < /tmp/debinx
+DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+DEBINX1="/tmp/debinx1"
+TARGET="$1"
+cat "$DEBINX" | sed -e '/^Depends:/d' -e '/^Filename:/d' -e '/^MD5sum:/d' > /tmp/debinx1
+[ -f /tmp/.importsizelist ] && rm /tmp/.importsizelist
+
+read IMPORTMIRROR < /opt/tcemirror                                                                             
+PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
+IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
+
+wget -O /tmp/.importsizelist "$PREBUILTMIRROR"/.importsizelist > /dev/null 2>&1
+
+getdsize() {
+	awk -v package="Package: $1" -v FIELD="$1: "  '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+				if ( f[1] == "Size" )
+					print f[2] 
+			}
+		
+		}
+		
+	} ' < "$DEBINX1"
+}
+
+getisize() {
+	awk -v package="Package: $1" -v FIELD="$1: "  '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+				if ( f[1] == "Installed-Size" )
+					print f[2] 
+			}
+		
+		}
+		
+	} ' < "$DEBINX1"
+}
+
+
+
+
+for I in `ls /tmp/work`; do 
+if grep ^"$I": /tmp/.importsizelist >/dev/null; then
+   DSIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $2}'`
+   ISIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $3}'`
+   [ -f "$DEBDIR"/"$I".tar.gz ] || echo $DSIZE >> /tmp/.importdsize
+   echo $ISIZE >> /tmp/.importisize
+else 
+   read FULLPATH < /tmp/work/"$I"
+   THISDEB="${FULLPATH##*/}"
+   DSIZEBYTE=`getdsize "$I"`
+   echo "$DSIZEBYTE" >> /tmp/.importarchsize
+   [ -f "$DEBDIR"/"$THISDEB" ] || echo "$DSIZEBYTE" >> /tmp/.importdsize
+   ISIZEKB=`getisize "$I"` 
+   echo $((ISIZEKB * 1024)) >> /tmp/.importisize
+   DSIZE=`grep ^"$I"-data: /tmp/.importsizelist | awk '{print $2}'`
+   ISIZE=`grep ^"$I"-data: /tmp/.importsizelist | awk '{print $3}'`
+   [ ! -f "$DEBDIR"/"$I"-data.tar.gz ] && [ ! -z "$DSIZE" ] && echo $DSIZE >> /tmp/.importdsize
+   [ -z "$ISIZE" ] || echo "$ISIZE" >> /tmp/.importisize
+fi
+done
+alias df='df'
+DSIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importdsize` | awk '{printf("%.0f\n", $1)}')
+ISIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importisize` | awk '{printf("%.0f\n", $1)}')
+ARCHSIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importarchsize` | awk '{printf("%.0f\n", $1)}')
+SCESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024*2}' /tmp/.importarchsize` | awk '{printf("%.0f\n", $1)}')
+RAM=`free -m | grep Mem | awk '{print $4}'`
+HDFREE=$(echo `df /etc/sysconfig/tcedir/ | grep -v Filesystem | awk '{print $3/10240}'` | awk '{printf("%.0f\n", $1)}')
+if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce ]; then
+  HDNEEDED="$DSIZEFINAL"
+  FULLSIZE=`expr "$DSIZEFINAL" + "$ISIZEFINAL"`
+else
+  HDNEEDED=`expr "$SCESIZEFINAL" + "$DSIZEFINAL"`
+  FULLSIZE=`expr "$SCESIZEFINAL" + "$DSIZEFINAL" + "$ISIZEFINAL"`
+fi
+
+unset TCERAM
+if ! ls -l /etc/sysconfig/tcedir | grep "\/mnt\/" > /dev/null 2>&1; then 
+  	TCERAM=1
+fi
+
+if [ -f /tmp/.importram ]; then
+  
+  echo ""$DSIZEFINAL" MB of downloads required." 
+  echo ""$ISIZEFINAL" MB needed for unpacking archives - RAM will be used." 
+  echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
+  echo " "
+  if [ "$TCERAM" == "1" ]; then
+  	echo "`readlink /etc/sysconfig/tcedir` is located in RAM."
+  	echo ""$FULLSIZE" MB is a good estimate of RAM needed, "$RAM" MB is available." 
+  	echo " "
+
+  	if [ "$FULLSIZE" -gt "$RAM" ]; then
+		echo "WARNING: You do not have enough free RAM, you should not proceed."
+	fi
+
+  else
+    	echo ""$HDNEEDED" MB is a good estimate of `readlink /etc/sysconfig/tcedir` space needed, "$HDFREE" MB is available."
+  	echo ""$ISIZEFINAL" MB is a good estimate of RAM needed, "$RAM" MB is available." 
+  	echo " "
+
+  	if [ "$ISIZEFINAL" -gt "$RAM" ]; then
+		echo "WARNING: You do not have enough free RAM, you should not proceed."
+	fi
+	if [ "$HDNEEDED" -gt "$HDFREE" ]; then
+		echo "WARNING: You do not have enough /etc/sysconfig/tcedirtcedir space, you should not proceed."
+	fi
+  fi
+else
+    if [ "$TCERAM" == "1" ]; then
+	echo ""$DSIZEFINAL" MB of downloads required." 
+  	echo ""$ISIZEFINAL" MB needed for unpacking archives."
+  	echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
+	echo " "
+  	echo "`readlink /etc/sysconfig/tcedir` is located in RAM."
+  	echo ""$FULLSIZE" MB is a good estimate of RAM needed, "$RAM" MB is available." 
+  	echo " "
+
+  	if [ "$FULLSIZE" -gt "$RAM" ]; then
+		echo "WARNING: You do not have enough free RAM, you should not proceed."
+	fi
+    else
+  
+  		echo ""$DSIZEFINAL" MB of downloads required." 
+  		echo ""$ISIZEFINAL" MB needed for unpacking archives."
+  		echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
+  		echo ""$FULLSIZE" MB is a good estimate of `readlink /etc/sysconfig/tcedir` space needed, "$HDFREE" MB is available."
+    		echo " "
+     	if [ "$HDNEEDED" -gt "$HDFREE" ]; then
+		echo "WARNING: You do not have enough /etc/sysconfig/tcedirtcedir space, you should not proceed."
+    	fi
+    fi
+fi            
+echo " "
+
+[ -f /tmp/.importarchsize ] && rm /tmp/.importarchsize
+[ -f /tmp/.importdsize ] && rm /tmp/.importdsize
+[ -f /tmp/.importisize ] && rm /tmp/.importisize
+
+rm "$DEBINX1"
+
+
+
+
+
+
+
