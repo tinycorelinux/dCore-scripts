@@ -10,9 +10,9 @@ BUILD=`getBuild`
 TCEDIR=/etc/sysconfig/tcedir
 
 setupStartupScript() {
-	[ -d "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed ] || mkdir -p "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed
-	chmod 775 "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed
-	chown root.staff "$TCEDIR"/import/"$TARGET"/usr/local/tce.installed
+	[ -d "$IMPORT"/"$TARGET"/usr/local/tce.installed ] || mkdir -p "$IMPORT"/"$TARGET"/usr/local/tce.installed
+	chmod 775 "$IMPORT"/"$TARGET"/usr/local/tce.installed
+	chown root.staff "$IMPORT"/"$TARGET"/usr/local/tce.installed
 }
 
 
@@ -115,16 +115,22 @@ else
 	exit 1
 fi
 
-echo -n "Proceed to create $TARGET.sce? (y/N): "
-read ans
-[ "$ans" == "y" ] || exit 1
+
 
 > /var/log/sce.log
 [ -d "$TCEDIR"/sce ] || mkdir "$TCEDIR"/sce
 [ -d "$TCEDIR"/import/debs ] || mkdir -p "$TCEDIR"/import/debs
 DEBS="$TCEDIR"/import/debs
 
-cd "$TCEDIR"/import
+if [ -f /tmp/.importram ]; then
+	IMPORT=/tmp/import
+	mkdir -p "$IMPORT"
+	cd "$IMPORT"
+else
+	IMPORT="$TCEDIR"/import
+	cd "$IMPORT"
+fi
+
 #[ -f exclude.lst ] || gzip -dc /tmp/deb2sce.xlst.gz > exclude.lst
 
 [ -d "$TARGET" ] || mkdir "$TARGET"
@@ -137,6 +143,17 @@ if [ -s /tmp/.targetfile ]; then
 	done
 else
 	debGetDeps "$TARGET"
+fi
+
+if [ -f /tmp/.importsize ]; then
+	debGetSize "$TARGET"
+fi
+
+echo -n "Proceed to create $TARGET.sce? (y/N): "
+read ans
+if [ "$ans" != "y" ]; then
+	cleanup
+	exit 1
 fi
 
 mkdir -p usr/local/importmd5sum
@@ -173,20 +190,20 @@ for DEBINFO in `ls -t /tmp/work`; do
 
 		if md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
   	 	then		 
-			echo "${DEBINFO}: `cat "${DEBINFO}".tar.gz.md5.txt | cut -f1 -d" "`" >> "$TCEDIR"/import/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum		  
+			echo "${DEBINFO}: `cat "${DEBINFO}".tar.gz.md5.txt | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum		  
 			echo "Merging "${DEBINFO}":"
-    	   		tar xf "${DEBINFO}".tar.gz -C "$TCEDIR"/import/"$TARGET"        		  
+    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET"        		  
 		elif [ -f "${DEBINFO}".tar.gz.md5.txt ] && ! md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null 2>&1
 		then
 			echo "md5sum failed for "${DEBINFO}".tar.gz, exiting.."
 			cleanup
 			exit 1
 		fi	
-		cd "$TCEDIR"/import/"$TARGET"
+		cd "$IMPORT"/"$TARGET"
 
 	 elif [ "$FULLPATH" != "" ]; then
 	 	THISDEB="${FULLPATH##*/}"
-	 	if [ -f ../debs/"$THISDEB" ]; then
+	 	if [ -f "$DEBS"/"$THISDEB" ]; then
 			if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
 				rm "$DEBS"/"$THISDEB"
 				echo "Fetching updated "$THISDEB".."
