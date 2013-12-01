@@ -148,7 +148,7 @@ else
   		echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
   		echo ""$FULLSIZE" MB is a good estimate of `readlink /etc/sysconfig/tcedir` space needed, "$HDFREE" MB is available."
     		echo " "
-     	if [ "$HDNEEDED" -gt "$HDFREE" ]; then
+     	if [ "$FULLSIZE" -gt "$HDFREE" ]; then
 		echo "WARNING: You do not have enough /etc/sysconfig/tcedirtcedir space, you should not proceed."
     	fi
     fi
