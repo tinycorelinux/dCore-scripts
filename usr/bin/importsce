@@ -23,8 +23,8 @@ exit_tcnet() {
 	exit 1
 }
 
-
-[ -f /tmp/.importsecure ] && sudo rm /tmp/.importsecure
+[ -f /tmp/.importram ] && sudo rm /tmp/.importram
+[ -f /tmp/.importsize ] && sudo rm /tmp/.importsize
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 [ -f /tmp/.depfile ] && sudo rm /tmp/.depfile
 [ -f /tmp/.pkgextrafiles ] && sudo rm /tmp/.pkgextrafiles
@@ -38,10 +38,11 @@ wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEP 2>/dev/null || exit_tcnet
 wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit_tcnet
 wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null || exit_tcnet
 unset FLAGS PACKAGELIST
-while getopts bofs OPTION
+while getopts rsbof OPTION
 do
 	case ${OPTION} in
-#		s) SECURE=TRUE ;;
+		r) RAM=TRUE ;;
+		s) SIZE=TRUE ;;
 		b) FLAGS="$FLAGS"b ;;
 		o) FLAGS="$FLAGS"o ;;
 		f) PACKAGELIST=TRUE ;;
@@ -58,9 +59,13 @@ if [ "$PACKAGELIST" ]; then
   TARGET=`basename $TARGET`
 fi
 
-#if [ "$SECURE" == "TRUE" ]; then
-#	touch /tmp/.importsecure
-#fi
+if [ "$SIZE" == "TRUE" ]; then
+	touch /tmp/.importsize
+fi
+
+if [ "$RAM" == "TRUE" ]; then
+	touch /tmp/.importram
+fi
 
 if [ -z "$TARGET" ]
 then
