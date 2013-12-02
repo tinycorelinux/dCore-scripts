@@ -98,7 +98,7 @@ fi
 
 # TCERAM means /etc/sysconfig/tcedir resides in memory.
 unset TCERAM
-if ls -l /etc/sysconfig/tcedir | grep "\/mnt\/" > /dev/null 2>&1; then 
+if ! ls -l /etc/sysconfig/tcedir | grep "\/mnt\/" > /dev/null 2>&1; then 
   	TCERAM=1
 fi
 
