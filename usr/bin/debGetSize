@@ -82,25 +82,27 @@ else
 fi
 done
 alias df='df'
-DSIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importdsize` | awk '{printf("%.0f\n", $1)}')
-ISIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importisize` | awk '{printf("%.0f\n", $1)}')
-ARCHSIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importarchsize` | awk '{printf("%.0f\n", $1)}')
-SCESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024*2}' /tmp/.importarchsize` | awk '{printf("%.0f\n", $1)}')
+DSIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importdsize` | awk '{printf("%.2f\n", $1)}')
+ISIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importisize` | awk '{printf("%.2f\n", $1)}')
+ARCHSIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importarchsize` | awk '{printf("%.2f\n", $1)}')
+SCESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024*2}' /tmp/.importarchsize` | awk '{printf("%.2f\n", $1)}')
 RAM=`free -m | grep Mem | awk '{print $4}'`
-HDFREE=$(echo `df /etc/sysconfig/tcedir/ | grep -v Filesystem | awk '{print $3/10240}'` | awk '{printf("%.0f\n", $1)}')
+HDFREE=$(echo `df /etc/sysconfig/tcedir/ | grep -v Filesystem | awk '{print $3/10240}'` | awk '{printf("%.2f\n", $1)}')
 if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce ]; then
   HDNEEDED="$DSIZEFINAL"
-  FULLSIZE=`expr "$DSIZEFINAL" + "$ISIZEFINAL"`
+  FULLSIZE=`echo "$DSIZEFINAL $ISIZEFINAL" | awk '{print $2 + $1}'`
 else
-  HDNEEDED=`expr "$SCESIZEFINAL" + "$DSIZEFINAL"`
-  FULLSIZE=`expr "$SCESIZEFINAL" + "$DSIZEFINAL" + "$ISIZEFINAL"`
+  HDNEEDED=`echo "$SCESIZEFINAL $DSIZEFINAL" | awk '{print $2 + $1}'`
+  FULLSIZE=`echo "$HDNEEDED $ISIZEFINAL" | awk '{print $2 + $1}'`
 fi
 
+# TCERAM means /etc/sysconfig/tcedir resides in memory.
 unset TCERAM
-if ! ls -l /etc/sysconfig/tcedir | grep "\/mnt\/" > /dev/null 2>&1; then 
+if ls -l /etc/sysconfig/tcedir | grep "\/mnt\/" > /dev/null 2>&1; then 
   	TCERAM=1
 fi
 
+# The existence of /tmp/.importram means that unpacking will occur in memory.
 if [ -f /tmp/.importram ]; then
   
   echo ""$DSIZEFINAL" MB of downloads required." 
@@ -109,18 +111,20 @@ if [ -f /tmp/.importram ]; then
   echo " "
   if [ "$TCERAM" == "1" ]; then
   	echo "`readlink /etc/sysconfig/tcedir` is located in RAM."
-  	echo ""$FULLSIZE" MB is a good estimate of RAM needed, "$RAM" MB is available." 
+  	echo ""$FULLSIZE" MB is a good estimate of RAM needed, "$RAM".00 MB is available." 
   	echo " "
-
+	FULLSIZE=`echo "$FULLSIZE" | awk '{printf("%.0f\n", $1)}'`
   	if [ "$FULLSIZE" -gt "$RAM" ]; then
 		echo "WARNING: You do not have enough free RAM, you should not proceed."
 	fi
 
   else
     	echo ""$HDNEEDED" MB is a good estimate of `readlink /etc/sysconfig/tcedir` space needed, "$HDFREE" MB is available."
-  	echo ""$ISIZEFINAL" MB is a good estimate of RAM needed, "$RAM" MB is available." 
+  	echo ""$ISIZEFINAL" MB is a good estimate of RAM needed, "$RAM".00 MB is available." 
   	echo " "
-
+	ISIZEFINAL=` echo "$ISIZEFINAL" | awk '{printf("%.0f\n", $1)}'`
+	HDNEEDED=`echo "$HDNEEDED" | awk '{printf("%.0f\n", $1)}'`
+	HDFREE=`echo "$HDFREE" | awk '{printf("%.0f\n", $1)}'`
   	if [ "$ISIZEFINAL" -gt "$RAM" ]; then
 		echo "WARNING: You do not have enough free RAM, you should not proceed."
 	fi
@@ -135,9 +139,9 @@ else
   	echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
 	echo " "
   	echo "`readlink /etc/sysconfig/tcedir` is located in RAM."
-  	echo ""$FULLSIZE" MB is a good estimate of RAM needed, "$RAM" MB is available." 
+  	echo ""$FULLSIZE" MB is a good estimate of RAM needed, "$RAM".00 MB is available." 
   	echo " "
-
+	FULLSIZE=`echo "$FULLSIZE" | awk '{printf("%.0f\n", $1)}'`
   	if [ "$FULLSIZE" -gt "$RAM" ]; then
 		echo "WARNING: You do not have enough free RAM, you should not proceed."
 	fi
@@ -146,8 +150,11 @@ else
   		echo ""$DSIZEFINAL" MB of downloads required." 
   		echo ""$ISIZEFINAL" MB needed for unpacking archives."
   		echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
+		echo " "
   		echo ""$FULLSIZE" MB is a good estimate of `readlink /etc/sysconfig/tcedir` space needed, "$HDFREE" MB is available."
     		echo " "
+	FULLSIZE=`echo "$FULLSIZE" | awk '{printf("%.0f\n", $1)}'`
+	HDFREE=`echo "$HDFREE" | awk '{printf("%.0f\n", $1)}'`
      	if [ "$FULLSIZE" -gt "$HDFREE" ]; then
 		echo "WARNING: You do not have enough /etc/sysconfig/tcedirtcedir space, you should not proceed."
     	fi
