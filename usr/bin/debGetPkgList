@@ -34,19 +34,48 @@ getDeps() {
 		
 		}
 		
-	} ' < "$DEBINX"
-}
+	} ' < "$DEBINX" 
 
+
+}
 [ -s /tmp/debinx ] || debGetEnv "$2"
-read DEBINX < /tmp/debinx
-DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+
 
 if [ -z "$1" ]
 then
 	echo "you must specify a search target."
 	exit 1
 fi
+if ls -A /opt/debextra > /dev/null 2>&1; then
+ for I in `ls /opt/debextra`; do
+  #MIR=`cat /opt/debextra/"$I" | cut -f1 -d"|"` 
+  
+  DEBINX=/tmp/debinx."$I"
+  if grep "Package: "$1"$" "$DEBINX" > /dev/null; then
+    DEPS="$(getDeps $1)"
+    #sudo sed -i "s:^:$MIR/:" /tmp/work/$1
+    [ ! -z "$DEPS" ] && echo " "
+  else
+    echo " "
+  fi
+  echo "$DEPS"
+ done
 
-DEPS="$(getDeps $1)"
-[ -z "$DEPS" ] && exit 1
-echo "$DEPS"
+ if [ -z "$DEPS" ]; then
+   # MIR=`cat /opt/debmirror`
+    read DEBINX < /tmp/debinx
+    DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+    DEPS="$(getDeps $1)"
+    [ -z "$DEPS" ] && exit 1
+    echo "$DEPS"
+ fi
+
+else
+    #MIR=`cat /opt/debmirror`
+    read DEBINX < /tmp/debinx
+    DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+    DEPS="$(getDeps $1)"
+    [ -z "$DEPS" ] && exit 1
+    echo "$DEPS"
+fi
+

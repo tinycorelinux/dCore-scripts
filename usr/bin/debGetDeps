@@ -19,11 +19,11 @@ getDeps()
 	
 	echo "$PKG"
 	touch /tmp/work/"$PKG"
-	if grep $PKG: /tmp/.pkgprebuilt > /dev/null 2>&1; then
-	  DEPLIST="$DEPLIST `grep $PKG: /tmp/.pkgprebuilt | cut -f2 -d:`"
+	if grep "^$PKG:" /tmp/.pkgprebuilt > /dev/null 2>&1; then
+	  DEPLIST="$DEPLIST `grep "^$PKG:" /tmp/.pkgprebuilt | cut -f2 -d:`"
 	else
 	  DEPLIST=`debGetPkgList $PKG 2>/dev/null`
-	  [ -s /tmp/.depfile ] &&  DEPLIST="$DEPLIST `grep $PKG: /tmp/.depfile | cut -f2 -d:`"
+	  [ -s /tmp/.depfile ] &&  DEPLIST="$DEPLIST `grep "^$PKG:" /tmp/.depfile | cut -f2 -d:`"
 	fi
 	for D in $DEPLIST; do getDeps $D; done
 }

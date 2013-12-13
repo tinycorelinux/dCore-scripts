@@ -30,11 +30,13 @@ armv6 )
 	MIRROR1=http://archive.raspbian.org/raspbian
 	;;
 armv7 )
+	BINARY=binary-armhf
 	DEBINX=debian_wheezy_main_armhf_Packages
 	zsyncDebianIndex
 	MIRROR1=http://ftp.us.debian.org/debian
 	;;
-x86 )
+x86 )	
+	BINARY=binary-i386
 	DEBINX=debian_wheezy_main_i386_Packages
 	zsyncDebianIndex
 	MIRROR1=http://ftp.us.debian.org/debian
@@ -48,6 +50,24 @@ then
 	exit 1
 else
 	echo "$DEBINX" > /tmp/debinx
+fi
+
+if ls -A /opt/debextra > /dev/null 2>&1; then
+	for I in `ls /opt/debextra/`; do
+		if [ ! -z $(cat /opt/debextra/"$I" | awk '{print $3}') ]; then
+			MIR=`cat /opt/debextra/"$I" | awk '{print $1}'`
+			DIST=`cat /opt/debextra/"$I" | awk '{print $2}'`
+			REPO=`cat /opt/debextra/"$I" | awk '{print $3}'` 
+			F="/dists/"$DIST"/"$REPO"/"$BINARY"/"
+			wget -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I" || echo "Mirror "$D" is unavailable"
+		else
+			MIR=`cat /opt/debextra/"$I" | awk '{print $1}'`
+			DIST="wheezy"
+			REPO=`cat /opt/debextra/"$I" | awk '{print $2}'` 
+			F="/dists/"$DIST"/"$REPO"/"$BINARY"/"
+			wget -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I" || echo "Mirror "$D" is unavailable"
+		fi
+	done
 fi
 
 # Test mirror

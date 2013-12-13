@@ -17,13 +17,15 @@ setupStartupScript() {
 
 
 fetchDeb() {
-	sudo wget -O "$DEBS"/"$THISDEB"  ${MIRROR}/${1}
-	if [ "$?" != 0 ]
-	then
-		echo "failed on download of $1"
-		echo "$1" >> /tmp/import.log
-		selectDeb ${1}
-	fi
+
+		sudo wget -O "$DEBS"/"$THISDEB"  ${MIRROR}/${1}
+		if [ "$?" != 0 ]
+		then
+			echo "failed on download of $1"
+			echo "$1" >> /tmp/import.log
+			selectDeb ${1}
+		fi
+			
 }
 
 selectDeb() {
@@ -64,6 +66,7 @@ cleanup() {
 	chmod 775 /usr/local/tce.icons 2>/dev/null
 	chgrp staff /usr/local/tce.installed
 	chgrp staff /usr/local/tce.icons 2>/dev/null
+	[ -f "/tmp/debinx.*" ] && sudo rm /tmp/debinx.*
 }
 
 # Main
@@ -85,7 +88,7 @@ then
 fi
 TARGET="$1"
 
-debGetEnv "$2" || exit 1
+# debGetEnv "$2" || exit 1
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/$DEBINX"
 echo "Using Package Index: $DEBINX"
@@ -95,7 +98,7 @@ echo
 unset META
 #RESULTS="$(debQuery "$TARGET")"
 #if [ ! "$RESULTS" ]
-if sudo grep -q "$TARGET:" /tmp/.pkgprebuilt; then
+if sudo grep -q "^$TARGET:" /tmp/.pkgprebuilt; then
 	echo "$TARGET is a dCore premade package"
 	META="$TARGET"
 
@@ -103,12 +106,21 @@ elif [ -s /tmp/.targetfile ]; then
 	echo "$TARGET is from your own custom package list."
 	META="$TARGET"
 
-elif sudo grep -q "$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
+elif sudo grep -q "^$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a meta package of related Debian ones."
 	META="$TARGET"
+elif sudo grep "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1; then
+	EXTRAINX=`grep "^Package: $TARGET$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
+	MIRRORFILE=`echo "$EXTRAINX" | sed 's:/tmp/debinx.::'`
+	EXTRAMIRROR=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $1}'`
+	if [ ! -z $(cat /opt/debextra/"$MIRRORFILE" | awk '{print $3}') ]; then
+		EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
+	else
+		EXTRAREPO="wheezy"
+	fi
+	echo "$TARGET is a Debian `echo "$EXTRAREPO"` package from `echo "$EXTRAMIRROR"`."
 elif sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
-	echo "$TARGET is a standard Debian package."
-
+	echo "$TARGET is a standard Debian wheezy package."
 else
 	echo "$TARGET is not a standard Debian, dCore precompiled, or meta package, exiting.."
 	cleanup 
@@ -203,24 +215,50 @@ for DEBINFO in `ls -t /tmp/work`; do
 
 	 elif [ "$FULLPATH" != "" ]; then
 	 	THISDEB="${FULLPATH##*/}"
-	 	if [ -f "$DEBS"/"$THISDEB" ]; then
-			if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
-				rm "$DEBS"/"$THISDEB"
-				echo "Fetching updated "$THISDEB".."
-				fetchDeb "$FULLPATH"		
+		if ! grep "^Package: $DEBINFO$" /tmp/debinx.* > /dev/null 2>&1 ; then
+			if [ -f "$DEBS"/"$THISDEB" ]; then
+				if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
+					rm "$DEBS"/"$THISDEB"
+					echo "Fetching updated "$THISDEB".."
+					fetchDeb "$FULLPATH"		
+				fi
+			else
+				fetchDeb "$FULLPATH"
 			fi
+			sudo debExtract "$DEBS"/"$THISDEB"
+			if [ "$?" != "0" ]; then
+		  		echo "Failure to extract "$THISDEB", exiting.."
+		  		cleanup
+		  		exit 1
+			fi
+			echo ""$DEBINFO": `getMd5sum "$DEBINFO"`" >> "$IMPORT"/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum		
 		else
-			fetchDeb "$FULLPATH"
-		fi
-		sudo debExtract "$DEBS"/"$THISDEB"
-		if [ "$?" != "0" ]; then
-		  echo "Failure to extract "$THISDEB", exiting.."
-		  cleanup
-		  exit 1
-		fi
+			DEBINX=`grep "^Package: $DEBINFO$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
+			MIRRORFILE=`echo "$DEBINX" | sed 's:/tmp/debinx.::'`
+			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
+	 		if [ -f "$DEBS"/"$THISDEB" ]; then
+				if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
+					rm "$DEBS"/"$THISDEB"
+					echo "Fetching updated "$THISDEB".."
+					fetchDeb "$FULLPATH"		
+				fi
+			else
+				fetchDeb "$FULLPATH"
+			fi
+			sudo debExtract "$DEBS"/"$THISDEB"
+			if [ "$?" != "0" ]; then
+				echo "Failure to extract "$THISDEB", exiting.."
+				cleanup
+				exit 1
+			fi
 		
-		echo ""$DEBINFO": `getMd5sum "$DEBINFO"`" >> "$IMPORT"/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum
- 					
+			echo ""$DEBINFO": `getMd5sum "$DEBINFO"`" >> "$IMPORT"/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum	
+			
+			read DEBINX < /tmp/debinx
+			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
+			read MIRROR < /opt/debmirror
+
+		fi	
 	 fi
 done
 

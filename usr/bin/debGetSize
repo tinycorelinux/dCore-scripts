@@ -11,7 +11,13 @@ read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/$DEBINX"
 DEBINX1="/tmp/debinx1"
 TARGET="$1"
+
+# Further strip and echo the main debinx to /tmp for quicker searching.
 cat "$DEBINX" | sed -e '/^Depends:/d' -e '/^Filename:/d' -e '/^MD5sum:/d' > /tmp/debinx1
+
+#Combine other debinx's from the other mirrors to the main one in /tmp for searching.
+#for I in `ls /tmp/debinx.*`; do cat "$I" >> /tmp/debinx1; done
+
 [ -f /tmp/.importsizelist ] && rm /tmp/.importsizelist
 
 read IMPORTMIRROR < /opt/tcemirror                                                                             
@@ -63,22 +69,56 @@ getisize() {
 
 for I in `ls /tmp/work`; do 
 if grep ^"$I": /tmp/.importsizelist >/dev/null; then
-   DSIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $2}'`
-   ISIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $3}'`
-   [ -f "$DEBDIR"/"$I".tar.gz ] || echo $DSIZE >> /tmp/.importdsize
-   echo $ISIZE >> /tmp/.importisize
-else 
-   read FULLPATH < /tmp/work/"$I"
-   THISDEB="${FULLPATH##*/}"
-   DSIZEBYTE=`getdsize "$I"`
-   echo "$DSIZEBYTE" >> /tmp/.importarchsize
-   [ -f "$DEBDIR"/"$THISDEB" ] || echo "$DSIZEBYTE" >> /tmp/.importdsize
-   ISIZEKB=`getisize "$I"` 
-   echo $((ISIZEKB * 1024)) >> /tmp/.importisize
-   DSIZE=`grep ^"$I"-data: /tmp/.importsizelist | awk '{print $2}'`
-   ISIZE=`grep ^"$I"-data: /tmp/.importsizelist | awk '{print $3}'`
-   [ ! -f "$DEBDIR"/"$I"-data.tar.gz ] && [ ! -z "$DSIZE" ] && echo $DSIZE >> /tmp/.importdsize
-   [ -z "$ISIZE" ] || echo "$ISIZE" >> /tmp/.importisize
+	DSIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $2}'`
+	ISIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $3}'`
+   	[ -f "$DEBDIR"/"$I".tar.gz ] || echo $DSIZE >> /tmp/.importdsize
+   	echo $ISIZE >> /tmp/.importisize
+else  
+   	if grep "^Package: $I$" /tmp/debinx.* > /dev/null 2>&1; then 
+       		DEBINX1=`sudo grep "^Package: $I$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
+       		read FULLPATH < /tmp/work/"$I"
+       		THISDEB="${FULLPATH##*/}"
+   		DSIZEBYTE=`getdsize "$I"`
+		if [ "$DSIZEBYTE" -eq "$DSIZEBYTE" ]; then 
+   			echo "$DSIZEBYTE" >> /tmp/.importarchsize
+		else 
+			echo "Error in calculating archive size for "$I", omitting.."
+		fi
+   		#echo "$DSIZEBYTE" >> /tmp/.importarchsize
+   		[ -f "$DEBDIR"/"$THISDEB" ] || echo "$DSIZEBYTE" >> /tmp/.importdsize
+   		ISIZEKB=`getisize "$I"` 
+		if [ "$ISIZEKB" -eq "$ISIZEKB" ]; then 
+   			echo $((ISIZEKB * 1024)) >> /tmp/.importisize
+		else 
+			echo "Error in calculating unpacked size for "$I", omitting.."
+		fi
+   		DSIZE=`grep ^"$I"-data: /tmp/.importsizelist | awk '{print $2}'`
+   		ISIZE=`grep ^"$I"-data: /tmp/.importsizelist | awk '{print $3}'`
+   		[ ! -f "$DEBDIR"/"$I"-data.tar.gz ] && [ ! -z "$DSIZE" ] && [ "$DSIZE" -eq "$DSIZE" ] && echo $DSIZE >> /tmp/.importdsize
+   		[ ! -z "$ISIZE" ] && [ "$ISIZE" -eq "$ISIZE" ] && echo "$ISIZE" >> /tmp/.importisize
+		DEBINX1="/tmp/debinx1"
+	else
+		read FULLPATH < /tmp/work/"$I"
+       		THISDEB="${FULLPATH##*/}"
+   		DSIZEBYTE=`getdsize "$I"`
+		if [ "$DSIZEBYTE" -eq "$DSIZEBYTE" ]; then 
+   			echo "$DSIZEBYTE" >> /tmp/.importarchsize
+		else 
+			echo "Error in calculating archive size for "$I", omitting.."
+		fi
+   		echo "$DSIZEBYTE" >> /tmp/.importarchsize
+   		[ -f "$DEBDIR"/"$THISDEB" ] || echo "$DSIZEBYTE" >> /tmp/.importdsize
+   		ISIZEKB=`getisize "$I"` 
+		if [ "$ISIZEKB" -eq "$ISIZEKB" ]; then 
+   			echo $((ISIZEKB * 1024)) >> /tmp/.importisize
+		else 
+			echo "Error in calculating unpacked size for "$I", omitting.."
+		fi
+   		DSIZE=`grep ^"$I"-data: /tmp/.importsizelist | awk '{print $2}'`
+   		ISIZE=`grep ^"$I"-data: /tmp/.importsizelist | awk '{print $3}'`
+   		[ ! -f "$DEBDIR"/"$I"-data.tar.gz ] && [ ! -z "$DSIZE" ] && [ "$DSIZE" -eq "$DSIZE" ] && echo $DSIZE >> /tmp/.importdsize
+   		[ ! -z "$ISIZE" ] && [ "$ISIZE" -eq "$ISIZE" ] && echo "$ISIZE" >> /tmp/.importisize
+	fi
 fi
 done
 alias df='df'
