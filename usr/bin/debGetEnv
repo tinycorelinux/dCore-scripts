@@ -59,22 +59,30 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			DIST=`cat /opt/debextra/"$I" | awk '{print $2}'`
 			REPO=`cat /opt/debextra/"$I" | awk '{print $3}'` 
 			F="/dists/"$DIST"/"$REPO"/"$BINARY"/"
-			wget -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I" || echo "Mirror "$D" is unavailable"
+			if wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"; then
+				echo "Using the "$DIST" "$REPO" repo of mirror "$MIR""
+			else
+				 echo "Mirror "$MIR" is unavailable"
+			fi
 		else
 			MIR=`cat /opt/debextra/"$I" | awk '{print $1}'`
 			DIST="wheezy"
 			REPO=`cat /opt/debextra/"$I" | awk '{print $2}'` 
 			F="/dists/"$DIST"/"$REPO"/"$BINARY"/"
-			wget -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I" || echo "Mirror "$D" is unavailable"
+			if wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"; then
+				 echo "Using the "$DIST" "$REPO" repo of mirror "$MIR""
+			else
+				 echo "Mirror "$MIR" is unavailable"
+			fi
 		fi
 	done
 fi
 
 # Test mirror
 if wget -s "$MIRROR" > /dev/null 2>&1; then
-	echo "Using mirror: "$MIRROR""
+	echo "Using the wheezy main repo of mirror: "$MIRROR""
 	echo "$MIRROR" > /opt/debmirror
 else
-	echo ""$MIRROR" is not available, exiting.."  
+	echo "The wheezy main repo of mirror "$MIRROR" is not available, exiting.."  
 exit 1
 fi 
