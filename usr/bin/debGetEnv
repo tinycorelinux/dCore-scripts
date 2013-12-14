@@ -61,6 +61,8 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			F="/dists/"$DIST"/"$REPO"/"$BINARY"/"
 			if wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"; then
 				echo "Using the "$DIST" "$REPO" repo of mirror "$MIR""
+			elif wget -q -O - "$MIR"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"; then
+				 echo "Using mirror "$MIR""
 			else
 				 echo "Mirror "$MIR" is unavailable"
 			fi
@@ -71,7 +73,9 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			F="/dists/"$DIST"/"$REPO"/"$BINARY"/"
 			if wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"; then
 				 echo "Using the "$DIST" "$REPO" repo of mirror "$MIR""
-			else
+			elif  wget -q -O - "$MIR"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"; then
+			         echo "Using mirror "$MIR""
+			else  
 				 echo "Mirror "$MIR" is unavailable"
 			fi
 		fi
