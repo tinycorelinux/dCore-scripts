@@ -5,9 +5,14 @@
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
 TCEDIR=/etc/sysconfig/tcedir
-
+BUILD=`getBuild`
+if [ "$BUILD" == "x86" ]; then
+	DEBBUILD="i386"
+elif [ "$BUILD" == "armv7" ]; then
+	DEBBUILD="armhf"
+fi
 getDeps() {
-	awk -v package="Package: $1" -v location="/tmp/work/$1" -v FILE="/tmp/.importsecure" -v md5sum="/tmp/$1.md5sum" '
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v location="/tmp/work/$1" -v FILE="/tmp/.importsecure" -v md5sum="/tmp/$1.md5sum" '
 	BEGIN {
 		RS=""
 		FS="\n"
@@ -17,6 +22,18 @@ getDeps() {
 			for (i=2; i <= NF; i++) {
 				split($i,f,": ")
 			
+		
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+			
+
+
 				if ( f[1] == "Depends" ) {
 					jmax = split(f[2],item,",")
 					for (j=1; j<=jmax; j++) { 
@@ -26,12 +43,14 @@ getDeps() {
 				}
 				if ( f[1] == "Filename" )
 					print f[2] > location
-				if ( system("test -f /tmp/.importsecure") == 0 ) {
+				
 				   if ( f[1] == "MD5sum" )
 					print f[2] > md5sum
-						     }
-			}
-		
+						     
+			
+		}
+
+
 		}
 		
 	} ' < "$DEBINX" 

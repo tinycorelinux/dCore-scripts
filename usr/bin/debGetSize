@@ -4,14 +4,19 @@
 > /tmp/.importarchsize
 > /tmp/.importdsize
 > /tmp/.importisize
-BUILD=`getBuild`
+
 DEBDIR="/etc/sysconfig/tcedir/import/debs"
 UNPACKDIR=/etc/sysconfig/tcedir/import/
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/$DEBINX"
 DEBINX1="/tmp/debinx1"
 TARGET="$1"
-
+BUILD=`getBuild`
+if [ "$BUILD" == "x86" ]; then
+	DEBBUILD="i386"
+elif [ "$BUILD" == "armv7" ]; then
+	DEBBUILD="armhf"
+fi
 # Further strip and echo the main debinx to /tmp for quicker searching.
 cat "$DEBINX" | sed -e '/^Depends:/d' -e '/^Filename:/d' -e '/^MD5sum:/d' > /tmp/debinx1
 
@@ -27,7 +32,7 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
 wget -O /tmp/.importsizelist "$PREBUILTMIRROR"/.importsizelist > /dev/null 2>&1
 
 getdsize() {
-	awk -v package="Package: $1" -v FIELD="$1: "  '
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
 	BEGIN {
 		RS=""
 		FS="\n"
@@ -36,6 +41,16 @@ getdsize() {
 		if ($1 == package) {
 			for (i=2; i <= NF; i++) {
 				split($i,f,": ")
+
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+
 				if ( f[1] == "Size" )
 					print f[2] 
 			}
@@ -46,7 +61,7 @@ getdsize() {
 }
 
 getisize() {
-	awk -v package="Package: $1" -v FIELD="$1: "  '
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
 	BEGIN {
 		RS=""
 		FS="\n"
@@ -55,6 +70,16 @@ getisize() {
 		if ($1 == package) {
 			for (i=2; i <= NF; i++) {
 				split($i,f,": ")
+
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+
 				if ( f[1] == "Installed-Size" )
 					print f[2] 
 			}
@@ -106,7 +131,7 @@ else
 		else 
 			echo "Error in calculating archive size for "$I", omitting.."
 		fi
-   		echo "$DSIZEBYTE" >> /tmp/.importarchsize
+   		#echo "$DSIZEBYTE" >> /tmp/.importarchsize
    		[ -f "$DEBDIR"/"$THISDEB" ] || echo "$DSIZEBYTE" >> /tmp/.importdsize
    		ISIZEKB=`getisize "$I"` 
 		if [ "$ISIZEKB" -eq "$ISIZEKB" ]; then 

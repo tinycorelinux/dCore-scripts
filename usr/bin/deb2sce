@@ -98,11 +98,8 @@ echo
 unset META
 #RESULTS="$(debQuery "$TARGET")"
 #if [ ! "$RESULTS" ]
-if sudo grep -q "^$TARGET:" /tmp/.pkgprebuilt; then
-	echo "$TARGET is a dCore premade package"
-	META="$TARGET"
 
-elif [ -s /tmp/.targetfile ]; then
+if [ -s /tmp/.targetfile ]; then
 	echo "$TARGET is from your own custom package list."
 	META="$TARGET"
 
@@ -119,7 +116,10 @@ elif sudo grep "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1; then
 		EXTRAREPO="wheezy"
 	fi
 	echo "$TARGET is a Debian `echo "$EXTRAREPO"` package from `echo "$EXTRAMIRROR"`."
-elif sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
+elif sudo grep "^$TARGET:" /tmp/.pkgprebuilt > /dev/null 2>&1; then
+	echo "$TARGET is a dCore premade package."
+	META="$TARGET"
+elif sudo grep -q "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a standard Debian wheezy package."
 else
 	echo "$TARGET is not a standard Debian, dCore precompiled, or meta package, exiting.."
@@ -175,7 +175,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 
 	 read FULLPATH < /tmp/work/"$DEBINFO"
 
-	 if grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null; then
+	 if grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null && ! grep "^Package: $DEBINFO$" /tmp/debinx.* > /dev/null 2>&1 ; then
 	 	read IMPORTMIRROR < /opt/tcemirror                                                                             
 	 	PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
 		IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
