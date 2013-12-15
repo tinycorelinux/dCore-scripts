@@ -21,6 +21,7 @@ getDeps()
 	touch /tmp/work/"$PKG"
 	if grep "^Package: $PKG$" /tmp/debinx.* > /dev/null 2>&1 ; then
 		DEPLIST=`debGetPkgList $PKG 2>/dev/null`
+		[ -s /tmp/.depfile ] &&  DEPLIST="$DEPLIST `grep "^$PKG:" /tmp/.depfile | cut -f2 -d:`"
 	elif grep "^$PKG:" /tmp/.pkgprebuilt > /dev/null 2>&1; then
 		DEPLIST="$DEPLIST `grep "^$PKG:" /tmp/.pkgprebuilt | cut -f2 -d:`"
 	else
