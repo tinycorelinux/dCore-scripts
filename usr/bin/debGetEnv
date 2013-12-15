@@ -59,9 +59,15 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			DIST=`cat /opt/debextra/"$I" | awk '{print $2}'`
 			REPO=`cat /opt/debextra/"$I" | awk '{print $3}'` 
 			F="/dists/"$DIST"/"$REPO"/"$BINARY"/"
-			if wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"; then
+			if wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
+				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
 				echo "Using the "$DIST" "$REPO" repo of mirror "$MIR""
-			else	
+			elif wget -s "$MIR"/"$DIST"/"$REPO"/Packages.bz2 > /dev/null 2>&1; then
+				wget -q -O - "$MIR"/"$DIST"/"$REPO"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
+				echo "Using the "$DIST" "$REPO" repo of mirror "$MIR""
+			elif wget -s "$MIR"/Packages.bz2 > /dev/null 2>&1; then
+				echo "Using the repo mirror "$MIR""
+			else
 				echo " "
 				echo -n "WARNING:   Repo "$MIR"  "$DIST"  "$REPO" is unavailable."
 				echo " "
@@ -72,8 +78,15 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			DIST="wheezy"
 			REPO=`cat /opt/debextra/"$I" | awk '{print $2}'` 
 			F="/dists/"$DIST"/"$REPO"/"$BINARY"/"
-			if wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"; then
+			if wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
+				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
 				echo "Using the "$DIST" "$REPO" repo of mirror "$MIR""
+			elif wget -s "$MIR"/"$REPO"/Packages.bz2 > /dev/null 2>&1; then
+				wget -q -O - "$MIR"/"$REPO"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
+				echo "Using the "$DIST" "$REPO" repo of mirror "$MIR""
+			elif wget -s "$MIR"/Packages.bz2 > /dev/null 2>&1; then
+				wget -q -O - "$MIR"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
+				echo "Using the repo mirror "$MIR""
 			else
 				echo " "
 				echo -n "WARNING:   Repo "$MIR" "$DIST" "$REPO" is unavailable."
