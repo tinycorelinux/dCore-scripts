@@ -244,12 +244,11 @@ for DEBINFO in `ls -t /tmp/work`; do
 			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
 			if [ -f "$DEBS"/"$THISDEB" ]; then
 	 			if [ ! -z `getMd5sum "$DEBINFO"` ]; then
-					if [ -f "$DEBS"/"$THISDEB" ]; then
-					if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
-						rm "$DEBS"/"$THISDEB"
-						echo "Fetching updated "$THISDEB".."
-						fetchDeb "$FULLPATH"		
-					fi
+						if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
+							rm "$DEBS"/"$THISDEB"
+							echo "Fetching updated "$THISDEB".."
+							fetchDeb "$FULLPATH"		
+						fi
 				else
 					rm "$DEBS"/"$THISDEB"
 					echo "Fetching updated "$THISDEB".."
