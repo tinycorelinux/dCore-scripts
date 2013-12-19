@@ -242,6 +242,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			DEBINX=`grep "^Package: $DEBINFO$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
 			MIRRORFILE=`echo "$DEBINX" | sed 's:/tmp/debinx.::'`
 			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
+			if [ -f "$DEBS"/"$THISDEB" ]; then
 	 			if [ ! -z `getMd5sum "$DEBINFO"` ]; then
 					if [ -f "$DEBS"/"$THISDEB" ]; then
 					if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
