@@ -110,12 +110,9 @@ elif sudo grep "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1; then
 	EXTRAINX=`grep "^Package: $TARGET$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
 	MIRRORFILE=`echo "$EXTRAINX" | sed 's:/tmp/debinx.::'`
 	EXTRAMIRROR=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $1}'`
-	if [ ! -z $(cat /opt/debextra/"$MIRRORFILE" | awk '{print $3}') ]; then
-		EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
-	else
-		EXTRAREPO="wheezy"
-	fi
-	echo "$TARGET is a Debian `echo "$EXTRAREPO"` package from `echo "$EXTRAMIRROR"`."
+	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
+	EXTRAPOOL=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $3}'`
+	echo "$TARGET is a Debian `echo "$EXTRAREPO"` `echo "$EXTRAPOOL"` package from `echo "$EXTRAMIRROR"`."
 elif sudo grep "^$TARGET:" /tmp/.pkgprebuilt > /dev/null 2>&1; then
 	echo "$TARGET is a dCore premade package."
 	META="$TARGET"
