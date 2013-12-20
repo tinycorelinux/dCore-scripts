@@ -7,6 +7,11 @@ export PATH
 
 checkroot
 BUILD=`getBuild`
+if [ "$BUILD" == "x86" ]; then
+	DEBBUILD="i386"
+elif [ "$BUILD" == "armv7" ]; then
+	DEBBUILD="armhf"
+fi
 TCEDIR=/etc/sysconfig/tcedir
 
 setupStartupScript() {
@@ -41,7 +46,7 @@ selectDeb() {
 }
 
 getMd5sum() {
-	awk -v package="Package: $1" -v FIELD="$1: "  '
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
 	BEGIN {
 		RS=""
 		FS="\n"
@@ -50,6 +55,16 @@ getMd5sum() {
 		if ($1 == package) {
 			for (i=2; i <= NF; i++) {
 				split($i,f,": ")
+
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+				
 				if ( f[1] == "MD5sum" )
 					print f[2] 
 			}
