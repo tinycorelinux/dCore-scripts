@@ -12,7 +12,7 @@ elif [ "$BUILD" == "armv7" ]; then
 	DEBBUILD="armhf"
 fi
 getDeps() {
-	awk -v package="Package: $1" -v build="$DEBBUILD" -v location="/tmp/work/$1" -v FILE="/tmp/.importsecure" -v md5sum="/tmp/$1.md5sum" '
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v location="/tmp/work/$1" -v FILE="/tmp/.importsecure" '
 	BEGIN {
 		RS=""
 		FS="\n"
@@ -43,9 +43,6 @@ getDeps() {
 				}
 				if ( f[1] == "Filename" )
 					print f[2] > location
-				
-				   if ( f[1] == "MD5sum" )
-					print f[2] > md5sum
 						     
 			
 		}
