@@ -12,7 +12,7 @@ elif [ "$BUILD" == "armv7" ]; then
 	DEBBUILD="armhf"
 fi
 getDeps() {
-	awk -v package="Package: $1" -v build="$DEBBUILD" -v location="/tmp/work/$1" -v FILE="/tmp/.importsecure" '
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v location="/tmp/work/$1" '
 	BEGIN {
 		RS=""
 		FS="\n"
