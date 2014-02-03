@@ -28,12 +28,14 @@ exit_tcnet() {
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 [ -f /tmp/.depfile ] && sudo rm /tmp/.depfile
 [ -f /tmp/.pkgextrafiles ] && sudo rm /tmp/.pkgextrafiles
-[ -f /tmp/select.ans    ] && sudo rm /tmp/select.ans   
-[ -f /tmp/.targetfile    ] && sudo rm /tmp/.targetfile
+[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans   
+[ -f /tmp/.targetfile ] && sudo rm /tmp/.targetfile
+[ -f /tmp/.extrarepodep ] && sudo rm /tmp/.extrarepodep
 
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
+wget -O /tmp/.extrarepodep -cq "$IMPORTMIRROR"/PKGEXTRAREPODEP 2>/dev/null || exit_tcnet
 wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEP 2>/dev/null || exit_tcnet
 wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit_tcnet
 wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null || exit_tcnet
