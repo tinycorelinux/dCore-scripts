@@ -76,6 +76,16 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			elif wget -s "$MIR"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.gz | gunzip > /tmp/debinx."$I"
 				echo "Using the repo mirror "$MIR""
+			elif wget -s "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
+				wget -O /tmp/debinx."$I" -cq "$MIR""$F"/Packages.gen 
+				echo "Using the repo "$MIR" "$DIST" "$REPO""
+			elif wget -s "$MIR"/"$DIST"/"$REPO"/Packages.gen > /dev/null 2>&1; then
+				wget -O /tmp/debinx."$I" -cq "$MIR"/"$DIST"/"$REPO"/Packages.gen 
+				echo "Using the repo "$MIR" "$DIST" "$REPO""
+			elif wget -s "$MIR"/Packages.gen > /dev/null 2>&1; then
+				wget -O /tmp/debinx."$I" "$MIR"/Packages.gen 
+				echo "Using the repo mirror "$MIR""			
+
 			else
 				echo " "
 				echo -n "WARNING:   Repo "$MIR"  "$DIST"  "$REPO" is unavailable."
@@ -104,6 +114,15 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				echo "Using the repo "$MIR" "$DIST" "$REPO""
 			elif wget -s "$MIR"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.gz | gunzip > /tmp/debinx."$I"
+				echo "Using the repo mirror "$MIR""
+			elif wget -s "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
+				wget -O /tmp/debinx."$I" -cq "$MIR""$F"/Packages.gen 
+				echo "Using the repo "$MIR" "$DIST" "$REPO""
+			elif wget -s "$MIR"/"$REPO"/Packages.gen > /dev/null 2>&1; then
+				wget -O /tmp/debinx."$I" "$MIR"/"$REPO"/Packages.gen 
+				echo "Using the repo "$MIR" "$DIST" "$REPO""
+			elif wget -s "$MIR"/Packages.gen > /dev/null 2>&1; then
+				wget -O /tmp/debinx."$I" -cq "$MIR"/Packages.gen 
 				echo "Using the repo mirror "$MIR""
 			else
 				echo " "
