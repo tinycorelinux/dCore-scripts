@@ -81,7 +81,9 @@ cleanup() {
 	chmod 775 /usr/local/tce.icons 2>/dev/null
 	chgrp staff /usr/local/tce.installed
 	chgrp staff /usr/local/tce.icons 2>/dev/null
-	[ -f "/tmp/debinx.*" ] && sudo rm /tmp/debinx.*
+	if ls /tmp/debinx.* > /dev/null 2>&1; then 
+		sudo rm /tmp/debinx.*
+	fi
 }
 
 # Main

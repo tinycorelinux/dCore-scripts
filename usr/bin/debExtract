@@ -78,8 +78,8 @@ cd "$DEBS"
   	fi
 
   else
-	[ -f rm "$DEBS"/"${BASENAME}"-data.tar.gz ] && rm rm "$DEBS"/"${BASENAME}"-data.tar.gz
-	[ -f rm "$DEBS"/"${BASENAME}"-data.tar.gz.md5.txt ] && rm rm "$DEBS"/"${BASENAME}"-data.tar.gz.md5.txt
+	[ -f "$DEBS"/"${BASENAME}"-data.tar.gz ] && rm "$DEBS"/"${BASENAME}"-data.tar.gz
+	[ -f "$DEBS"/"${BASENAME}"-data.tar.gz.md5.txt ] && rm "$DEBS"/"${BASENAME}"-data.tar.gz.md5.txt
 	wget -O "$DEBS"/"${BASENAME}"-data.tar.gz -c "$IMPORTMIRROR"/"${BASENAME}"-data.tar.gz 
   	wget -O "$DEBS"/"${BASENAME}"-data.tar.gz.md5.txt -c "$IMPORTMIRROR"/"${BASENAME}"-data.tar.gz.md5.txt 	
   fi
