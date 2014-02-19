@@ -63,28 +63,22 @@ then
 	exit 1
 fi
 if ls -A /opt/debextra > /dev/null 2>&1; then
- for I in `ls /opt/debextra`; do
-  #MIR=`cat /opt/debextra/"$I" | cut -f1 -d"|"` 
-  
-  DEBINX=/tmp/debinx."$I"
-  if grep "Package: "$1"$" "$DEBINX" > /dev/null; then
-    DEPS="$(getDeps $1)"
-    #sudo sed -i "s:^:$MIR/:" /tmp/work/$1
-    [ ! -z "$DEPS" ] && echo " "
-  else
-    echo " "
-  fi
-  echo "$DEPS"
- done
 
- if [ -z "$DEPS" ]; then
-   # MIR=`cat /opt/debmirror`
+  if grep "Package: "$1"$" /tmp/debinx.* > /dev/null; then
+    DEBINX=`grep "^Package: "$1"$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
+    DEPS="$(getDeps $1)"
+    #[ ! -z "$DEPS" ] && echo " "
+    echo "$DEPS"
+    exit
+  else
+    # MIR=`cat /opt/debmirror`
     read DEBINX < /tmp/debinx
     DEBINX="/etc/sysconfig/tcedir/$DEBINX"
     DEPS="$(getDeps $1)"
     [ -z "$DEPS" ] && exit 1
     echo "$DEPS"
- fi
+  fi
+  
 
 else
     #MIR=`cat /opt/debmirror`
