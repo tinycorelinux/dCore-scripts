@@ -62,7 +62,7 @@ processAPP(){
 
 	#THISAPP=`basename $APPNAME .sce`
 	if grep "^$APPNAME:" /tmp/.installed > /dev/null 2>&1; then
-		echo "$THISAPP is already installed!"
+		echo "$APPNAME is already installed!"
 		continue
 	fi
 	if [ -d /tmp/tcloop/"$APPNAME" ]; then
