@@ -12,6 +12,7 @@ FORCE="n"  # Overwrite system files default to no. Use -f to force overwrite.
 SAVED_DIR=`pwd`
 
 #ONBOOTNAME="$(getbootparam lst 2>/dev/null)"
+
 [ -n "$ONBOOTNAME" ] || ONBOOTNAME="onboot.lst"
 
 [ -f /tmp/.installed ] || touch /tmp/.installed
@@ -59,9 +60,18 @@ processAPP(){
 	APPNAME="${APPNAME/-KERNEL/-${KERNELVER}}"
 	TARGETAPP="${TARGETAPP/-KERNEL.sce/-${KERNELVER}.sce}"
 
-	if [ -f /usr/local/tce.installed/"${APPNAME##/*/}" ]; then
-		echo "$APPNAME is already installed!"
+	#THISAPP=`basename $APPNAME .sce`
+	if grep "^$APPNAME:" /tmp/.installed > /dev/null 2>&1; then
+		echo "$THISAPP is already installed!"
 		continue
+	fi
+	if [ -d /tmp/tcloop/"$APPNAME" ]; then
+		if [ "$BOOTING" ]; then
+			continue
+		else
+			echo ""$APPNAME" is already installed!"
+			continue
+		fi
 	fi
 	if [ -f "$TARGETAPP" ]; then
 		:
@@ -71,7 +81,7 @@ processAPP(){
 		echo "$TARGETAPP not found!"
 		abort_to_saved_dir
 	fi
-	FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
+	#FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
 	EXTENSION=`basename "$TARGETAPP"`
 	install "$TARGETAPP"
 	[ "$SUPPRESS" ] || echo "$TARGETAPP: OK"
@@ -119,20 +129,30 @@ update_system() {
 		if [ "$BOOTING" ] ; then
 			cat /tmp/ss$$.lst >> /tmp/setup.lst
 		else
-			for SS in $(cat /tmp/ss$$.lst)
+			for SS in $(cat /tmp/ss$$.lst | grep -v "tce.installed/$APPNAME$")
 			do
 				APP=`basename "$SS"`
-				if ! grep "^$APP:" /tmp/.installed >/dev/null; then
+				if ! grep "^$APP:" /tmp/.installed > /dev/null 2>&1; then
 					if [ "$DEBUG" == "TRUE" ]; then
-					  echo "$APP:" >> /var/log/sce.log
-					  sudo $SS >> /var/log/sce.log 2>&1
+					  echo "$APP:" >> /tmp/.installed
+					  sudo echo "$APP:" | sudo tee -a /var/log/sce.log > /dev/null 2>&1
+					  sudo $SS 2>&1 | sudo tee -a /var/log/sce.log > /dev/null 2>&1
 					else
-					  sudo $SS >> /dev/null 2>&1
+					  sudo $SS >> /dev/null 2>&1 
+					  echo "$APP:" >> /tmp/.installed
 					fi
-					echo "$APP:" >> /tmp/.installed
 					
 				fi
 			done
+			APP=`basename /usr/local/tce.installed/"$APPNAME"`
+			if [ "$DEBUG" == "TRUE" ]; then
+				echo "$APP:" >> /tmp/.installed
+				sudo echo "$APP:" 2>&1 | sudo tee -a /var/log/sce.log > /dev/null 2>&1
+				sudo /usr/local/tce.installed/"$APPNAME" 2>&1 | sudo tee -a /var/log/sce.log > /dev/null 2>&1
+			else	
+				echo "$APP:" >> /tmp/.installed
+				sudo /usr/local/tce.installed/"$APPNAME" >> /dev/null 2>&1 
+			fi
 		   FREEDESKTOP="/tmp/tcloop/"$APPNAME"/usr/share/applications"
 		   if [ "$(ls -A $FREEDESKTOP 2>/dev/null)" ]; then
 		    	for F in $(ls "$FREEDESKTOP"/*.desktop | grep -v "tinycore-"| grep -Ev '(~[1-9][1-9]*)'.desktop); do
@@ -156,8 +176,9 @@ update_system() {
 		   fi
 		   
 		fi
+		
 		rm /tmp/ss$$.lst
-	fi
+	fi		
 }
 
 install(){
@@ -197,6 +218,12 @@ install(){
 		umount -d /tmp/tcloop/"$APPNAME"
 		update_system "$THISAPP" "$APPNAME"
 	fi
+	#grep "^$APPNAME:" /tmp/.installed > /dev/null 2>&1 || echo "$APPNAME:" >> /tmp/.installed
+	if [ -f /tmp/tcloop/"$APPNAME"/usr/local/sce/"$APPNAME"/"$APPNAME".md5sum ]; then
+		for I in `cat /tmp/tcloop/"$APPNAME"/usr/local/sce/"$APPNAME"/"$APPNAME".md5sum | cut -f1 -d:`; do
+			grep "^$I:" /tmp/.debinstalled > /dev/null 2>&1 || echo "$I:" >> /tmp/.debinstalled
+		done
+	fi
 	[ "$BOOTING" ] && [ "$SHOWAPPS" ] && echo -n "${YELLOW}$APPNAME ${NORMAL}"
 }
 
@@ -209,14 +236,76 @@ fi
 [ -f /etc/sysconfig/showapps ] && SHOWAPPS=TRUE && SUPPRESS=TRUE
 TCEINSTALLED=/usr/local/tce.installed
 
+getDeps() {
+DEPLIST="$1 $DEPLIST"
+
+if [ -f "$TARGETDIR"/"$1".sce.dep ]; then
+	for E in `cat "$TARGETDIR"/"$1".sce.dep`; do 
+		getDeps "$E"
+	done
+fi
+}
+
+
+
 if [ -n "$TARGETAPP" ]
+#FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
 then
-	processAPP
+	THISSCENAME=${TARGETAPP%%.sce}
+		if [ ${TARGETAPP} == ${THISSCENAME} ]; then THISSCE=${TARGETAPP}.sce; fi
+				
+		if [ -f "$THISSCE" ]; then
+			TARGETDIR=`dirname "$THISSCE"`
+		else
+			TARGETDIR="$TCEDIR"/sce/
+		fi
+
+		if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
+			DEPLIST="$THISSCENAME"
+			for I in `cat "$TARGETDIR"/"$THISSCE".dep`; do 
+				getDeps "$I"
+			done
+		else
+			DEPLIST="$THISSCENAME"
+		
+		fi
+		for I in "$DEPLIST"; do	
+			TARGETAPP="$I"
+			#APPNAME=${TARGETAPP%%.sce}
+			#if [ ${TARETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
+			processAPP
+		done
 else
 	for TARGETAPP in $@; do
-		processAPP
-	done # Finish the for-loop for multiple extensions
+		THISSCENAME=${TARGETAPP%%.sce}
+		if [ ${TARGETAPP} == ${THISSCENAME} ]; then THISSCE=${TARGETAPP}.sce; fi
+		
+		if [ -f "$THISSCE" ]; then
+			TARGETDIR=`dirname "$THISSCE"`
+		else
+			TARGETDIR="$TCEDIR"/sce/
+		fi
+
+		if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
+			DEPLIST="$THISSCENAME"
+			for I in `cat "$TARGETDIR"/"$THISSCE".dep`; do 
+				getDeps "$I"
+			done
+		else
+			DEPLIST="$THISSCENAME"
+		
+		fi
+
+	done # Finish the for-loop for multiple extensions 
+		for I in `echo "$DEPLIST"`; do
+			TARGETAPP="$I"
+			#APPNAME=${TARGETAPP%%.sce}
+			#if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
+			processAPP
+		done # for loop for dependencies
 fi
+
+
 cd "$SAVED_DIR"
 
 [ "$BOOTING" ] && exit 0
@@ -225,4 +314,5 @@ then
 	[ $(which "$DESKTOP"_restart) ] && "$DESKTOP"_restart 2>/dev/null
 	[ $(which wbar) ] && pkill wbar && wbar.sh
 fi
+
 exit 0

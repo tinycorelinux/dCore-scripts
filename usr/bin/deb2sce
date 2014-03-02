@@ -4,7 +4,7 @@
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
-
+sudo chmod 1777 /tmp
 checkroot
 BUILD=`getBuild`
 if [ "$BUILD" == "x86" ]; then
@@ -84,9 +84,19 @@ cleanup() {
 	if ls /tmp/debinx.* > /dev/null 2>&1; then 
 		sudo rm /tmp/debinx.*
 	fi
+	if ls /tmp/*.debs > /dev/null 2>&1; then 
+		sudo rm /tmp/*.debs
+	fi
+	[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
+	[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
+	[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
+	if ls /tmp/*.debdeps > /dev/null 2>&1; then 
+		sudo rm /tmp/*.debdeps
+	fi	
 }
 
 # Main
+[ -d /tmp/work ] && sudo rm -r /tmp/work
 unset ONBOOT ONDEMAND FILE
 while getopts bo OPTION
 do
@@ -123,8 +133,8 @@ if [ -s /tmp/.targetfile ]; then
 elif sudo grep -q "^$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a meta package of related Debian ones."
 	META="$TARGET"
-elif sudo grep "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1; then
-	EXTRAINX=`grep "^Package: $TARGET$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
+elif sudo grep "^Package: $TARGET$" /tmp/debinx.* > /dev/null 2>&1; then
+	EXTRAINX=`grep "^Package: $TARGET$" /tmp/debinx.* | head -n 1 | cut -f1 -d:`
 	MIRRORFILE=`echo "$EXTRAINX" | sed 's:/tmp/debinx.::'`
 	EXTRAMIRROR=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $1}'`
 	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
@@ -171,10 +181,19 @@ else
 	debGetDeps "$TARGET"
 fi
 
+if [ -f /tmp/.importdep ]; then
+	debGetSceDep "$TARGET"
+fi
+
 if [ -f /tmp/.importsize ]; then
 	debGetSize "$TARGET"
 fi
 
+echo "The below packages will be included in "$TARGET".sce."
+echo " "
+for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo "$I"; done
+echo " "
+echo "The above packages will be included in "$TARGET".sce."
 echo -n "Proceed to create $TARGET.sce? (y/N): "
 read ans
 if [ "$ans" != "y" ]; then
@@ -182,11 +201,13 @@ if [ "$ans" != "y" ]; then
 	exit 1
 fi
 
-mkdir -p usr/local/importmd5sum
+mkdir -p usr/local/sce/"$TARGET"
 
 HERE=`pwd`
 for DEBINFO in `ls -t /tmp/work`; do
-	 
+	 if [ -f /tmp/.scedebs ]; then
+	 	grep "^$DEBINFO$" /tmp/.scedebs > /dev/null 2>&1 && continue
+	 fi 
 	 read FULLPATH < /tmp/work/"$DEBINFO"
 
 	 if grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null && ! grep "^Package: $DEBINFO$" /tmp/debinx.* > /dev/null 2>&1 ; then
@@ -216,7 +237,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 
 		if md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
   	 	then		 
-			echo "${DEBINFO}: `cat "${DEBINFO}".tar.gz.md5.txt | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum		  
+			echo "${DEBINFO}: `cat "${DEBINFO}".tar.gz.md5.txt | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		  
 			echo "Merging "${DEBINFO}":"
     	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET"        		  
 		elif [ -f "${DEBINFO}".tar.gz.md5.txt ] && ! md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null 2>&1
@@ -251,7 +272,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 		  		cleanup
 		  		exit 1
 			fi
-			echo ""$DEBINFO": `getMd5sum "$DEBINFO"`" >> "$IMPORT"/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum		
+			echo ""$DEBINFO": `getMd5sum "$DEBINFO"`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		
 		else
 			DEBINX=`grep "^Package: $DEBINFO$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
 			MIRRORFILE=`echo "$DEBINX" | sed 's:/tmp/debinx.::'`
@@ -278,7 +299,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 				exit 1
 			fi
 		
-			echo ""$DEBINFO": `getMd5sum "$DEBINFO"`" >> "$IMPORT"/"$TARGET"/usr/local/importmd5sum/"$TARGET".md5sum	
+			echo ""$DEBINFO": `getMd5sum "$DEBINFO"`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum	
 			
 			read DEBINX < /tmp/debinx
 			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
@@ -291,6 +312,11 @@ done
 
 
 cd ..
+mv /tmp/*.debs "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/ > /dev/null 2>&1
+if [ -f /tmp/"$TARGET".debdeps ]; then
+	cp /tmp/"$TARGET".debdeps "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/
+fi
+
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1
 mksquashfs "$TARGET" "$TCEDIR"/sce/"$TARGET".sce -noappend
 if [ "$?" == "0" ]

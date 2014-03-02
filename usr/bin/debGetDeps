@@ -33,8 +33,7 @@ getDeps()
 
 TARGET="$1"
 if [ -n "$TARGET" ]; then
-	[ -d /tmp/work ] && sudo rm -r /tmp/work
-	mkdir /tmp/work
+	[ -d /tmp/work ] || mkdir /tmp/work
         getDeps "$TARGET"
         echo
 else

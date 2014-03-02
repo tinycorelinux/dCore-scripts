@@ -8,6 +8,17 @@ export PATH
 checknotroot
 BUILD=`getBuild`
 
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo "Usage:"
+	echo "'"importsce"' with no options will prompt for characters of desired package name."
+	echo "'"importsce -f"' to use a file list of packages - '"importsce -f FILENAME"'."
+	echo "'"importsce -b"' to add package to sceboot.lst."
+	echo "'"importsce -r"' to use RAM for unpacking source debs."
+	echo "'"importsce -s"' to list sizes of packages to be fetched and installed."
+	echo "'"importsce -d"' to make use of existing SCE packages as dependencies.  A select menu will appear."
+	echo "'"importsce -o"' to add resulting SCE package to ondemand."
+exit 1
+fi
 mksce() {
 	if [ "$FLAGS" ]
 	then
@@ -31,6 +42,7 @@ exit_tcnet() {
 [ -f /tmp/select.ans ] && sudo rm /tmp/select.ans   
 [ -f /tmp/.targetfile ] && sudo rm /tmp/.targetfile
 [ -f /tmp/.extrarepodep ] && sudo rm /tmp/.extrarepodep
+[ -f /tmp/.importdep ] && sudo rm /tmp/.importdep
 
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
@@ -40,9 +52,10 @@ wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEP 2>/dev/null || exit_tcnet
 wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit_tcnet
 wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null || exit_tcnet
 unset FLAGS PACKAGELIST
-while getopts rsbof OPTION
+while getopts drsbof OPTION
 do
 	case ${OPTION} in
+		d) DEPS=TRUE ;;
 		r) RAM=TRUE ;;
 		s) SIZE=TRUE ;;
 		b) FLAGS="$FLAGS"b ;;
@@ -59,6 +72,10 @@ if [ "$PACKAGELIST" ]; then
   TARGETFILE=`readlink -f "$TARGET"`
   cat $TARGETFILE > /tmp/.targetfile
   TARGET=`basename $TARGET`
+fi
+
+if [ "$DEPS" == "TRUE" ]; then
+	touch /tmp/.importdep
 fi
 
 if [ "$SIZE" == "TRUE" ]; then
@@ -82,6 +99,7 @@ sudo debGetEnv
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/$DEBINX"
 if [ "$PACKAGELIST" ] && [ -f "$TARGETFILE" ]; then
+  echo " "
   echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?"
   read ans                   
   [ "$ans" == "y" ] || exit 0                          
@@ -89,7 +107,8 @@ if [ "$PACKAGELIST" ] && [ -f "$TARGETFILE" ]; then
 elif sudo grep -i "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
   { sudo grep -i "^Package: $TARGET" /tmp/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   read DEB < /tmp/select.ans                                                                           
-  [ "$DEB" == "q" ] && exit 1                                                                          
+  [ "$DEB" == "q" ] && exit 1      
+  echo " "                                                                    
   echo -n "Do you want to import $DEB? (y/N): "                        
   read ans                                                             
   [ "$ans" == "y" ] || exit 1                                           

@@ -1,0 +1,81 @@
+#!/bin/sh
+
+[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
+[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
+[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
+[ -f /tmp/"$1".debdeps ] && sudo rm /tmp/"$1".debdeps
+[ -f /etc/sysconfig/tcedir/sce/"$1".sce.dep ] && sudo rm /etc/sysconfig/tcedir/sce/"$1".sce.dep
+
+if ls /tmp/*.debs > /dev/null 2>&1; then 
+	sudo rm /tmp/*.debs
+fi
+
+cd /etc/sysconfig/tcedir/sce
+
+## Select menu for choosing dependency sce's
+ls *.sce | sed 's:.sce::' | sort > /tmp/.scelist
+while true; do 
+cat /tmp/.scelist | select "Choose the sce you want use as a dependency. You can choose more than one, and enter "q" for quit when you have completed your selection." "-"
+read ANS < /tmp/select.ans
+if [ "$ANS" == "q" ]; then
+ break
+fi
+grep "^$ANS$" /tmp/.scedeps || echo "$ANS" >> /tmp/.scedeps
+sed -i "/^$ANS$/d" /tmp/.scelist
+done
+##
+
+## Echo the selected deps to the dep file
+if [ -f /tmp/.scedeps ]; then
+	cat /tmp/.scedeps >> /etc/sysconfig/tcedir/sce/"$1".sce.dep
+fi
+##
+
+
+## Recursive function to determine packages that exist in dependency sce's
+getDeps() {
+
+grep "^$1$" /tmp/.scedeps > /dev/null 2>&1 || echo "$1" >> /tmp/.scedeps
+if [ -f "$1".sce.dep ]; then
+	for E in `cat "$1".sce.dep`; do 
+		getDeps "$E"
+	done
+fi
+}
+
+for I in `cat /tmp/.scedeps`; do 
+	getDeps "$I"
+done
+
+##
+
+echo " "
+
+## Create deb package lists from depdendency sce's
+for I in `cat /tmp/.scedeps`; do 
+
+if [ -d /tmp/tcloop/"$I" ]; then
+	DIR1=/tmp/tcloop/"$I"
+	# yes n | cp -ai "$DIR1"/* "$OUTDIR"/ 2>/dev/null
+	cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: >> /tmp/.scedebs
+	cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: > /tmp/"$I".debs
+else
+  DIR1=/tmp/"$I".tmp
+  [ -d "$DIR1" ] || mkdir -p "$DIR1"
+  sudo mount /etc/sysconfig/tcedir/sce/"$I".sce "$DIR1" > /dev/null 2>&1
+  # yes n | cp -ai "$DIR1"/* "$OUTDIR"/ > /dev/null 2>&1
+  cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: >> /tmp/.scedebs
+  cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: > /tmp/"$I".debs
+  
+  sudo umount "$DIR1"
+  rmdir "$DIR1"
+fi
+##
+
+ls -t /tmp/work > /tmp/"$1".debdeps
+
+done
+
+
+
+
