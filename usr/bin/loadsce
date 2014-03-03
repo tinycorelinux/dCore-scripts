@@ -61,7 +61,7 @@ processAPP(){
 	TARGETAPP="${TARGETAPP/-KERNEL.sce/-${KERNELVER}.sce}"
 
 	#THISAPP=`basename $APPNAME .sce`
-	if grep "^$APPNAME:" /tmp/.installed > /dev/null 2>&1; then
+	if grep "^$APPNAME:" /tmp/.debinstalled > /dev/null 2>&1; then
 		echo "$APPNAME is already installed!"
 		continue
 	fi
@@ -237,11 +237,16 @@ fi
 TCEINSTALLED=/usr/local/tce.installed
 
 getDeps() {
-DEPLIST="$1 $DEPLIST"
+DEPLIST=" $1 $DEPLIST "
 
 if [ -f "$TARGETDIR"/"$1".sce.dep ]; then
 	for E in `cat "$TARGETDIR"/"$1".sce.dep`; do 
-		getDeps "$E"
+		H=" $E "
+		if echo "$DEPLIST" | grep "$H" > /dev/null 2>&1; then
+			continue
+		else 
+			getDeps "$E"
+		fi
 	done
 fi
 }
@@ -261,12 +266,12 @@ then
 		fi
 
 		if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
-			DEPLIST="$THISSCENAME"
+			DEPLIST=" $THISSCENAME "
 			for I in `cat "$TARGETDIR"/"$THISSCE".dep`; do 
 				getDeps "$I"
 			done
 		else
-			DEPLIST="$THISSCENAME"
+			DEPLIST=" $THISSCENAME "
 		
 		fi
 		for I in "$DEPLIST"; do	
@@ -287,12 +292,12 @@ else
 		fi
 
 		if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
-			DEPLIST="$THISSCENAME"
+			DEPLIST=" $THISSCENAME "
 			for I in `cat "$TARGETDIR"/"$THISSCE".dep`; do 
 				getDeps "$I"
 			done
 		else
-			DEPLIST="$THISSCENAME"
+			DEPLIST=" $THISSCENAME "
 		
 		fi
 
