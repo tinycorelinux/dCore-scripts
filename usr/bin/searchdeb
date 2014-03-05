@@ -1,0 +1,61 @@
+#!/bb/ash
+# (c) Robert Shingledecker 2012
+. /etc/init.d/tc-functions
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
+checknotroot
+BUILD=`getBuild`
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo "Usage:"
+	echo "'searchdeb PKG' when PKG is characters of desired package name will list possible matches."
+exit 1
+fi
+
+
+exit_tcnet() {
+	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
+	exit 1
+}
+
+
+read IMPORTMIRROR < /opt/tcemirror
+PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
+IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
+
+
+TARGET="$1"
+
+if [ -z "$TARGET" ]
+then
+	echo -n "Enter starting characters of package sought: "
+	read TARGET
+fi
+
+[ -n "$TARGET" ] || exit 1
+
+#[ -s /tmp/debinx ] || sudo debGetEnv "$2"
+sudo debGetEnv
+read DEBINX < /tmp/debinx
+DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+
+if ls /tmp/debinx.* > /dev/null 2>&1; then
+	for I in `ls /tmp/debinx.*`; do
+		FILE=`basename "$I" | cut -f2 -d.`
+		REPO=`cat /opt/debextra/"$FILE"`
+		unset PKGS
+		PKGS=`sudo grep -i "^Package:" "$I" | grep "$TARGET"  | awk '{print $2}' | sort | uniq`
+		if [ -n "$PKGS" ]; then
+			echo " "
+			echo "The below package matches are available in "$REPO":"
+			echo "$PKGS"
+		fi
+	done
+fi
+echo "The below package matches are available in the main Debian Wheezy repo."
+
+sudo grep -i "^Package:" "$DEBINX" | grep "$TARGET" | awk '{print $2}' | sort | uniq 
+
+
