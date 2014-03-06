@@ -20,7 +20,7 @@ read ANS < /tmp/select.ans
 if [ "$ANS" == "q" ]; then
  break
 fi
-grep "^$ANS$" /tmp/.scedeps || echo "$ANS" >> /tmp/.scedeps
+grep "^$ANS$" /tmp/.scedeps > /dev/null 2>&1 || echo "$ANS" >> /tmp/.scedeps
 sed -i "/^$ANS$/d" /tmp/.scelist
 done
 ##
@@ -42,33 +42,35 @@ if [ -f "$1".sce.dep ]; then
 	done
 fi
 }
-
-for I in `cat /tmp/.scedeps`; do 
-	getDeps "$I"
-done
-
+if [ -f /tmp/.scedeps ]; then
+	for I in `cat /tmp/.scedeps`; do 
+		getDeps "$I"
+	done
+fi
 ##
 
 echo " "
 
 ## Create deb package lists from depdendency sce's
-for I in `cat /tmp/.scedeps`; do 
+if [ -f /tmp/.scedeps ]; then
+	for I in `cat /tmp/.scedeps`; do 
 
-if [ -d /tmp/tcloop/"$I" ]; then
-	DIR1=/tmp/tcloop/"$I"
-	# yes n | cp -ai "$DIR1"/* "$OUTDIR"/ 2>/dev/null
-	cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: >> /tmp/.scedebs
-	cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: > /tmp/"$I".debs
-else
-  DIR1=/tmp/"$I".tmp
-  [ -d "$DIR1" ] || mkdir -p "$DIR1"
-  sudo mount /etc/sysconfig/tcedir/sce/"$I".sce "$DIR1" > /dev/null 2>&1
-  # yes n | cp -ai "$DIR1"/* "$OUTDIR"/ > /dev/null 2>&1
-  cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: >> /tmp/.scedebs
-  cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: > /tmp/"$I".debs
-  
-  sudo umount "$DIR1"
-  rmdir "$DIR1"
+	if [ -d /tmp/tcloop/"$I" ]; then
+		DIR1=/tmp/tcloop/"$I"
+		# yes n | cp -ai "$DIR1"/* "$OUTDIR"/ 2>/dev/null
+		cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: >> /tmp/.scedebs
+		cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: > /tmp/"$I".debs
+	else
+	  	DIR1=/tmp/"$I".tmp
+	  	[ -d "$DIR1" ] || mkdir -p "$DIR1"
+	  	sudo mount /etc/sysconfig/tcedir/sce/"$I".sce "$DIR1" > /dev/null 2>&1
+	  	# yes n | cp -ai "$DIR1"/* "$OUTDIR"/ > /dev/null 2>&1
+	  	cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: >> /tmp/.scedebs
+	  	cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: > /tmp/"$I".debs
+	  	
+	  	sudo umount "$DIR1"
+	  	rmdir "$DIR1"
+	fi
 fi
 ##
 

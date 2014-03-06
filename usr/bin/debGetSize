@@ -93,7 +93,7 @@ getisize() {
 
 
 for I in `ls /tmp/work`; do 
-grep "^$I$" /tmp/.scedebs && return
+grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 && return
 if grep ^"$I": /tmp/.importsizelist >/dev/null; then
 	DSIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $2}'`
 	ISIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $3}'`
