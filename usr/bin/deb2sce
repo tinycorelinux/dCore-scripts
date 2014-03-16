@@ -185,15 +185,16 @@ if [ -f /tmp/.importdep ]; then
 	debGetSceDep "$TARGET"
 fi
 
-if [ -f /tmp/.importsize ]; then
-	debGetSize "$TARGET"
-fi
-
 echo "The below packages will be included in "$TARGET".sce."
 echo " "
 for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo "$I"; done
 echo " "
 echo "The above packages will be included in "$TARGET".sce."
+
+if [ -f /tmp/.importsize ]; then
+	debGetSize "$TARGET"
+fi
+
 echo -n "Proceed to create $TARGET.sce? (y/N): "
 read ans
 if [ "$ans" != "y" ]; then

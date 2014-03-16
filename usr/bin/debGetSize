@@ -93,7 +93,7 @@ getisize() {
 
 
 for I in `ls /tmp/work`; do 
-grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 && return
+grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 && continue
 if grep ^"$I": /tmp/.importsizelist >/dev/null; then
 	DSIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $2}'`
 	ISIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $3}'`
@@ -226,9 +226,10 @@ else
 fi            
 echo " "
 
-[ -f /tmp/.importarchsize ] && rm /tmp/.importarchsize
-[ -f /tmp/.importdsize ] && rm /tmp/.importdsize
-[ -f /tmp/.importisize ] && rm /tmp/.importisize
+[ -f /tmp/.importarchsize ] && sudo rm /tmp/.importarchsize
+[ -f /tmp/.importdsize ] && sudo rm /tmp/.importdsize
+[ -f /tmp/.importisize ] && sudo rm /tmp/.importisize
+[ -f /tmp/.importsizelist ] && sudo rm /tmp/.importsizelist
 
 rm "$DEBINX1"
 

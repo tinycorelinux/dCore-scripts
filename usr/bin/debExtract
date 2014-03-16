@@ -43,8 +43,10 @@ ar p "$FILE" "$DATA_TAR" > "$PKGDIR"/"$DATA_TAR"
 ar p "$FILE" "$CONFIG_TAR" > "$PKGDIR"/"$CONFIG_TAR"
 tar xf "$PKGDIR"/"$DATA_TAR" -C "$PKG"
 tar xf "$PKGDIR"/"$CONFIG_TAR" -C "$CFG"
-[ -d "$PKG"/usr/share/doc ] && rm -r "$PKG"/usr/share/doc
-[ -d "$PKG"/usr/share/man ] && rm -r "$PKG"/usr/share/man
+if [ ! -f /tmp/.keepdoc ]; then
+	[ -d "$PKG"/usr/share/doc ] && rm -r "$PKG"/usr/share/doc
+	[ -d "$PKG"/usr/share/man ] && rm -r "$PKG"/usr/share/man
+fi
 [ -d "$PKG"/usr/share/menu ] && rm -r "$PKG"/usr/share/menu
 [ -d "$PKG"/usr/share/lintian ] && rm -r "$PKG"/usr/share/lintian
 	
