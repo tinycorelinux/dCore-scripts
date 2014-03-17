@@ -4,6 +4,8 @@
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
+TCUSER=`cat /etc/sysconfig/tcuser`
+sudo chown "$TCUSER":staff /tmp
 sudo chmod 1777 /tmp
 checkroot
 BUILD=`getBuild`
@@ -90,6 +92,7 @@ cleanup() {
 	[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
 	[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
 	[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
+	[ -f /tmp/.pkgexists ] && sudo rm /tmp/.pkgexists
 	if ls /tmp/*.debdeps > /dev/null 2>&1; then 
 		sudo rm /tmp/*.debdeps
 	fi	
@@ -183,6 +186,13 @@ fi
 
 if [ -f /tmp/.importdep ]; then
 	debGetSceDep "$TARGET"
+fi
+
+if [ -f /tmp/.pkgexists ]; then
+	echo "$TARGET already exists in below dependency sce's, aborting."
+	cat /tmp/.pkgexists
+	cleanup
+	exit 1
 fi
 
 echo "The below packages will be included in "$TARGET".sce."

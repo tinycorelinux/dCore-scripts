@@ -5,6 +5,7 @@ HERE=`pwd`
 [ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
 [ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
 [ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
+[ -f /tmp/.pkgexists ] && sudo rm /tmp/.pkgexists
 [ -f /tmp/"$1".debdeps ] && sudo rm /tmp/"$1".debdeps
 [ -f /etc/sysconfig/tcedir/sce/"$1".sce.dep ] && sudo rm /etc/sysconfig/tcedir/sce/"$1".sce.dep
 
@@ -55,11 +56,15 @@ echo " "
 
 ## Create deb package lists from depdendency sce's
 if [ -f /tmp/.scedeps ]; then
+unset PKGEXISTS
 	for I in `cat /tmp/.scedeps`; do 
 
 		if [ -d /tmp/tcloop/"$I" ]; then
 			DIR1=/tmp/tcloop/"$I"
 			# yes n | cp -ai "$DIR1"/* "$OUTDIR"/ 2>/dev/null
+			if grep "^$1:" "$DIR1"/usr/local/sce/"$I"/"$I".md5sum > /dev/null 2>&1; then
+				echo "$I" >> /tmp/.pkgexists
+			fi
 			cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: >> /tmp/.scedebs
 			cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: > /tmp/"$I".debs
 		else
@@ -67,6 +72,9 @@ if [ -f /tmp/.scedeps ]; then
 		  	[ -d "$DIR1" ] || mkdir -p "$DIR1"
 		  	sudo mount /etc/sysconfig/tcedir/sce/"$I".sce "$DIR1" > /dev/null 2>&1
 		  	# yes n | cp -ai "$DIR1"/* "$OUTDIR"/ > /dev/null 2>&1
+			if grep "^$1:" "$DIR1"/usr/local/sce/"$I"/"$I".md5sum > /dev/null 2>&1; then
+				echo "$I" >> /tmp/.pkgexists
+			fi
 		  	cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: >> /tmp/.scedebs
 		  	cat "$DIR1"/usr/local/sce/"$I"/"$I".md5sum | cut -f1 -d: > /tmp/"$I".debs
 		  	
