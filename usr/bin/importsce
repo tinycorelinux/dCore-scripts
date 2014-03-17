@@ -4,7 +4,8 @@
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
-
+TCEDIR=`readlink /etc/sysconfig/tcedir`
+SCEBOOTLST=""$TCEDIR"/sceboot.lst"
 checknotroot
 BUILD=`getBuild`
 
@@ -61,12 +62,23 @@ do
 		d) DEPS=TRUE ;;
 		r) RAM=TRUE ;;
 		s) SIZE=TRUE ;;
-		b) FLAGS="$FLAGS"b ;;
-		o) FLAGS="$FLAGS"o ;;
+		b) FLAGS="$FLAGS"b ; ONBOOT=TRUE ;;
+		o) FLAGS="$FLAGS"o ; ONDEMAND=TRUE ;;
 		f) PACKAGELIST=TRUE ;;
 		*) exit 1 ;;
 	esac
 done
+
+if grep -i "^ONBOOT=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+	ONBOOT=TRUE
+	FLAGS="$FLAGS"b
+fi
+
+if grep -i "^ONDEMAND=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+	ONDEMAND=TRUE
+	FLAGS="$FLAGS"o
+fi
+
 shift `expr $OPTIND - 1`
 [ "$FLAGS" ] && FLAGS="-$FLAGS"
 
@@ -101,7 +113,6 @@ elif [ "$KEEPDOC" == "TRUE" ]; then
 	touch /tmp/.keepdoc
 fi
 
-
 MS_MNTS=`mount|awk '$5~/fat|vfat|msdos|ntfs/{printf "%s ",$1}'`
 REALDIR=`readlink /etc/sysconfig/tcedir`
 MNTDEV=`df "$REALDIR" | tail -n1 | cut -f1 -d" "`
@@ -116,6 +127,43 @@ case "$MS_MNTS" in
 
 esac
 
+echo " "
+
+if [ "$ONBOOT" == "TRUE" ]; then
+	echo ""$TARGET" will be entered into "$SCEBOOTLST"."
+	echo " "
+	sleep .5
+fi
+
+if [ "$ONDEMAND" == "TRUE" ]; then
+	echo ""$TARGET" will be added to ondemand."
+	echo " "
+	sleep .5
+fi
+
+if [ -f /tmp/.importdep ]; then
+	echo "You can choose existing sce's for dependencies of "$TARGET"."
+	echo " "
+	sleep .5
+fi
+
+if [ -f /tmp/.importsize ]; then
+	echo "Size calculations for "$TARGET" and it's depenencies will be done."
+	echo " "
+	sleep .5
+fi
+
+if [ -f /tmp/.importram ]; then
+	echo "RAM will be used for the unpacking of files."
+	echo " "
+	sleep .5
+fi
+
+if [ -f /tmp/.keepdoc ]; then
+	echo "Doc and man pages will not be purged."
+	echo " "
+	sleep .5
+fi
 
 
 
