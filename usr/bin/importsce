@@ -91,24 +91,28 @@ fi
 
 if grep -i "^DEPS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	touch /tmp/.importdep
+	echo "Using the -d option."
 elif [ "$DEPS" == "TRUE" ]; then
 	touch /tmp/.importdep
 fi
 
 if grep -i "^SIZE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	touch /tmp/.importsize
+	echo "Using the -s option."
 elif [ "$SIZE" == "TRUE" ]; then
 	touch /tmp/.importsize
 fi
 
 if grep -i "^RAM=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	touch /tmp/.importram
+	echo "Using the -r option."
 elif [ "$RAM" == "TRUE" ]; then
 	touch /tmp/.importram
 fi
 
 if grep -i "^KEEPDOC=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	touch /tmp/.keepdoc
+	echo "Using the -k option."
 elif [ "$KEEPDOC" == "TRUE" ]; then
 	touch /tmp/.keepdoc
 fi
@@ -128,44 +132,6 @@ case "$MS_MNTS" in
 esac
 
 echo " "
-
-if [ "$ONBOOT" == "TRUE" ]; then
-	echo ""$TARGET" will be entered into "$SCEBOOTLST"."
-	echo " "
-	sleep .5
-fi
-
-if [ "$ONDEMAND" == "TRUE" ]; then
-	echo ""$TARGET" will be added to ondemand."
-	echo " "
-	sleep .5
-fi
-
-if [ -f /tmp/.importdep ]; then
-	echo "You can choose existing sce's for dependencies of "$TARGET"."
-	echo " "
-	sleep .5
-fi
-
-if [ -f /tmp/.importsize ]; then
-	echo "Size calculations for "$TARGET" and it's depenencies will be done."
-	echo " "
-	sleep .5
-fi
-
-if [ -f /tmp/.importram ]; then
-	echo "RAM will be used for the unpacking of files."
-	echo " "
-	sleep .5
-fi
-
-if [ -f /tmp/.keepdoc ]; then
-	echo "Doc and man pages will not be purged."
-	echo " "
-	sleep .5
-fi
-
-
 
 if [ -z "$TARGET" ]
 then
