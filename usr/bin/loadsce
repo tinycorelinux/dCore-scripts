@@ -275,7 +275,7 @@ then
 		
 		fi
 		for I in "$DEPLIST"; do	
-			TARGETAPP="$I"
+			TARGETAPP=`echo "$I" | tr -d ' '`
 			#APPNAME=${TARGETAPP%%.sce}
 			#if [ ${TARETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
 			processAPP
