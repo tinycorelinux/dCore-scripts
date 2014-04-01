@@ -274,7 +274,7 @@ then
 			DEPLIST=" $THISSCENAME "
 		
 		fi
-		for I in "$DEPLIST"; do	
+		for I in `echo "$DEPLIST"`; do	
 			TARGETAPP=`echo "$I" | tr -d ' '`
 			#APPNAME=${TARGETAPP%%.sce}
 			#if [ ${TARETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
