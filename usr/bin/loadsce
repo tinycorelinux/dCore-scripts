@@ -303,7 +303,7 @@ else
 
 	done # Finish the for-loop for multiple extensions 
 		for I in `echo "$DEPLIST"`; do
-			TARGETAPP="$I"
+			TARGETAPP=`echo "$I" | tr -d ' '`
 			#APPNAME=${TARGETAPP%%.sce}
 			#if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
 			processAPP
