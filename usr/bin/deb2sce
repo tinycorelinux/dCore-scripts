@@ -1,5 +1,6 @@
 #!/bb/ash
 # (c) Robert Shingledecker 2012
+# Contributions by Jason Williams
 . /etc/init.d/tc-functions
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
@@ -14,6 +15,20 @@ if [ "$BUILD" == "x86" ]; then
 elif [ "$BUILD" == "armv7" ]; then
 	DEBBUILD="armhf"
 fi
+
+if [ -f /usr/share/doc/tc/distro.txt ]; then
+	DISTRO=`cat /usr/share/doc/tc/distro.txt`
+else
+	DISTRO=debian
+fi
+
+if [ -f /usr/share/doc/tc/repo.txt ]; then
+	REPO=`cat /usr/share/doc/tc/repo.txt`
+else
+	REPO=wheezy
+fi
+
+
 TCEDIR=/etc/sysconfig/tcedir
 
 setupStartupScript() {
@@ -123,7 +138,7 @@ read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/$DEBINX"
 echo "Using Package Index: $DEBINX"
 read MIRROR < /opt/debmirror
-echo "Using Debian Mirror: $MIRROR"
+echo "Using "$DISTRO" Mirror: $MIRROR"
 echo
 unset META
 #RESULTS="$(debQuery "$TARGET")"
@@ -134,7 +149,7 @@ if [ -s /tmp/.targetfile ]; then
 	META="$TARGET"
 
 elif sudo grep -q "^$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
-	echo "$TARGET is a meta package of related Debian ones."
+	echo "$TARGET is a meta package of related "$DISTRO" ones."
 	META="$TARGET"
 elif sudo grep "^Package: $TARGET$" /tmp/debinx.* > /dev/null 2>&1; then
 	EXTRAINX=`grep "^Package: $TARGET$" /tmp/debinx.* | head -n 1 | cut -f1 -d:`
@@ -142,14 +157,14 @@ elif sudo grep "^Package: $TARGET$" /tmp/debinx.* > /dev/null 2>&1; then
 	EXTRAMIRROR=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $1}'`
 	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
 	EXTRAPOOL=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $3}'`
-	echo "$TARGET is a Debian `echo "$EXTRAREPO"` `echo "$EXTRAPOOL"` package from `echo "$EXTRAMIRROR"`."
+	echo "$TARGET is a "$DISTRO" `echo "$EXTRAREPO"` `echo "$EXTRAPOOL"` package from `echo "$EXTRAMIRROR"`."
 elif sudo grep "^$TARGET:" /tmp/.pkgprebuilt > /dev/null 2>&1; then
 	echo "$TARGET is a dCore premade package."
 	META="$TARGET"
 elif sudo grep -q "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
-	echo "$TARGET is a standard Debian wheezy package."
+	echo "$TARGET is a standard "$DISTRO" "$REPO" package."
 else
-	echo "$TARGET is not a standard Debian, dCore precompiled, or meta package, exiting.."
+	echo "$TARGET is not a standard "$DISTRO", dCore precompiled, or meta package, exiting.."
 	cleanup 
 	exit 1
 fi

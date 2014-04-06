@@ -1,5 +1,6 @@
 #!/bb/ash
 # (c) Robert Shingledecker 2012
+# Contributions by Jason Williams 
 . /etc/init.d/tc-functions
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
@@ -21,6 +22,20 @@ zsyncDebianIndex()
 
 unset DEBINX MIRROR
 TCEDIR=/etc/sysconfig/tcedir
+
+if [ -f /usr/share/doc/tc/distro.txt ]; then
+	DISTRO=`cat /usr/share/doc/tc/distro.txt`
+else
+	DISTRO=debian
+fi
+
+if [ -f /usr/share/doc/tc/repo.txt ]; then
+	REPO=`cat /usr/share/doc/tc/repo.txt`
+else
+	REPO=wheezy
+fi
+
+echo "$DISTRO"
 BUILD="$1"
 [ -z "$BUILD" ] && BUILD=`getBuild`
 case $BUILD in
@@ -37,9 +52,15 @@ armv7 )
 	;;
 x86 )	
 	BINARY=binary-i386
-	DEBINX=debian_wheezy_main_i386_Packages
-	zsyncDebianIndex
-	MIRROR1=http://ftp.us.debian.org/debian
+	if [ "$DISTRO" == "debian" ]; then
+		DEBINX=debian_wheezy_main_i386_Packages
+		zsyncDebianIndex
+		MIRROR1=http://ftp.us.debian.org/debian
+	elif [ "$DISTRO" == "ubuntu" ]; then
+		DEBINX=ubuntu_saucy_main_i386_Packages
+		zsyncDebianIndex
+		MIRROR1=http://us.archive.ubuntu.com/ubuntu
+	fi
 	;;
 esac
 read MIRROR 2>/dev/null < /opt/debmirror 2>/dev/null || MIRROR="$MIRROR1"
@@ -61,31 +82,31 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 		if [ ! -z $(cat /opt/debextra/"$I" | awk '{print $3}') ]; then
 			MIR=`cat /opt/debextra/"$I" | awk '{print $1}'`
 			DIST=`cat /opt/debextra/"$I" | awk '{print $2}'`
-			REPO=`cat /opt/debextra/"$I" | awk '{print $3}'` 
-			F="/dists/"$DIST"/"$REPO"/"$BINARY"/"
+			POOL=`cat /opt/debextra/"$I" | awk '{print $3}'` 
+			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
 			if wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
 				echo "Using the repo "$MIR" "$DIST" "$REPO""
-			elif wget -s "$MIR"/"$DIST"/"$REPO"/Packages.bz2 > /dev/null 2>&1; then
-				wget -q -O - "$MIR"/"$DIST"/"$REPO"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
+			elif wget -s "$MIR"/"$DIST"/"$POOL"/Packages.bz2 > /dev/null 2>&1; then
+				wget -q -O - "$MIR"/"$DIST"/"$POOL"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.bz2 > /dev/null 2>&1; then
 				echo "Using the repo mirror "$MIR""
 			elif wget -s "$MIR""$F"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.gz | gunzip > /tmp/debinx."$I"
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
-			elif wget -s "$MIR"/"$DIST"/"$REPO"/Packages.gz > /dev/null 2>&1; then
-				wget -q -O - "$MIR"/"$DIST"/"$REPO"/Packages.gz | gunzip > /tmp/debinx."$I"
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
+			elif wget -s "$MIR"/"$DIST"/"$POOL"/Packages.gz > /dev/null 2>&1; then
+				wget -q -O - "$MIR"/"$DIST"/"$POOL"/Packages.gz | gunzip > /tmp/debinx."$I"
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.gz | gunzip > /tmp/debinx."$I"
 				echo "Using the repo mirror "$MIR""
 			elif wget -s "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
 				wget -O /tmp/debinx."$I" -cq "$MIR""$F"/Packages.gen 
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
-			elif wget -s "$MIR"/"$DIST"/"$REPO"/Packages.gen > /dev/null 2>&1; then
-				wget -O /tmp/debinx."$I" -cq "$MIR"/"$DIST"/"$REPO"/Packages.gen 
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
+			elif wget -s "$MIR"/"$DIST"/"$POOL"/Packages.gen > /dev/null 2>&1; then
+				wget -O /tmp/debinx."$I" -cq "$MIR"/"$DIST"/"$POOL"/Packages.gen 
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.gen > /dev/null 2>&1; then
 				wget -O /tmp/debinx."$I" "$MIR"/Packages.gen 
 				echo "Using the repo mirror "$MIR""			
@@ -99,38 +120,38 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 		else
 			MIR=`cat /opt/debextra/"$I" | awk '{print $1}'`
 			DIST="wheezy"
-			REPO=`cat /opt/debextra/"$I" | awk '{print $2}'` 
-			F="/dists/"$DIST"/"$REPO"/"$BINARY"/"
+			POOL=`cat /opt/debextra/"$I" | awk '{print $2}'` 
+			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
 			if wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
-			elif wget -s "$MIR"/"$REPO"/Packages.bz2 > /dev/null 2>&1; then
-				wget -q -O - "$MIR"/"$REPO"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
+			elif wget -s "$MIR"/"$POOL"/Packages.bz2 > /dev/null 2>&1; then
+				wget -q -O - "$MIR"/"$POOL"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
 				echo "Using the repo mirror "$MIR""
 			elif wget -s "$MIR""$F"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.gz | gunzip > /tmp/debinx."$I"
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
-			elif wget -s "$MIR"/"$REPO"/Packages.gz > /dev/null 2>&1; then
-				wget -q -O - "$MIR"/"$REPO"/Packages.gz | gunzip > /tmp/debinx."$I"
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
+			elif wget -s "$MIR"/"$POOL"/Packages.gz > /dev/null 2>&1; then
+				wget -q -O - "$MIR"/"$POOL"/Packages.gz | gunzip > /tmp/debinx."$I"
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.gz | gunzip > /tmp/debinx."$I"
 				echo "Using the repo mirror "$MIR""
 			elif wget -s "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
 				wget -O /tmp/debinx."$I" -cq "$MIR""$F"/Packages.gen 
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
-			elif wget -s "$MIR"/"$REPO"/Packages.gen > /dev/null 2>&1; then
-				wget -O /tmp/debinx."$I" "$MIR"/"$REPO"/Packages.gen 
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
+			elif wget -s "$MIR"/"$POOL"/Packages.gen > /dev/null 2>&1; then
+				wget -O /tmp/debinx."$I" "$MIR"/"$POOL"/Packages.gen 
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.gen > /dev/null 2>&1; then
 				wget -O /tmp/debinx."$I" -cq "$MIR"/Packages.gen 
 				echo "Using the repo mirror "$MIR""
 			else
 				echo " "
-				echo -n "WARNING:   Repo "$MIR" "$DIST" "$REPO" is unavailable."
+				echo -n "WARNING:   Repo "$MIR" "$DIST" "$POOL" is unavailable."
 				echo " "
 				sleep 5
 			fi
@@ -140,9 +161,9 @@ fi
 
 # Test mirror
 if wget -s "$MIRROR" > /dev/null 2>&1; then
-	echo "Using the repo "$MIRROR" wheezy main"
+	echo "Using the repo "$MIRROR" "$REPO" main"
 	echo "$MIRROR" > /opt/debmirror
 else
-	echo "The wheezy main repo of mirror "$MIRROR" is not available, exiting.."  
+	echo "The "$REPO" main repo of mirror "$MIRROR" is not available, exiting.."  
 exit 1
 fi 
