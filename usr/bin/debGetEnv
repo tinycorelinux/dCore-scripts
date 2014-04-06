@@ -86,7 +86,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
 			if wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
-				echo "Using the repo "$MIR" "$DIST" "$REPO""
+				echo "Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/"$DIST"/"$POOL"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/"$DIST"/"$POOL"/Packages.bz2 | bunzip2 > /tmp/debinx."$I"
 				echo "Using the repo "$MIR" "$DIST" "$POOL""
@@ -113,7 +113,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 
 			else
 				echo " "
-				echo -n "WARNING:   Repo "$MIR"  "$DIST"  "$REPO" is unavailable."
+				echo -n "WARNING:   Repo "$MIR"  "$DIST"  "$POOL" is unavailable."
 				echo " "
 				sleep 5
 			fi
@@ -161,9 +161,9 @@ fi
 
 # Test mirror
 if wget -s "$MIRROR" > /dev/null 2>&1; then
-	echo "Using the repo "$MIRROR" "$REPO" main"
+	echo "Using the repo "$MIRROR" "$DISTRO" "$REPO" main"
 	echo "$MIRROR" > /opt/debmirror
 else
-	echo "The "$REPO" main repo of mirror "$MIRROR" is not available, exiting.."  
+	echo "The "$DISTRO" "$REPO" main repo of mirror "$MIRROR" is not available, exiting.."  
 exit 1
 fi 
