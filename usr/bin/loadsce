@@ -62,8 +62,12 @@ processAPP(){
 
 	#THISAPP=`basename $APPNAME .sce`
 	if grep "^$APPNAME:" /tmp/.debinstalled > /dev/null 2>&1; then
-		echo "$APPNAME is already installed!"
-		continue
+		if [ "$BOOTING" ]; then
+			continue
+		else
+			echo ""$APPNAME" is already installed!"
+			continue
+		fi
 	fi
 	if [ -d /tmp/tcloop/"$APPNAME" ]; then
 		if [ "$BOOTING" ]; then
