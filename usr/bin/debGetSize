@@ -31,7 +31,22 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
 
 wget -O /tmp/.importsizelist "$PREBUILTMIRROR"/.importsizelist > /dev/null 2>&1
 
-getdsize() {
+
+getdsize_main() {
+> /tmp/"$1".pkgdsizelist
+grep -B 1 -A 6 "^Package: $1$" "$DEBINX" > /tmp/"$1".pkgdsizelist
+grep "^Size:" /tmp/"$1".pkgdsizelist | cut -f2 -d":"
+rm /tmp/"$1".pkgdsizelist
+}
+
+getisize_main() {
+> /tmp/"$1".pkgisizelist
+grep -B 1 -A 6 "^Package: $1$" "$DEBINX" > /tmp/"$1".pkgisizelist
+grep "^Installed-Size:" /tmp/"$1".pkgisizelist | cut -f2 -d":"
+rm /tmp/"$1".pkgisizelist
+}
+
+getdsize_extra() {
 	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
 	BEGIN {
 		RS=""
@@ -60,7 +75,7 @@ getdsize() {
 	} ' < "$DEBINX1"
 }
 
-getisize() {
+getisize_extra() {
 	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
 	BEGIN {
 		RS=""
@@ -98,20 +113,21 @@ if grep ^"$I": /tmp/.importsizelist >/dev/null; then
 	DSIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $2}'`
 	ISIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $3}'`
    	[ -f "$DEBDIR"/"$I".tar.gz ] || echo $DSIZE >> /tmp/.importdsize
+	echo $DSIZE >> /tmp/.importarchsize
    	echo $ISIZE >> /tmp/.importisize
 else  
    	if grep "^Package: $I$" /tmp/debinx.* > /dev/null 2>&1; then 
        		DEBINX1=`sudo grep "^Package: $I$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
        		read FULLPATH < /tmp/work/"$I"
        		THISDEB="${FULLPATH##*/}"
-   		DSIZEBYTE=`getdsize "$I"`
+   		DSIZEBYTE=`getdsize_extra "$I"`
 		if [ ! -z "$DSIZEBYTE" ]; then 
 			if [ "$DSIZEBYTE" -eq "$DSIZEBYTE" ]; then 
    				echo "$DSIZEBYTE" >> /tmp/.importarchsize
 			fi
 		fi
    		[ -f "$DEBDIR"/"$THISDEB" ] || echo "$DSIZEBYTE" >> /tmp/.importdsize
-   		ISIZEKB=`getisize "$I"` 
+   		ISIZEKB=`getisize_extra "$I"` 
 		if [ ! -z "$ISIZEKB" ]; then 
 			if [ "$ISIZEKB" -eq "$ISIZEKB" ]; then 
    				echo $((ISIZEKB * 1024)) >> /tmp/.importisize
@@ -125,14 +141,14 @@ else
 	else
 		read FULLPATH < /tmp/work/"$I"
        		THISDEB="${FULLPATH##*/}"
-   		DSIZEBYTE=`getdsize "$I"`
+   		DSIZEBYTE=`getdsize_main "$I"`
 		if [ ! -z "$DSIZEBYTE" ]; then 
 			if [ "$DSIZEBYTE" -eq "$DSIZEBYTE" ]; then 
    				echo "$DSIZEBYTE" >> /tmp/.importarchsize
 			fi
    		fi
    		[ -f "$DEBDIR"/"$THISDEB" ] || echo "$DSIZEBYTE" >> /tmp/.importdsize
-   		ISIZEKB=`getisize "$I"` 
+   		ISIZEKB=`getisize_main "$I"` 
 		if [ ! -z "$ISIZEKB" ]; then 
 			if [ "$ISIZEKB" -eq "$ISIZEKB" ]; then 
    				echo $((ISIZEKB * 1024)) >> /tmp/.importisize

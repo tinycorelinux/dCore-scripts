@@ -2,16 +2,25 @@
 # (c) Robert Shingledecker 2012
 . /etc/init.d/tc-functions
 
-PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
-export PATH
+
+
 TCEDIR=/etc/sysconfig/tcedir
-BUILD=`getBuild`
+BUILD=`cat /usr/share/doc/tc/arch.txt`
 if [ "$BUILD" == "x86" ]; then
 	DEBBUILD="i386"
 elif [ "$BUILD" == "armv7" ]; then
 	DEBBUILD="armhf"
 fi
-getDeps() {
+
+getDeps1() {
+> /tmp/"$1".pkglist
+grep -B 1 -A 6 "^Package: $1$" "$DEBINX" > /tmp/"$1".pkglist
+grep "^Depends:" /tmp/"$1".pkglist | cut -f2 -d":" | tr -d ',' | tr -d '|'
+grep "^Filename:" /tmp/"$1".pkglist | cut -f2 -d":" | tr -d ' ' > /tmp/work/"$1"
+rm /tmp/"$1".pkglist
+}
+
+getDeps2() {
 	awk -v package="Package: $1" -v build="$DEBBUILD" -v location="/tmp/work/$1" '
 	BEGIN {
 		RS=""
@@ -66,7 +75,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 
   if grep "Package: "$1"$" /tmp/debinx.* > /dev/null; then
     DEBINX=`grep "^Package: "$1"$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
-    DEPS="$(getDeps $1)"
+    DEPS="$(getDeps2 $1)"
     #[ ! -z "$DEPS" ] && echo " "
     echo "$DEPS"
     exit
@@ -74,7 +83,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
     # MIR=`cat /opt/debmirror`
     read DEBINX < /tmp/debinx
     DEBINX="/etc/sysconfig/tcedir/$DEBINX"
-    DEPS="$(getDeps $1)"
+    DEPS="$(getDeps1 $1)"
     [ -z "$DEPS" ] && exit 1
     echo "$DEPS"
   fi
@@ -84,7 +93,7 @@ else
     #MIR=`cat /opt/debmirror`
     read DEBINX < /tmp/debinx
     DEBINX="/etc/sysconfig/tcedir/$DEBINX"
-    DEPS="$(getDeps $1)"
+    DEPS="$(getDeps1 $1)"
     [ -z "$DEPS" ] && exit 1
     echo "$DEPS"
 fi

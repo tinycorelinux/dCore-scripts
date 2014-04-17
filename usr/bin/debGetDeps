@@ -4,11 +4,10 @@
 # getDeps morphed from tree.sh by Robert Shingledecker - Nov 2012
 . /etc/init.d/tc-functions
 
-PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
-export PATH
+
 
 TCEDIR="/etc/sysconfig/tcedir"
-BUILD=`getBuild`
+#BUILD=`getBuild`
 
 
 getDeps()
