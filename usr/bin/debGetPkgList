@@ -5,7 +5,7 @@
 
 
 TCEDIR=/etc/sysconfig/tcedir
-BUILD=`cat /usr/share/doc/tc/arch.txt`
+BUILD=`getBuild`
 if [ "$BUILD" == "x86" ]; then
 	DEBBUILD="i386"
 elif [ "$BUILD" == "armv7" ]; then
@@ -73,8 +73,8 @@ then
 fi
 if ls -A /opt/debextra > /dev/null 2>&1; then
 
-  if grep "Package: "$1"$" /tmp/debinx.* > /dev/null; then
-    DEBINX=`grep "^Package: "$1"$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
+  if grep "^Package: "$1"$" /tmp/debinx.* > /dev/null; then
+    DEBINX=`grep -l "^Package: $1$" /tmp/debinx.* | head -n 1`
     DEPS="$(getDeps2 $1)"
     #[ ! -z "$DEPS" ] && echo " "
     echo "$DEPS"

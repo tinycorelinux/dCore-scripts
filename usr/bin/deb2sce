@@ -151,7 +151,7 @@ elif sudo grep -q "^$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "
 	echo "$TARGET is a meta package of related "$DISTRO" ones."
 	META="$TARGET"
 elif sudo grep "^Package: $TARGET$" /tmp/debinx.* > /dev/null 2>&1; then
-	EXTRAINX=`grep "^Package: $TARGET$" /tmp/debinx.* | head -n 1 | cut -f1 -d:`
+	EXTRAINX=`grep -l "^Package: $TARGET$" /tmp/debinx.* | head -n 1`
 	MIRRORFILE=`echo "$EXTRAINX" | sed 's:/tmp/debinx.::'`
 	EXTRAMIRROR=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $1}'`
 	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
