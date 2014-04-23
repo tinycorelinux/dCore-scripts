@@ -98,6 +98,7 @@ if grep -i "^DEPS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	echo "Using the -d option."
 elif [ "$DEPS" == "TRUE" ]; then
 	touch /tmp/.importdep
+	echo "Using the -d option."
 fi
 
 if grep -i "^SIZE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
@@ -105,6 +106,7 @@ if grep -i "^SIZE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	echo "Using the -s option."
 elif [ "$SIZE" == "TRUE" ]; then
 	touch /tmp/.importsize
+	echo "Using the -s option."
 fi
 
 if grep -i "^RAM=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
@@ -112,6 +114,7 @@ if grep -i "^RAM=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	echo "Using the -r option."
 elif [ "$RAM" == "TRUE" ]; then
 	touch /tmp/.importram
+	echo "Using the -r option."
 fi
 
 if grep -i "^KEEPDOC=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
@@ -119,6 +122,7 @@ if grep -i "^KEEPDOC=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	echo "Using the -k option."
 elif [ "$KEEPDOC" == "TRUE" ]; then
 	touch /tmp/.keepdoc
+	echo "Using the -k option."
 fi
 
 if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
@@ -126,6 +130,7 @@ if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; the
 	echo "Using the -n option."
 elif [ "$NONINTERACTIVE" == "TRUE" ]; then
 	touch /tmp/.importinteractive
+	echo "Using the -n option."
 fi
 
 MS_MNTS=`mount|awk '$5~/fat|vfat|msdos|ntfs/{printf "%s ",$1}'`
