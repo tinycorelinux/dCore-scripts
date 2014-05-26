@@ -19,7 +19,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"importsce -s"' to list sizes of packages to be fetched and installed."
 	echo "'"importsce -d"' to make use of existing SCE packages as dependencies.  A select menu will appear."
 	echo "'"importsce -o"' to add resulting SCE package to ondemand."
-	echo "'"importsce -N"' for non interactive mode."
+	echo "'"importsce -n"' for non interactive mode."
 exit 1
 fi
 
