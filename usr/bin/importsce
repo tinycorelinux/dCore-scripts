@@ -19,7 +19,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"importsce -s"' to list sizes of packages to be fetched and installed."
 	echo "'"importsce -d"' to make use of existing SCE packages as dependencies.  A select menu will appear."
 	echo "'"importsce -o"' to add resulting SCE package to ondemand."
-	echo "'"importsce -n"' for non interactive mode."
+	echo "'"importsce -N"' for non interactive mode."
 exit 1
 fi
 
@@ -174,7 +174,7 @@ if [ "$PACKAGELIST" ] && [ -f "$TARGETFILE" ]; then
   fi
 elif sudo grep -i "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
   if [ -f /tmp/.importinteractive ]; then
-   	DEB=`{ sudo grep -i "^Package: $TARGET$" /tmp/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}' ; sudo grep -i "^$TARGET:" /tmp/.depfile | cut -f1 -d: ; sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt | cut -f1 -d: ; }`
+   	DEB=`{ sudo grep -i "^Package: $TARGET$" /tmp/debinx* | awk '{print $2}' || sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}' || sudo grep -i "^$TARGET:" /tmp/.depfile | cut -f1 -d: || sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt | cut -f1 -d: ; }`
   	if [ -z "$DEB" ]; then
 		{ sudo grep -i "^Package: $TARGET" /tmp/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   		read DEB < /tmp/select.ans                                                                           

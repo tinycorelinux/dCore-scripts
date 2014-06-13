@@ -190,11 +190,15 @@ cd "$TARGET"
 > /tmp/import.log	
 
 if [ -s /tmp/.targetfile ]; then
+	echo "Gathering dependency info.."
 	for I in `cat /tmp/.targetfile`; do 
-		debGetDeps "$I"
-	done
+		debGetDeps "$I" > /dev/null 2>&1
+	done &
+	/usr/bin/rotdash $!
 else
-	debGetDeps "$TARGET"
+	echo "Gathering dependency info.."
+	debGetDeps "$TARGET" > /dev/null 2>&1 &
+	/usr/bin/rotdash $!
 fi
 
 if [ -f /tmp/.importdep ]; then
