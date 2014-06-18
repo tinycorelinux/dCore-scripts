@@ -25,10 +25,14 @@ TCEDIR=/etc/sysconfig/tcedir
 
 if [ -f /usr/share/doc/tc/distro.txt ]; then
 	DISTRO=`cat /usr/share/doc/tc/distro.txt`
+else
+	DISTRO=debian
 fi
 
 if [ -f /usr/share/doc/tc/repo.txt ]; then
 	REPO=`cat /usr/share/doc/tc/repo.txt`
+else
+	REPO=wheezy
 fi
 
 echo "$DISTRO"
@@ -42,7 +46,7 @@ armv6 )
 	;;
 armv7 )
 	BINARY=binary-armhf
-	DEBINX=debian_wheezy_main_armhf_Packages
+	DEBINX=debian_"$REPO"_main_armhf_Packages
 	zsyncDebianIndex
 	MIRROR1=http://ftp.us.debian.org/debian
 	;;
@@ -115,7 +119,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			fi
 		else
 			MIR=`cat /opt/debextra/"$I" | awk '{print $1}'`
-			DIST="jessie"
+			DIST="$REPO"
 			POOL=`cat /opt/debextra/"$I" | awk '{print $2}'` 
 			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
 			if wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
