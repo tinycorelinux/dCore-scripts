@@ -107,6 +107,7 @@ echo -n "${BLUE}Starting udev daemon for hotplug support...${NORMAL}"
 #/sbin/udevadm trigger --action=add 2>/dev/null >/dev/null &
 /sbin/udevadm trigger --action=add 2>&1 >/dev/null &
 [ -x /etc/init.d/tc-mkdev ] && /etc/init.d/tc-mkdev
+udevadm settle &&
 /usr/bin/rotdash $!
 echo "${GREEN}Done.${NORMAL}"
 
@@ -585,6 +586,9 @@ fi
 /sbin/loadcpufreq 2>/dev/null &
 
 /opt/bootsync.sh
+
+rm /etc/udev/rules.d/60-persistent-storage.rules
+/sbin/udevadm trigger  2>&1 >/dev/null &
 
 [ -n "$NOAUTOLOGIN" ] && echo "booting" > /etc/sysconfig/noautologin
 
