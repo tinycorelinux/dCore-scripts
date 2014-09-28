@@ -6,6 +6,6 @@ KERNEL!="sr[0-9]*|xvd*", GOTO="cdrom_end"
 ENV{DEVTYPE}!="disk", GOTO="cdrom_end"
 
 # unconditionally tag device as CDROM
-KERNEL=="sr[0-9]*", ENV{ID_CDROM}="1"
+KERNEL=="sr[0-9]*", ENV{ID_CDROM}="1", GROUP="staff"
 
 LABEL="cdrom_end"
