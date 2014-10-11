@@ -107,23 +107,48 @@ echo -n "${BLUE}Starting udev daemon for hotplug support...${NORMAL}"
 #/sbin/udevadm trigger --action=add 2>/dev/null >/dev/null &
 /sbin/udevadm trigger --action=add 2>&1 >/dev/null &
 [ -x /etc/init.d/tc-mkdev ] && /etc/init.d/tc-mkdev
-udevadm settle &&
 /usr/bin/rotdash $!
 echo "${GREEN}Done.${NORMAL}"
 
 [ -n "$WAITUSB" ] && (
 	case $WAITUSB in
-		*:*) dev=${WAITUSB#*:}
-		timeout=$((${WAITUSB%:*} * 4))
-		while [ $timeout -gt 0 ]; do
-			echo -en "${BLUE}\rWaiting as requested ... ${NORMAL}$(($timeout / 4)) "
-			timeout=$(($timeout - 1))
-			sleep 0.25
-			blkid -lt $dev >/dev/null && timeout=0
-		done
-		echo
+		*LABEL*) 
+			timeout=${WAITUSB%:*} 
+			ID=${WAITUSB#*:}
+			PART=${ID#*=}
+			mkdir /tmp/testusbdevice
+			while [ $timeout -gt 0 ]; do
+				echo -en "${BLUE}\rWaiting as requested ... ${NORMAL} $timeout "
+				timeout=$(($timeout - 1))
+				DEV1=$(blkid -L "$PART")
+				sleep 1
+				[ -n "$DEV1" ] || continue
+				/bb/mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
+	  				
+			done
+			umount "$DEV1"
+			rmdir /tmp/testusbdevice
 		;;
-		*) sleep "$WAITUSB" ;;
+		*UUID*) 
+			timeout=${WAITUSB%:*}
+			ID=${WAITUSB#*:}
+			PART=${ID#*=}
+			mkdir /tmp/testusbdevice
+
+			while [ $timeout -gt 0 ]; do
+				echo -en "${BLUE}\rWaiting as requested ... ${NORMAL} $timeout "
+				timeout=$(($timeout - 1))
+				DEV1=$(blkid -U "$PART")
+				sleep 1
+				[ -n "$DEV1" ] || continue
+				/bb/mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
+	  				
+			done
+			umount "$DEV1"
+			rmdir /tmp/testusbdevice
+		;;
+		*) sleep "$WAITUSB" 
+		;;	
 	esac
 )
 
@@ -588,7 +613,15 @@ fi
 /opt/bootsync.sh
 
 rm /etc/udev/rules.d/60-persistent-storage.rules
-/sbin/udevadm trigger  2>&1 >/dev/null &
+/sbin/udevadm trigger  2>&1 >/dev/null &&
+
+/bb/addgroup "$USER" cdrom
+/bb/addgroup "$USER" tty
+/bb/addgroup "$USER" dialout
+/bb/addgroup "$USER" audio
+/bb/addgroup "$USER" video
+/bb/addgroup "$USER" plugdev
+
 
 [ -n "$NOAUTOLOGIN" ] && echo "booting" > /etc/sysconfig/noautologin
 
