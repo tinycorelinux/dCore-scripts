@@ -128,6 +128,7 @@ echo "${GREEN}Done.${NORMAL}"
 			done
 			umount "$DEV1"
 			rmdir /tmp/testusbdevice
+			echo
 		;;
 		*UUID*) 
 			timeout=${WAITUSB%:*}
@@ -146,6 +147,7 @@ echo "${GREEN}Done.${NORMAL}"
 			done
 			umount "$DEV1"
 			rmdir /tmp/testusbdevice
+			echo
 		;;
 		*) sleep "$WAITUSB" 
 		;;	
