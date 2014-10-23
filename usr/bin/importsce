@@ -100,6 +100,9 @@ if grep -i "^DEPS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 elif [ "$DEPS" == "TRUE" ]; then
 	touch /tmp/.importdep
 	echo "Using the -d option."
+elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
+	touch /tmp/.importdep
+	echo "Existing dep file found and will be used."
 fi
 
 if grep -i "^SIZE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then

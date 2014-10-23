@@ -1,9 +1,11 @@
 #!/bin/sh
+# (c) Jason Williams 2013
 . /etc/init.d/tc-functions
 
 > /tmp/.importarchsize
 > /tmp/.importdsize
 > /tmp/.importisize
+> /tmp/.oldsize
 
 DEBDIR="/etc/sysconfig/tcedir/import/debs"
 UNPACKDIR=/etc/sysconfig/tcedir/import/
@@ -166,12 +168,14 @@ DSIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}'
 ISIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importisize` | awk '{printf("%.2f\n", $1)}')
 ARCHSIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importarchsize` | awk '{printf("%.2f\n", $1)}')
 SCESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024*2}' /tmp/.importarchsize` | awk '{printf("%.2f\n", $1)}')
+
 RAM=`free -m | grep Mem | awk '{print $4}'`
 HDFREE=$(echo `df /etc/sysconfig/tcedir/ | grep -v Filesystem | awk '{print $4/1024}'` | awk '{printf("%.2f\n", $1)}')
-if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce ]; then
+
+if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce ] && ! mount | grep " /tmp/tcloop/"$TARGET" " > /dev/null 2>&1; then
   HDNEEDED="$DSIZEFINAL"
-  FULLSIZE=`echo "$DSIZEFINAL $ISIZEFINAL" | awk '{print $2 + $1}'`
-else
+  FULLSIZE=`echo "$HDNEEDED $ISIZEFINAL" | awk '{print $2 + $1}'`
+else 
   HDNEEDED=`echo "$SCESIZEFINAL $DSIZEFINAL" | awk '{print $2 + $1}'`
   FULLSIZE=`echo "$HDNEEDED $ISIZEFINAL" | awk '{print $2 + $1}'`
 fi
@@ -246,6 +250,7 @@ echo " "
 [ -f /tmp/.importdsize ] && sudo rm /tmp/.importdsize
 [ -f /tmp/.importisize ] && sudo rm /tmp/.importisize
 [ -f /tmp/.importsizelist ] && sudo rm /tmp/.importsizelist
+[ -f /tmp/.oldsize ] && sudo rm /tmp/.oldsize
 
 rm "$DEBINX1"
 

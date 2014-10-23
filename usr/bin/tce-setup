@@ -1,13 +1,13 @@
 #!/bb/ash
 #(c) Robert Shingledecker 2009-2011
-
+# Contributions by Jason Williams 
 . /etc/init.d/tc-functions
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
 
 checkroot
-
+TCEDIR=/etc/sysconfig/tcedir
 read USER < /etc/sysconfig/tcuser
 TCEINSTALLED="/usr/local/tce.installed"
 if [ ! -f /tmp/.installed ]; then
@@ -82,6 +82,9 @@ process_gz() {
 	cd -
 }
 process_sce() {
+	if [ -n "$(ls "$TCEDIR"/sce/update)" ]; then
+		mv "$TCEDIR"/sce/update/* "$TCEDIR"/sce/
+	fi
 	while read S
 	do
 		su "$USER" -c "loadsce -b "$S""

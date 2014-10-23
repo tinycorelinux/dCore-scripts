@@ -1,5 +1,5 @@
 #!/bin/sh
-
+# (c) Jason Williams 2013
 HERE=`pwd`
 
 [ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
@@ -7,33 +7,36 @@ HERE=`pwd`
 [ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
 [ -f /tmp/.pkgexists ] && sudo rm /tmp/.pkgexists
 [ -f /tmp/"$1".debdeps ] && sudo rm /tmp/"$1".debdeps
-[ -f /etc/sysconfig/tcedir/sce/"$1".sce.dep ] && sudo rm /etc/sysconfig/tcedir/sce/"$1".sce.dep
+
 
 if ls /tmp/*.debs > /dev/null 2>&1; then 
 	sudo rm /tmp/*.debs
 fi
 
 cd /etc/sysconfig/tcedir/sce
+if [ -f /etc/sysconfig/tcedir/sce/"$1".sce.dep ]; then
+	cat /etc/sysconfig/tcedir/sce/"$1".sce.dep > /tmp/.scedeps
+else
 
-## Select menu for choosing dependency sce's
-ls *.sce | sed 's:.sce::' | sort > /tmp/.scelist
-while true; do 
-cat /tmp/.scelist | select "Choose the sce you want use as a dependency of "$1". You can choose more than one, and enter "q" for quit when you have completed your selection." "-"
-read ANS < /tmp/select.ans
-if [ "$ANS" == "q" ]; then
- break
+	## Select menu for choosing dependency sce's
+	ls *.sce | sed 's:.sce::' | sort > /tmp/.scelist
+	while true; do 
+	cat /tmp/.scelist | select "Choose the sce you want use as a dependency of "$1". You can choose more than one, and enter "q" for quit when you have completed your selection." "-"
+	read ANS < /tmp/select.ans
+	if [ "$ANS" == "q" ]; then
+		break
+	fi
+	grep "^$ANS$" /tmp/.scedeps > /dev/null 2>&1 || echo "$ANS" >> /tmp/.scedeps
+	sed -i "/^$ANS$/d" /tmp/.scelist
+	done
+	##
+
+	## Echo the selected deps to the dep file
+	if [ -f /tmp/.scedeps ]; then
+		cat /tmp/.scedeps >> /etc/sysconfig/tcedir/sce/"$1".sce.dep
+	fi
+	##
 fi
-grep "^$ANS$" /tmp/.scedeps > /dev/null 2>&1 || echo "$ANS" >> /tmp/.scedeps
-sed -i "/^$ANS$/d" /tmp/.scelist
-done
-##
-
-## Echo the selected deps to the dep file
-if [ -f /tmp/.scedeps ]; then
-	cat /tmp/.scedeps >> /etc/sysconfig/tcedir/sce/"$1".sce.dep
-fi
-##
-
 
 ## Recursive function to determine packages that exist in dependency sce's
 getDeps() {

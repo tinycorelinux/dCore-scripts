@@ -5,6 +5,8 @@
 
 useBusybox
 
+> /tmp/.pkglist
+
 TCUSER=`cat /etc/sysconfig/tcuser`
 sudo chown "$TCUSER":staff /tmp
 sudo chmod 1777 /tmp
@@ -212,17 +214,40 @@ if [ -f /tmp/.pkgexists ]; then
 	exit 1
 fi
 
-echo "The below packages will be included in "$TARGET".sce."
-echo " "
-for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo "$I"; done
-echo " "
-echo "The above packages will be included in "$TARGET".sce."
+
+
+if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
+	echo
+	echo
+	echo "The below SCE's in your SCE directory will be used as"
+	echo "to provide dependencies for "$TARGET".sce."
+	echo
+	for FILE in `cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep`; do
+		if [ -f /etc/sysconfig/tcedir/sce/"$FILE".sce ]; then
+			echo "$FILE"
+		fi
+	done
+	echo
+	echo
+fi
 
 if [ -f /tmp/.importsize ]; then
 	debGetSize "$TARGET"
 fi
 
+for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo "$I" >> /tmp/.pkglist; done
+
+
 if [ ! -f /tmp/.importinteractive ]; then
+	echo "Do you want to review the list of packages that $TARGET.sce"
+	echo "will consist of? Enter y/N in the next 5 seconds"
+	echo -n "and q to exit reading the package list. (y/N): "
+	read -t 5 ans
+	if [ "$ans" == "y" ]; then
+		less /tmp/.pkglist
+	fi
+	echo
+	echo
 	echo -n "Proceed to create $TARGET.sce? (y/N): "
 	read ans
 	if [ "$ans" != "y" ]; then
@@ -348,7 +373,13 @@ if [ -f /tmp/"$TARGET".debdeps ]; then
 fi
 
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1
-mksquashfs "$TARGET" "$TCEDIR"/sce/"$TARGET".sce -noappend
+if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && mount | grep " /tmp/tcloop/"$TARGET" " > /dev/null 2>&1; then
+	[ -d "$TCEDIR"/sce/update ] || mkdir -p "$TCEDIR"/sce/update
+	mksquashfs "$TARGET" "$TCEDIR"/sce/update/"$TARGET".sce -noappend
+else
+	mksquashfs "$TARGET" "$TCEDIR"/sce/"$TARGET".sce -noappend
+fi
+
 if [ "$?" == "0" ]
 then
 	#mv "$TARGET".sce "$TCEDIR"/sce/.
