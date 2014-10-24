@@ -235,14 +235,25 @@ if [ -f /tmp/.importsize ]; then
 	debGetSize "$TARGET"
 fi
 
+if [ -s /tmp/.importfree ]; then
+	cat /tmp/.importfree
+	echo "The above errors have occured. Do you wish to continue"
+	echo -n "importing "$TARGET" despite the warnings? (y/N):"
+	read ans
+	if [ "$ans" != "y" ]; then
+		cleanup
+		exit 1
+	fi
+fi
+
 for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo "$I" >> /tmp/.pkglist; done
 
 
 if [ ! -f /tmp/.importinteractive ]; then
 	echo "Do you want to review the list of packages that $TARGET.sce"
-	echo "will consist of? Enter y/N in the next 5 seconds"
-	echo -n "and q to exit reading the package list. (y/N): "
-	read -t 5 ans
+	echo "will consist of? Enter y to view and q to exit reading"
+	echo -n "the package list. (y/N): "
+	read ans
 	if [ "$ans" == "y" ]; then
 		less /tmp/.pkglist
 	fi

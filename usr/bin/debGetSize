@@ -6,6 +6,7 @@
 > /tmp/.importdsize
 > /tmp/.importisize
 > /tmp/.oldsize
+> /tmp/.importfree
 
 DEBDIR="/etc/sysconfig/tcedir/import/debs"
 UNPACKDIR=/etc/sysconfig/tcedir/import/
@@ -199,7 +200,8 @@ if [ -f /tmp/.importram ]; then
   	echo " "
 	FULLSIZE=`echo "$FULLSIZE" | awk '{printf("%.0f\n", $1)}'`
   	if [ "$FULLSIZE" -gt "$RAM" ]; then
-		echo "WARNING: You do not have enough free RAM, you should not proceed."
+		echo "WARNING: You do not have enough free RAM, you should not proceed." >> /tmp/.importfree
+		echo " " >> /tmp/.importfree
 	fi
 
   else
@@ -210,10 +212,10 @@ if [ -f /tmp/.importram ]; then
 	HDNEEDED=`echo "$HDNEEDED" | awk '{printf("%.0f\n", $1)}'`
 	HDFREE=`echo "$HDFREE" | awk '{printf("%.0f\n", $1)}'`
   	if [ "$ISIZEFINAL" -gt "$RAM" ]; then
-		echo "WARNING: You do not have enough free RAM, you should not proceed."
+		echo "WARNING: You do not have enough free RAM, you should not proceed." >> /tmp/.importfree
 	fi
 	if [ "$HDNEEDED" -gt "$HDFREE" ]; then
-		echo "WARNING: You do not have enough /etc/sysconfig/tcedirtcedir space, you should not proceed."
+		echo "WARNING: You do not have enough `readlink /etc/sysconfig/tcedir` space, you should not proceed." >> /tmp/.importfree
 	fi
   fi
 else
@@ -227,7 +229,7 @@ else
   	echo " "
 	FULLSIZE=`echo "$FULLSIZE" | awk '{printf("%.0f\n", $1)}'`
   	if [ "$FULLSIZE" -gt "$RAM" ]; then
-		echo "WARNING: You do not have enough free RAM, you should not proceed."
+		echo "WARNING: You do not have enough free RAM, you should not proceed." >> /tmp/.importfree
 	fi
     else
   
@@ -240,7 +242,7 @@ else
 	FULLSIZE=`echo "$FULLSIZE" | awk '{printf("%.0f\n", $1)}'`
 	HDFREE=`echo "$HDFREE" | awk '{printf("%.0f\n", $1)}'`
      	if [ "$FULLSIZE" -gt "$HDFREE" ]; then
-		echo "WARNING: You do not have enough /etc/sysconfig/tcedirtcedir space, you should not proceed."
+		echo "WARNING: You do not have enough `readlink /etc/sysconfig/tcedir` space, you should not proceed." >> /tmp/.importfree
     	fi
     fi
 fi            
