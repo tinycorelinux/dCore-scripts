@@ -107,11 +107,17 @@ if [ "$EXECITEM" ]; then
 		shift 1 && exec "$APPNAME" "$@"
 	else
 		echo
-		echo "/usr/share/applications/"$APPNAME".desktop does not exist"
-		echo "nor does "$APPNAME" exist in the system PATH."
-		echo "Please instead invoke from regular menu or terminal."
-		echo
-		exit 1
+		if [ -d /tmp/.X11* ]; then 
+			xmessage "Neither freedesktop file nor "$APPNAME" executable exists.  Please invoke from terminal or menu." 
+			exit 1
+		else
+			echo "/usr/share/applications/"$APPNAME".desktop does not exist"
+			echo "nor does "$APPNAME" exist in the system PATH."
+			echo "Please instead invoke from regular menu or terminal."
+			echo
+			exit 1
+		fi
+		
 	fi
 	exit 0
 fi
