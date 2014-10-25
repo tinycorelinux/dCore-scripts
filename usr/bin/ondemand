@@ -2,6 +2,7 @@
 # (c) Robert Shingledecker 2009-2012
 . /etc/init.d/tc-functions
 useBusybox
+PATH=`echo "$PATH" | sed 's|:/etc/sysconfig/tcedir/ondemand||g'`
 
 selectList() {
 	TMPFILE=`mktemp`	
@@ -15,20 +16,21 @@ selectList() {
 #		Exclude current ondemand items from select
 		[ -e "$TCEDIR"/ondemand/"$ITEM" ] && ADDITEM=0
 		
-		[ "$ADDITEM" == "1" ] &&  echo "$ITEM" >> "$TMPFILE"
+		[ "$ADDITEM" == "1" ] &&  sudo echo "$ITEM" >> "$TMPFILE"
+		chown "$TCUSER":staff "$TMPFILE"
 	done
 	
 	sort -f "$TMPFILE"
 	rm -f "$TMPFILE"
 }
-
+TCUSER=`cat /etc/sysconfig/tcuser`
 TCEDIR=/etc/sysconfig/tcedir
 [ -d "$TCEDIR" ] || exit 1
 WBAR_ICON_DIR="/usr/local/tce.icons"
 FREEDESKTOP=/usr/local/share/applications
 2>/dev/null read DESKTOP < /etc/sysconfig/desktop
 
-LOCALDIR="$HOME"/.local/share/applications
+LOCALDIR=/home/"$TCUSER"/.local/share/applications
 
 [ -d /mnt/test ] || sudo mkdir -p /mnt/test
 
@@ -74,8 +76,8 @@ if [ "$REMOVEITEM" ]; then
 	TARGET="$TCEDIR"/ondemand/"$APPNAME"
 	if [ -e "$TARGET" ]; then
 		rm -f  "$TARGET"
-		[ $(which "$DESKTOP"_ondemand) ] && "$DESKTOP"_ondemand 2>/dev/null
-		[ $(which "$DESKTOP"_restart) ] && "$DESKTOP"_restart 2>/dev/null
+		[ $(which "$DESKTOP"_ondemand) ] && sudo su "$TCUSER" -c ""$DESKTOP"_ondemand" 2>/dev/null
+		[ $(which "$DESKTOP"_restart) ] && sudo su "$TCUSER" -c ""$DESKTOP"_restart" 2>/dev/null
 	fi
 	exit 0
 fi
@@ -96,16 +98,20 @@ if [ "$EXECITEM" ]; then
 	unset FROMWHERE
 	COMMAND="loadsce"
 	INSTALLED=/usr/local/tce.installed
-	if [ ! -e "$INSTALLED"/"$APPNAME" ]; then
-		shift 1 && ${COMMAND} "$FROMWHERE""$APPNAME"."$TYPE" && launchApp "$APPNAME" $@
+	if [ ! -e /tmp/tcloop/"$APPNAME" ] && ! grep ^"$APPNAME": /tmp/.debinstalled > /dev/null 2>&1; then
+		shift 1 && sudo su "$TCUSER" -c "${COMMAND} "$APPNAME""
+	fi
+	if [ -e /usr/share/applications/"$APPNAME".desktop ]; then
+		shift 1 && launchApp "$APPNAME" "$@"
+	elif [ "$(which $APPNAME)" ]; then
+		shift 1 && exec "$APPNAME" "$@"
 	else
-		if [ "$(which $APPNAME)" ]
-		then
-			exec $APPNAME
-		else
-			echo "Already loaded. Call from regular menu or terminal."
-			printf "\a"
-		fi
+		echo
+		echo "/usr/share/applications/"$APPNAME".desktop does not exist"
+		echo "nor does "$APPNAME" exist in the system PATH."
+		echo "Please instead invoke from regular menu or terminal."
+		echo
+		exit 1
 	fi
 	exit 0
 fi
@@ -113,15 +119,17 @@ fi
 # Arrive here if no flags were specified.
 # Create ondemand item....
 # Generic shell script for OnDemand by all WMs
-[ -d "$TCEDIR"/ondemand ] || mkdir -p "$TCEDIR"/ondemand
+[ -d "$TCEDIR"/ondemand ] || sudo mkdir -p "$TCEDIR"/ondemand 
+[ -d "$TCEDIR"/ondemand ] && sudo chown -R "$TCUSER":staff "$TCEDIR"/ondemand 
 FILE="$TCEDIR"/ondemand/"$APPNAME"
-echo '#!/bin/sh' > "$FILE"
-echo "ondemand -e $EXTN" >> "$FILE"
-chmod +x "$FILE"
+sudo echo '#!/bin/sh' > "$FILE"
+sudo echo "ondemand -e $APPNAME.sce" >> "$FILE"
+sudo chmod +x "$FILE"
+sudo chown "$TCUSER":staff "$FILE"
 
 # Optional as flwm does not need a make_ondemand.
-[ $(which ${DESKTOP}_ondemand) ] && ${DESKTOP}_ondemand "$APPNAME"
+[ $(which ${DESKTOP}_ondemand) ] && sudo su "$TCUSER" -c "${DESKTOP}_ondemand "$APPNAME""
 
 if [ $(which ${DESKTOP}_restart) ]; then
-	${DESKTOP}_restart
+	sudo su "$TCUSER" -c "${DESKTOP}_restart"
 fi

@@ -402,7 +402,7 @@ then
 			echo "$TARGET" >> "$TCEDIR"/sceboot.lst
 		fi
 	fi
-	[ "$ONDEMAND" ] && ondemand "$TARGET"
+	[ "$ONDEMAND" ] && su "$TCUSER" -c "ondemand "$TARGET""
 	echo "Done."
 else
 	echo "Failed."
