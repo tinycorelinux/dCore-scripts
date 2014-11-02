@@ -146,7 +146,8 @@ unset META
 #if [ ! "$RESULTS" ]
 
 if [ -s /tmp/.targetfile ]; then
-	echo "$TARGET is from your own custom package list."
+	echo "$TARGET is from your own custom package list:"
+	echo "`readlink /tmp/.targetfile`"
 	META="$TARGET"
 
 elif sudo grep -q "^$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
@@ -193,7 +194,7 @@ cd "$TARGET"
 
 if [ -s /tmp/.targetfile ]; then
 	echo "Gathering dependency info.."
-	for I in `cat /tmp/.targetfile`; do 
+	for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
 		debGetDeps "$I" > /dev/null 2>&1
 	done &
 	/usr/bin/rotdash $!
@@ -232,7 +233,9 @@ if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 fi
 
 if [ -f /tmp/.importsize ]; then
-	debGetSize "$TARGET"
+	echo "Determining HD and RAM space needed.."
+	debGetSize "$TARGET" > /dev/null 2>&1 &
+	/usr/bin/rotdash $!
 fi
 
 if [ -s /tmp/.importfree ]; then
@@ -403,6 +406,7 @@ then
 		fi
 	fi
 	[ "$ONDEMAND" ] && su "$TCUSER" -c "ondemand "$TARGET""
+	cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
 	echo "Done."
 else
 	echo "Failed."

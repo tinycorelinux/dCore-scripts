@@ -189,12 +189,13 @@ fi
 
 # The existence of /tmp/.importram means that unpacking will occur in memory.
 if [ -f /tmp/.importram ]; then
-  
+  echo " "
   echo ""$DSIZEFINAL" MB of downloads required." 
   echo ""$ISIZEFINAL" MB needed for unpacking archives - RAM will be used." 
   echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
   echo " "
   if [ "$TCERAM" == "1" ]; then
+	echo " "
   	echo "`readlink /etc/sysconfig/tcedir` is located in RAM."
   	echo ""$FULLSIZE" MB is a good estimate of RAM needed, "$RAM".00 MB is available." 
   	echo " "
@@ -205,6 +206,7 @@ if [ -f /tmp/.importram ]; then
 	fi
 
   else
+	echo " "
     	echo ""$HDNEEDED" MB is a good estimate of `readlink /etc/sysconfig/tcedir` space needed, "$HDFREE" MB is available."
   	echo ""$ISIZEFINAL" MB is a good estimate of RAM needed, "$RAM".00 MB is available." 
   	echo " "
@@ -220,6 +222,7 @@ if [ -f /tmp/.importram ]; then
   fi
 else
     if [ "$TCERAM" == "1" ]; then
+	echo " "
 	echo ""$DSIZEFINAL" MB of downloads required." 
   	echo ""$ISIZEFINAL" MB needed for unpacking archives."
   	echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
@@ -232,7 +235,7 @@ else
 		echo "WARNING: You do not have enough free RAM, you should not proceed." >> /tmp/.importfree
 	fi
     else
-  
+  		echo " "
   		echo ""$DSIZEFINAL" MB of downloads required." 
   		echo ""$ISIZEFINAL" MB needed for unpacking archives."
   		echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."

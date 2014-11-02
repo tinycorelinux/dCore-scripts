@@ -14,7 +14,7 @@ BUILD=`getBuild`
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "Usage:"
 	echo "'"importsce"' with no options will prompt for characters of desired package name."
-	echo "'"importsce -f"' to use a file list of packages - '"importsce -f FILENAME"'."
+	echo "'"importsce -l"' to use a file list of packages - '"importsce -l FILENAME"'."
 	echo "'"importsce -b"' to add package to sceboot.lst."
 	echo "'"importsce -r"' to use RAM for unpacking source debs."
 	echo "'"importsce -s"' to list sizes of packages to be fetched and installed."
@@ -59,7 +59,7 @@ wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEP 2>/dev/null || exit_tcnet
 wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit_tcnet
 wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null || exit_tcnet
 unset FLAGS PACKAGELIST
-while getopts drsbofkn OPTION
+while getopts drsbolkn OPTION
 do
 	case ${OPTION} in
 		n) NONINTERACTIVE=TRUE ;;
@@ -69,7 +69,7 @@ do
 		s) SIZE=TRUE ;;
 		b) FLAGS="$FLAGS"b ; ONBOOT=TRUE ;;
 		o) FLAGS="$FLAGS"o ; ONDEMAND=TRUE ;;
-		f) PACKAGELIST=TRUE ;;
+		l) PACKAGELIST=TRUE ;;
 		*) exit 1 ;;
 	esac
 done
@@ -90,8 +90,12 @@ shift `expr $OPTIND - 1`
 TARGET="$1"
 if [ "$PACKAGELIST" ]; then
   TARGETFILE=`readlink -f "$TARGET"`
-  cat $TARGETFILE > /tmp/.targetfile
+  cp $TARGETFILE /tmp/.targetfile
   TARGET=`basename $TARGET`
+elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
+  TARGETFILE="$TCEDIR"/sce/"$1".sce.lst
+  cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
+  PACKAGELIST=TRUE
 fi
 
 if grep -i "^DEPS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
@@ -171,11 +175,22 @@ if [ "$PACKAGELIST" ] && [ -f "$TARGETFILE" ]; then
   	echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
   	mksce "$TARGET" 
   else
+	echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"? (y/N): " 
+  	read ans                   
+  	[ "$ans" == "y" ] || exit 0                          
+  	mksce "$TARGET" 
+  fi  
+elif [ "$PACKAGELIST" ] && [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
+  echo " "
+  if [ -f /tmp/.importinteractive ]; then
+  	echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
+  	mksce "$TARGET" 
+  else
 	echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?"
   	read ans                   
   	[ "$ans" == "y" ] || exit 0                          
   	mksce "$TARGET" 
-  fi
+  fi  
 elif sudo grep -i "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
   if [ -f /tmp/.importinteractive ]; then
    	DEB=`{ sudo grep -i "^Package: $TARGET$" /tmp/debinx* | awk '{print $2}' || sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}' || sudo grep -i "^$TARGET:" /tmp/.depfile | cut -f1 -d: || sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt | cut -f1 -d: ; }`
