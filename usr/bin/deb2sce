@@ -234,7 +234,7 @@ fi
 
 if [ -f /tmp/.importsize ]; then
 	echo "Determining HD and RAM space needed.."
-	debGetSize "$TARGET" > /dev/null 2>&1 &
+	debGetSize "$TARGET" &
 	/usr/bin/rotdash $!
 fi
 
@@ -406,7 +406,9 @@ then
 		fi
 	fi
 	[ "$ONDEMAND" ] && su "$TCUSER" -c "ondemand "$TARGET""
-	cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
+	if [ -s /tmp/.targetfile ]; then
+		cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
+	fi
 	echo "Done."
 else
 	echo "Failed."
