@@ -222,8 +222,6 @@ elif sudo grep -i "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1 ||  sudo gre
 	elif sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt ; then
 		DEB=`sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt | cut -f1 -d:`
 	fi
-  	echo $DEB
-	sleep 5
 	if [ -z "$DEB" ]; then
 		{ sudo grep -i "^Package: $TARGET" /tmp/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   		read DEB < /tmp/select.ans                                                                           
