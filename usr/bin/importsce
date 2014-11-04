@@ -88,6 +88,11 @@ shift `expr $OPTIND - 1`
 [ "$FLAGS" ] && FLAGS="-$FLAGS"
 
 TARGET="$1"
+
+# Strip .sce suffix of package if specified on command line
+TARGET=${TARGET%%.sce}
+
+# Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
 if [ "$PACKAGELIST" ]; then
   TARGETFILE=`readlink -f "$TARGET"`
   cp $TARGETFILE /tmp/.targetfile
@@ -98,6 +103,8 @@ elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
   PACKAGELIST=TRUE
 fi
 
+# Determine if the -d option or the existence of a dep file
+# is present and use dep file if found.
 if grep -i "^DEPS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	touch /tmp/.importdep
 	echo "Using the -d option."
@@ -109,6 +116,7 @@ elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
 	echo "Existing dep file found and will be used."
 fi
 
+# Determine if the size option is being used.
 if grep -i "^SIZE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	touch /tmp/.importsize
 	echo "Using the -s option."
@@ -117,6 +125,7 @@ elif [ "$SIZE" == "TRUE" ]; then
 	echo "Using the -s option."
 fi
 
+# Determine if RAM is going to be used for unpacking.
 if grep -i "^RAM=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	touch /tmp/.importram
 	echo "Using the -r option."
@@ -125,6 +134,7 @@ elif [ "$RAM" == "TRUE" ]; then
 	echo "Using the -r option."
 fi
 
+# Determine if docs are to be kept (/usr/share/doc, /usr/share/man, etc).
 if grep -i "^KEEPDOC=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	touch /tmp/.keepdoc
 	echo "Using the -k option."
@@ -133,6 +143,7 @@ elif [ "$KEEPDOC" == "TRUE" ]; then
 	echo "Using the -k option."
 fi
 
+# Determine if non-interactive mode is being used.
 if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	touch /tmp/.importinteractive
 	echo "Using the -n option."
@@ -141,6 +152,8 @@ elif [ "$NONINTERACTIVE" == "TRUE" ]; then
 	echo "Using the -n option."
 fi
 
+# Check for MS Windows filesystem of TCEDIR, and only continue of RAM 
+# is being used for unpacking.
 MS_MNTS=`mount|awk '$5~/fat|vfat|msdos|ntfs/{printf "%s ",$1}'`
 REALDIR=`readlink /etc/sysconfig/tcedir`
 MNTDEV=`df "$REALDIR" | tail -n1 | cut -f1 -d" "`
@@ -157,6 +170,7 @@ esac
 
 echo " "
 
+# When no package is specified on command line, ask for one.
 if [ -z "$TARGET" ]
 then
 	echo -n "Enter starting characters of package sought: "
@@ -165,10 +179,13 @@ fi
 
 [ -n "$TARGET" ] || exit 1
 
+# Below is where the package is found either in prebuilt, main
+# Packages file, or in extra repos.  And then proceeds to deb2sce.
 #[ -s /tmp/debinx ] || sudo debGetEnv "$2"
 sudo debGetEnv
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+# Below is where -l list file option is being used.
 if [ "$PACKAGELIST" ] && [ -f "$TARGETFILE" ]; then
   echo " "
   if [ -f /tmp/.importinteractive ]; then
@@ -180,6 +197,7 @@ if [ "$PACKAGELIST" ] && [ -f "$TARGETFILE" ]; then
   	[ "$ans" == "y" ] || exit 0                          
   	mksce "$TARGET" 
   fi  
+# Below is where an existing .lst file is found in sce dir.
 elif [ "$PACKAGELIST" ] && [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   echo " "
   if [ -f /tmp/.importinteractive ]; then
@@ -191,10 +209,22 @@ elif [ "$PACKAGELIST" ] && [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   	[ "$ans" == "y" ] || exit 0                          
   	mksce "$TARGET" 
   fi  
+# Below checks for package in the extra repos first, then the 
+# Debian main repos, then in the prebuilt section, in that order.
 elif sudo grep -i "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
   if [ -f /tmp/.importinteractive ]; then
-   	DEB=`{ sudo grep -i "^Package: $TARGET$" /tmp/debinx* | awk '{print $2}' || sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}' || sudo grep -i "^$TARGET:" /tmp/.depfile | cut -f1 -d: || sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt | cut -f1 -d: ; }`
-  	if [ -z "$DEB" ]; then
+	if sudo grep -i "^Package: $TARGET$" /tmp/debinx* > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^Package: $TARGET$" /tmp/debinx* | awk '{print $2}'`
+	elif sudo grep -i "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
+	elif sudo grep -i "^$TARGET:" /tmp/.depfile > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^$TARGET:" /tmp/.depfile | cut -f1 -d:`
+	elif sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt ; then
+		DEB=`sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt | cut -f1 -d:`
+	fi
+  	echo $DEB
+	sleep 5
+	if [ -z "$DEB" ]; then
 		{ sudo grep -i "^Package: $TARGET" /tmp/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   		read DEB < /tmp/select.ans                                                                           
   		[ "$DEB" == "q" ] && exit 1
