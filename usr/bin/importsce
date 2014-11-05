@@ -89,7 +89,9 @@ shift `expr $OPTIND - 1`
 
 TARGET="$1"
 
-# Strip .sce suffix of package if specified on command line
+# Strip .sce suffix of package and preceding directory 
+# and preceding directory if specified on command line.
+TARGET=`basename "$TARGET"`
 TARGET=${TARGET%%.sce}
 
 # Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
