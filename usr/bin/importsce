@@ -50,6 +50,12 @@ exit_tcnet() {
 [ -f /tmp/.targetfile ] && sudo rm /tmp/.targetfile
 [ -f /tmp/.extrarepodep ] && sudo rm /tmp/.extrarepodep
 [ -f /tmp/.importdep ] && sudo rm /tmp/.importdep
+[ -f /tmp/.importfree ] && sudo rm /tmp/.importfree
+[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
+[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
+[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
+
+
 
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"

@@ -16,7 +16,7 @@ fi
 cd /etc/sysconfig/tcedir/sce
 if [ -f /etc/sysconfig/tcedir/sce/"$1".sce.dep ]; then
 	cat /etc/sysconfig/tcedir/sce/"$1".sce.dep > /tmp/.scedeps
-else
+elif [ ! -f /tmp/.importinteractive ]; then
 
 	## Select menu for choosing dependency sce's
 	ls *.sce | sed 's:.sce::' | sort > /tmp/.scelist

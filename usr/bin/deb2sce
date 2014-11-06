@@ -108,7 +108,9 @@ cleanup() {
 	[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
 	[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
 	[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
+	[ -f /tmp/.importfree ] && sudo rm /tmp/.importfree
 	[ -f /tmp/.pkgexists ] && sudo rm /tmp/.pkgexists
+	[ -f /tmp/.importdep ] && sudo rm /tmp/.importdep
 	if ls /tmp/*.debdeps > /dev/null 2>&1; then 
 		sudo rm /tmp/*.debdeps
 	fi	
