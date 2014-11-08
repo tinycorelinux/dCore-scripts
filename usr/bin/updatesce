@@ -1,0 +1,89 @@
+#!/bin/sh
+# (c) Jason Williams 2014
+# Tool to update SCE extensions in bulk.
+
+. /etc/init.d/tc-functions
+checknotroot
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo "Usage:"
+	echo "'"updatesce"' with no options will bring up a menu of SCEs to choose to update."
+	echo "'"importsce all"' will update all existing SCEs, both loaded and unloaded."
+	echo "'"importsce iceweasel"' will update iceweasel."
+	exit 0
+fi
+
+[ -f /tmp/.scelistchoose ] && sudo rm /tmp/.scelistchoose
+[ -f /tmp/.sceupdateall ] && sudo rm /tmp/.sceupdateall
+[ -f /tmp/.sceupdatelist ] && sudo rm /tmp/.sceupdatelist
+
+cd /etc/sysconfig/tcedir/sce
+
+## Get list of SCEs to be updated, should be all.
+ls *.sce | sed 's:.sce::' | sort > /tmp/.sceupdateall
+##
+
+if [ -n "$2" ]; then
+	OPTS=`echo "$1" | tr -d '-'`
+fi
+
+if [ "$1" == "all" ]; then
+	echo " "
+	cat /tmp/.sceupdateall
+	echo " "
+	echo "The above SCEs are about to be updated.  Press Ctrl-C in the next 10 seconds to abort update.."
+	TIME=10
+	CUR=$TIME
+	while [ "$CUR" -gt 0 ]
+	do
+		echo -ne "$CUR\033[0K\r"
+	        CUR=$(( $CUR - 1 ))
+	        sleep 1
+	done
+
+	## Update all SCEs
+	for I in `cat /tmp/.sceupdateall`; do
+		importsce -ns"$OPTS" "$I"
+	done
+	##
+elif [ -f "$1".sce ]; then
+	importsce -ns"$OPTS" "$1".sce
+elif [ -f "$2".sce ]; then
+	importsce -ns"$OPTS" "$2"
+else
+	## Select menu for choosing SCEs to update
+	cp /tmp/.sceupdateall /tmp/.scelistchoose
+	while true; do 
+		cat /tmp/.scelistchoose | select "Choose the SCE you want to update. \
+You can choose more than one, and enter "q" for quit when you have completed your selection." "-"
+		read ANS < /tmp/select.ans
+		if [ "$ANS" == "q" ]; then
+			break
+		fi
+		grep "^$ANS$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$ANS" >> /tmp/.sceupdatelist
+		sed -i "/^$ANS$/d" /tmp/.scelistchoose
+	done
+	##
+	echo " "
+	if [ ! -n /tmp/.sceupdatelist ]; then
+		echo "No SCEs were chosen for update.  Exiting.."
+		echo " "
+		exit 0
+	fi
+	echo " "
+	cat /tmp/.sceupdatelist
+	echo " "
+	echo "You are about to update the above SCEs. y to continue, n to exit. (y/N): "
+	read ans
+	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+		## Update selected SCEs
+		for I in `cat /tmp/.sceupdatelist`; do
+			importsce -ns"$OPTS" "$I"
+		done
+		##
+	else
+		echo "Exiting.."
+		exit 1
+	fi
+fi
+
