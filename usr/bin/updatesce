@@ -51,6 +51,7 @@ elif [ -f "$1".sce ]; then
 elif [ -f "$2".sce ]; then
 	importsce -ns"$OPTS" "$2"
 else
+	OPTS=`echo "$1" | tr -d '-'`
 	## Select menu for choosing SCEs to update
 	cp /tmp/.sceupdateall /tmp/.scelistchoose
 	while true; do 

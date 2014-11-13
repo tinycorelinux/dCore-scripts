@@ -4,7 +4,8 @@
 . /etc/init.d/tc-functions
 
 #useBusybox
-
+alias wget='/bb/wget'
+alias md5sum='/bb/md5sum'
 > /tmp/.pkglist
 
 TCUSER=`cat /etc/sysconfig/tcuser`
