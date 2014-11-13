@@ -80,6 +80,8 @@ do
 	esac
 done
 
+wget -O /tmp/deb2sce.tar.gz -cq "$IMPORTMIRROR"/"deb2sce.tar.gz" 2>/dev/null
+
 if grep -i "^ONBOOT=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	ONBOOT=TRUE
 	FLAGS="$FLAGS"b

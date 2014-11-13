@@ -7,16 +7,17 @@
 
 . /etc/init.d/tc-functions
 
-PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
-export PATH
+#PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+#export PATH
 
 checkroot
 BUILD=`getBuild`
 TCEDIR=/etc/sysconfig/tcedir
+IMPORT="$TCEDIR"/import
 HERE=`pwd`
-PKGDIR=/tmp/debex.$$
-PKG="$PKGDIR"/pkg
-CFG="$PKGDIR"/cfg
+PKGDIR=/tmp
+PKG="$HERE"
+CFG="$PKG"/cfg
 FILE="$1"
 BASENAME="${FILE%%_*}"
 BASENAME="${BASENAME##/*/}"
@@ -33,9 +34,7 @@ if [ "${FILE##*.}" != "deb" ] ; then
 	echo "Only Debian packages work with this." 
 	exit 1
 fi
-[ -d "$PKGDIR" ] || mkdir -p "$PKGDIR"
 
-mkdir -p "$PKG"
 mkdir -p "$CFG"
 DATA_TAR=`ar t "$FILE" data.tar.*`
 CONFIG_TAR=`ar t "$FILE" control.tar.*`
@@ -43,20 +42,13 @@ ar p "$FILE" "$DATA_TAR" > "$PKGDIR"/"$DATA_TAR" || exit 1
 ar p "$FILE" "$CONFIG_TAR" > "$PKGDIR"/"$CONFIG_TAR" || exit 1
 tar xf "$PKGDIR"/"$DATA_TAR" -C "$PKG" || exit 1
 tar xf "$PKGDIR"/"$CONFIG_TAR" -C "$CFG" || exit 1
-if [ ! -f /tmp/.keepdoc ]; then
-	[ -d "$PKG"/usr/share/doc ] && rm -r "$PKG"/usr/share/doc
-	[ -d "$PKG"/usr/share/man ] && rm -r "$PKG"/usr/share/man
-fi
-[ -d "$PKG"/usr/share/menu ] && rm -r "$PKG"/usr/share/menu
-[ -d "$PKG"/usr/share/lintian ] && rm -r "$PKG"/usr/share/lintian
 	
 # Set Tiny Core custom script support.
-cd "$PKGDIR"
+#cd "$PKG"
 read IMPORTMIRROR < /opt/tcemirror                                                                             
 IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"   
-	
-wget -O /tmp/"${BASENAME}.deb2sce" -cq "$IMPORTMIRROR"/"${BASENAME}.deb2sce" 2>/dev/null		
-if [ -f /tmp/"${BASENAME}.deb2sce" ]
+		
+if tar xzf /tmp/deb2sce.tar.gz "${BASENAME}".deb2sce -C /tmp > /dev/null 2>&1
 then
 	echo Merging Tiny Core custom start script for ${BASENAME}: "${BASENAME}.deb2sce"
 	setupStartupScript
@@ -94,14 +86,14 @@ cd "$DEBS"
     echo "Md5sum failed for "${BASENAME}"-data.tar.gz, exiting..."
     exit 1
   fi
-  cd "$HERE"
+  cd "$PKG"
 fi
 
 	
 # Setup Debian postinst script.
 cd "$PKG"
 #find . -type d -empty | xargs rmdir > /dev/null 2>&1
-busybox find . -mindepth 1 -depth -type d -exec rmdir '{}' + 2>/dev/null
+#busybox find . -mindepth 1 -depth -type d -exec rmdir '{}' + 2>/dev/null
 
 if [ -f "$CFG"/postinst ]; then
 	mkdir -p "$PKG/usr/local/postinst"
@@ -116,10 +108,9 @@ fi
 
 #	cd pkg
 echo "Merging $BASENAME "
-#find . -depth | cpio -pmd "$HERE" 2>&1 > /dev/null
-(tar -cf - .) | (cd "$HERE" && tar -xpf -)
+#find . -depth | cpio -pmd "$PKG" 2>&1 > /dev/null
+#(tar -cf - .) | (cd "$PKG" && tar -xpf -)
 if [ "$?" != "0" ]; then
 	exit 1
 fi	
-cd "$HERE"
-rm -r "$PKGDIR"
+rm -r "$CFG"

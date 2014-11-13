@@ -3,7 +3,7 @@
 # Contributions by Jason Williams
 . /etc/init.d/tc-functions
 
-useBusybox
+#useBusybox
 
 > /tmp/.pkglist
 
@@ -64,32 +64,10 @@ selectDeb() {
 }
 
 getMd5sum() {
-	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
-	BEGIN {
-		RS=""
-		FS="\n"
-	}
-	{
-		if ($1 == package) {
-			for (i=2; i <= NF; i++) {
-				split($i,f,": ")
-
-				if ( f[1] == "Architecture" ) {
-					if ( f[2] == "all" )
-						{}
-					else if ( f[2] == build )
-						{}
-					else
-						break
-					}
-				
-				if ( f[1] == "MD5sum" )
-					print f[2] 
-			}
-		
-		}
-		
-	} ' < "$DEBINX"
+> /tmp/"$1".pkglist
+grep -B 1 -A 6 "^Package: $1$" "$DEBINX" > /tmp/"$1".pkglist
+grep "^MD5sum:" /tmp/"$1".pkglist | cut -f2 -d" " 
+rm /tmp/"$1".pkglist
 }
 
 cleanup() {
@@ -285,7 +263,6 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 	read IMPORTMIRROR < /opt/tcemirror                                                                             
 	 	PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
 		IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
-		if wget -sq "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz; then
 		cd "$DEBS"
 		  if [ -f "${DEBINFO}".tar.gz ]; then
 			[ -f "${DEBINFO}".tar.gz.md5.txt ] && rm "${DEBINFO}".tar.gz.md5.txt
@@ -301,10 +278,9 @@ for DEBINFO in `ls -t /tmp/work`; do
 		  else
 		  	[ -f "${DEBINFO}".tar.gz ] && rm "$DEBS"/"${DEBINFO}".tar.gz
 			[ -f "${DEBINFO}".tar.gz.md5.txt ] && rm "$DEBS"/"${DEBINFO}".tar.gz.md5.txt
-			wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
-			wget -O "${DEBINFO}".tar.gz.md5.txt "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt
+			wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz > /dev/null 2>&1
+			wget -O "${DEBINFO}".tar.gz.md5.txt "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz.md5.txt > /dev/null 2>&1
 		  fi
-		fi
 
 		if md5sum -c "${DEBINFO}".tar.gz.md5.txt >/dev/null
   	 	then		 
@@ -321,47 +297,59 @@ for DEBINFO in `ls -t /tmp/work`; do
 
 	 elif [ "$FULLPATH" != "" ]; then
 	 	THISDEB="${FULLPATH##*/}"
-		if ! grep "^Package: $DEBINFO$" /tmp/debinx.* > /dev/null 2>&1 ; then
-			if [ -f "$DEBS"/"$THISDEB" ]; then
-				if [ ! -z `getMd5sum "$DEBINFO"` ]; then
-					if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
+		if grep "^Package: $DEBINFO$" /tmp/debinx.* > /dev/null 2>&1 ; then
+			DEBINX=`grep "^Package: $DEBINFO$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
+			MIRRORFILE=`echo "$DEBINX" | sed 's:/tmp/debinx.::'`
+			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
+			if [ -f "$DEBS"/"$THISDEB" ]; then	
+				echo
+				if [ -f "$DEBS"/"$THISDEB".md5.txt ]; then
+					if [ ! `getMd5sum "$DEBINFO"` == `cat "$DEBS"/"$THISDEB".md5.txt | cut -f1 -d" "` ]; then
 						rm "$DEBS"/"$THISDEB"
 						echo "Fetching updated "$THISDEB".."
-						fetchDeb "$FULLPATH"		
+						fetchDeb "$FULLPATH"	
+						echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
 					fi
 				else
 					rm "$DEBS"/"$THISDEB"
 					echo "Fetching updated "$THISDEB".."
 					fetchDeb "$FULLPATH"
+					echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt
 				fi
 			else
 				fetchDeb "$FULLPATH"
-			fi
+				echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt
+			fi	
+			##
 			sudo debExtract "$DEBS"/"$THISDEB"
 			if [ "$?" != "0" ]; then
 		  		echo "Failure to extract "$THISDEB", exiting.."
 		  		cleanup
 		  		exit 1
-			fi
-			echo ""$DEBINFO": `getMd5sum "$DEBINFO"`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		
+			fi	
+			echo ""$DEBINFO":  `cat "$DEBS"/"$THISDEB".md5.txt | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
+			read DEBINX < /tmp/debinx
+			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
+			read MIRROR < /opt/debmirror
 		else
-			DEBINX=`grep "^Package: $DEBINFO$" /tmp/debinx* | head -n 1 | cut -f1 -d:`
-			MIRRORFILE=`echo "$DEBINX" | sed 's:/tmp/debinx.::'`
-			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
 			if [ -f "$DEBS"/"$THISDEB" ]; then
-	 			if [ ! -z `getMd5sum "$DEBINFO"` ]; then
-						if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
+	 			if [ -f "$DEBS"/"$THISDEB".md5.txt ]; then
+						if [ ! `getMd5sum "$DEBINFO"` == `cat "$DEBS"/"$THISDEB".md5.txt | cut -f1 -d" "` ]; then
 							rm "$DEBS"/"$THISDEB"
 							echo "Fetching updated "$THISDEB".."
-							fetchDeb "$FULLPATH"		
+							fetchDeb "$FULLPATH"
+							echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt		
 						fi
+						
 				else
 					rm "$DEBS"/"$THISDEB"
 					echo "Fetching updated "$THISDEB".."
 					fetchDeb "$FULLPATH"
+					echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt
 				fi
 			else
 				fetchDeb "$FULLPATH"
+				echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt
 			fi
 			sudo debExtract "$DEBS"/"$THISDEB"
 			if [ "$?" != "0" ]; then
@@ -370,12 +358,8 @@ for DEBINFO in `ls -t /tmp/work`; do
 				exit 1
 			fi
 		
-			echo ""$DEBINFO": `getMd5sum "$DEBINFO"`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum	
+			echo ""$DEBINFO":  `cat "$DEBS"/"$THISDEB".md5.txt | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
 			
-			read DEBINX < /tmp/debinx
-			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
-			read MIRROR < /opt/debmirror
-
 		fi	
 	 fi
 done
@@ -387,6 +371,15 @@ mv /tmp/*.debs "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/ > /dev/null 2>&1
 if [ -f /tmp/"$TARGET".debdeps ]; then
 	cp /tmp/"$TARGET".debdeps "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/
 fi
+
+if [ ! -f /tmp/.keepdoc ]; then
+	[ -d "$TARGET"/usr/share/doc ] && rm -r "$TARGET"/usr/share/doc
+	[ -d "$TARGET"/usr/share/man ] && rm -r "$TARGET"/usr/share/man
+fi
+[ -d "$TARGET"/usr/share/menu ] && rm -r "$TARGET"/usr/share/menu
+[ -d "$TARGET"/usr/share/lintian ] && rm -r "$TARGET"/usr/share/lintian
+
+busybox find "$TARGET" -mindepth 1 -depth -type d -exec rmdir '{}' + 2>/dev/null
 
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1
 if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && mount | grep " /tmp/tcloop/"$TARGET" " > /dev/null 2>&1; then

@@ -47,7 +47,7 @@ if [ "$1" == "all" ]; then
 	done
 	##
 elif [ -f "$1".sce ]; then
-	importsce -ns"$OPTS" "$1".sce
+	importsce -ns"$OPTS" "$1"
 elif [ -f "$2".sce ]; then
 	importsce -ns"$OPTS" "$2"
 else
