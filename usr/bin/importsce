@@ -5,7 +5,9 @@
 
 useBusybox
 
-
+sudo chown "$TCUSER":staff /tmp
+sudo chmod 1777 /tmp
+TCUSER=`cat /etc/sysconfig/tcuser`
 TCEDIR=`readlink /etc/sysconfig/tcedir`
 SCEBOOTLST=""$TCEDIR"/sceboot.lst"
 checknotroot
@@ -54,8 +56,8 @@ exit_tcnet() {
 [ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
 [ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
 [ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
-
-
+[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
+[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
@@ -63,7 +65,10 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
 wget -O /tmp/.extrarepodep -cq "$IMPORTMIRROR"/PKGEXTRAREPODEP 2>/dev/null || exit_tcnet
 wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEP 2>/dev/null || exit_tcnet
 wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit_tcnet
-wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null || exit_tcnet
+wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null ||  exit_tcnet
+wget -O /tmp/deb2sce.tar.gz -cq "$IMPORTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
+wget -O /tmp/.prebuiltmd5sumlist -cq "$PREBUILTMIRROR"/PREBUILTMD5SUMLIST ||  exit_tcnet
+
 unset FLAGS PACKAGELIST
 while getopts drsbolkn OPTION
 do
@@ -80,7 +85,7 @@ do
 	esac
 done
 
-wget -O /tmp/deb2sce.tar.gz -cq "$IMPORTMIRROR"/"deb2sce.tar.gz" 2>/dev/null
+
 
 if grep -i "^ONBOOT=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	ONBOOT=TRUE
