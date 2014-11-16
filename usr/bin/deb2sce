@@ -11,6 +11,7 @@ alias md5sum='/bb/md5sum'
 TCUSER=`cat /etc/sysconfig/tcuser`
 sudo chown "$TCUSER":staff /tmp
 sudo chmod 1777 /tmp
+sudo chmod -R "$TCUSER":staff /etc/sysconfig/tcedir""
 checkroot
 BUILD=`getBuild`
 if [ "$BUILD" == "x86" ]; then
@@ -280,10 +281,11 @@ for DEBINFO in `ls -t /tmp/work`; do
 		else
 		  	[ -f "${DEBINFO}".tar.gz ] && rm "$DEBS"/"${DEBINFO}".tar.gz
 			[ -f "${DEBINFO}".tar.gz.md5.txt ] && rm "$DEBS"/"${DEBINFO}".tar.gz.md5.txt
+			echo "Fetching updated "${DEBINFO}".tar.gz.."
 			wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz > /dev/null 2>&1
 		fi
 
-		if [ -f "${DEBINFO}".tar.gz ] && [ `md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist | cut -f2 -d" "` ]; then	 
+		if [ `md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist | cut -f2 -d" "` ]; then	 
 			echo "${DEBINFO}: `md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		  
 			echo "Merging "${DEBINFO}":"
     	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET"        		  
@@ -308,15 +310,17 @@ for DEBINFO in `ls -t /tmp/work`; do
 						rm "$DEBS"/"$THISDEB"
 						echo "Fetching updated "$THISDEB".."
 						fetchDeb "$FULLPATH"	
-						echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
+						#echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
 					fi
 				else
 					rm "$DEBS"/"$THISDEB"
 					echo "Fetching updated "$THISDEB".."
 					fetchDeb "$FULLPATH"
+					#echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
 				fi
 			else
 				fetchDeb "$FULLPATH"
+				#echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
 			fi	
 			##
 			sudo debExtract "$DEBS"/"$THISDEB"
@@ -336,15 +340,18 @@ for DEBINFO in `ls -t /tmp/work`; do
 							rm "$DEBS"/"$THISDEB"
 							echo "Fetching updated "$THISDEB".."
 							fetchDeb "$FULLPATH"
+							#echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
 						fi
 						
 				else
 					rm "$DEBS"/"$THISDEB"
 					echo "Fetching updated "$THISDEB".."
 					fetchDeb "$FULLPATH"
+					echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
 				fi
 			else
 				fetchDeb "$FULLPATH"
+				#echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
 			fi
 			sudo debExtract "$DEBS"/"$THISDEB"
 			if [ "$?" != "0" ]; then

@@ -48,15 +48,17 @@ tar xf "$PKGDIR"/"$CONFIG_TAR" -C "$CFG" || exit 1
 read IMPORTMIRROR < /opt/tcemirror                                                                             
 IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"   
 		
-if tar xzf /tmp/deb2sce.tar.gz "${BASENAME}".deb2sce -C /tmp > /dev/null 2>&1
+cd /tmp
+if sudo tar xzf /tmp/deb2sce.tar.gz "${BASENAME}".deb2sce > /dev/null 2>&1
 then
 	echo Merging Tiny Core custom start script for ${BASENAME}: "${BASENAME}.deb2sce"
 	setupStartupScript
 	cat /tmp/"${BASENAME}.deb2sce" > "$PKG/usr/local/tce.installed/${BASENAME}"
 	chmod -R 775 "$PKG/usr/local/tce.installed/"
 	chown -R root.staff "$PKG/usr/local/tce.installed/"
-	rm /tmp/"${BASENAME}.deb2sce"
+	sudo rm /tmp/"${BASENAME}.deb2sce"
 fi
+cd "$HERE"
 
 if grep "^${BASENAME}-data.tar.gz" /tmp/.pkgextrafiles >/dev/null; then
 cd "$DEBS"
