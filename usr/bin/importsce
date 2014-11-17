@@ -234,7 +234,7 @@ elif sudo grep -i "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1 ||  sudo gre
 		DEB=`sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
 	elif sudo grep -i "^$TARGET:" /tmp/.depfile > /dev/null 2>&1; then
 		DEB=`sudo grep -i "^$TARGET:" /tmp/.depfile | cut -f1 -d:`
-	elif sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt ; then
+	elif sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt  > /dev/null 2>&1; then
 		DEB=`sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt | cut -f1 -d:`
 	fi
 	if [ -z "$DEB" ]; then

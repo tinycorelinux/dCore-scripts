@@ -9,9 +9,7 @@ alias md5sum='/bb/md5sum'
 > /tmp/.pkglist
 
 TCUSER=`cat /etc/sysconfig/tcuser`
-sudo chown "$TCUSER":staff /tmp
-sudo chmod 1777 /tmp
-sudo chmod -R "$TCUSER":staff /etc/sysconfig/tcedir""
+
 checkroot
 BUILD=`getBuild`
 if [ "$BUILD" == "x86" ]; then
@@ -275,15 +273,17 @@ for DEBINFO in `ls -t /tmp/work`; do
 			if [ `md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` != `grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist | cut -f2 -d" "` ]; then
 				echo "Fetching updated "${DEBINFO}".tar.gz.."
 				rm "${DEBINFO}".tar.gz*
-				wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
+				sudo wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
 			fi
 			
+		elif sudo wget -s "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz > /dev/null 2>&1; then
+			echo "Fetching "${DEBINFO}".tar.gz.."
+			sudo wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
 		else
-		  	[ -f "${DEBINFO}".tar.gz ] && rm "$DEBS"/"${DEBINFO}".tar.gz
-			[ -f "${DEBINFO}".tar.gz.md5.txt ] && rm "$DEBS"/"${DEBINFO}".tar.gz.md5.txt
-			echo "Fetching updated "${DEBINFO}".tar.gz.."
-			wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz > /dev/null 2>&1
+			echo ""$DEBINFO" is a virtual or non existent package."
+			continue
 		fi
+		
 
 		if [ `md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist | cut -f2 -d" "` ]; then	 
 			echo "${DEBINFO}: `md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		  
@@ -304,23 +304,16 @@ for DEBINFO in `ls -t /tmp/work`; do
 			MIRRORFILE=`echo "$DEBINX" | sed 's:/tmp/debinx.::'`
 			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
 			if [ -f "$DEBS"/"$THISDEB" ]; then	
-				echo
-				if [ -f "$DEBS"/"$THISDEB" ]; then
-					if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
-						rm "$DEBS"/"$THISDEB"
-						echo "Fetching updated "$THISDEB".."
-						fetchDeb "$FULLPATH"	
-						#echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
-					fi
-				else
+				if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
 					rm "$DEBS"/"$THISDEB"
 					echo "Fetching updated "$THISDEB".."
-					fetchDeb "$FULLPATH"
-					#echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
+					fetchDeb "$FULLPATH"		
 				fi
-			else
+			
+			elif [ -n "$FULLPATH" ]; then
 				fetchDeb "$FULLPATH"
-				#echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
+			else
+				echo ""$DEBINFO" is a virtual or non-existent package."
 			fi	
 			##
 			sudo debExtract "$DEBS"/"$THISDEB"
@@ -334,24 +327,17 @@ for DEBINFO in `ls -t /tmp/work`; do
 			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		else
-			if [ -f "$DEBS"/"$THISDEB" ]; then
-	 			if [ -f "$DEBS"/"$THISDEB".md5.txt ]; then
-						if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
-							rm "$DEBS"/"$THISDEB"
-							echo "Fetching updated "$THISDEB".."
-							fetchDeb "$FULLPATH"
-							#echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
-						fi
-						
-				else
+			if [ -f "$DEBS"/"$THISDEB" ]; then	
+				if [ ! `getMd5sum "$DEBINFO"` == `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "` ]; then
 					rm "$DEBS"/"$THISDEB"
 					echo "Fetching updated "$THISDEB".."
-					fetchDeb "$FULLPATH"
-					echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
+					fetchDeb "$FULLPATH"		
 				fi
-			else
+			
+			elif [ -n "$FULLPATH" ]; then
 				fetchDeb "$FULLPATH"
-				#echo "`getMd5sum "$DEBINFO"`  "$THISDEB"" > "$DEBS"/"$THISDEB".md5.txt	
+			else
+				echo ""$DEBINFO" is a virtual or non-existent package."
 			fi
 			sudo debExtract "$DEBS"/"$THISDEB"
 			if [ "$?" != "0" ]; then
