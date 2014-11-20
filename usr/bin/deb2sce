@@ -66,10 +66,40 @@ selectDeb() {
 
 getMd5sum() {
 > /tmp/"$1".pkglist
-grep -B 1 -A 6 "^Package: $1$" "$DEBINX" > /tmp/"$1".pkglist
+grep -B 1 -A 2 "^Package: $1$" "$DEBINX" > /tmp/"$1".pkglist
 grep "^MD5sum:" /tmp/"$1".pkglist | cut -f2 -d" " 
 rm /tmp/"$1".pkglist
 }
+
+getMd5sum1() {
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+				
+				if ( f[1] == "MD5sum" )
+					print f[2] 
+			}
+		
+		}
+		
+	} ' < "$DEBINX"
+}
+
 
 cleanup() {
 	rm -rf /tmp/work
@@ -98,6 +128,8 @@ cleanup() {
 	[ -f /tmp/data.tar.xz ] && sudo rm /tmp/data.tar.xz
 	[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
 	[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
+	[ -f /tmp/debinxmd5 ] && sudo rm /tmp/debinxmd5
+	[ -f /tmp/debinxdep ] && sudo rm /tmp/debinxdep
 }
 
 # Main
@@ -133,6 +165,10 @@ echo
 unset META
 #RESULTS="$(debQuery "$TARGET")"
 #if [ ! "$RESULTS" ]
+
+# Further strip and echo the main debinx to /tmp for quicker searching.
+cat "$DEBINX" | sed -e '/^Installed-Size:/d' -e '/^Size:/d' -e '/^MD5sum:/d' > /tmp/debinxdep
+cat "$DEBINX" | sed -e '/^Depends:/d' -e '/^Filename:/d' -e '/^Installed-Size:/d' -e '/^Size:/d' > /tmp/debinxmd5
 
 if [ -s /tmp/.targetfile ]; then
 	echo "$TARGET is from your own custom package list:"
@@ -270,7 +306,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 read IMPORTMIRROR < /opt/tcemirror                                                                             
 	 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 	 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
-	 if grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null && ! grep "^Package: $DEBINFO$" /tmp/debinx.* > /dev/null 2>&1 ; then
+	 if [ -z "$FULLPATH" ] && grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null; then
 		if grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist > /dev/null 2>&1; then
 			cd "$DEBS"
 			if [ -f "${DEBINFO}".tar.gz ]; then
@@ -302,7 +338,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			MIRRORFILE=`echo "$DEBINX" | sed 's:/tmp/debinx.::'`
 			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
 			if [ -f "$DEBS"/"$THISDEB" ]; then
-				MD5NEW=$(getMd5sum "$DEBINFO")
+				MD5NEW=$(getMd5sum1 "$DEBINFO")
 				MD5OLD=$(md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
@@ -318,11 +354,12 @@ for DEBINFO in `ls -t /tmp/work`; do
 				cleanup
 				exit 1
 			fi		
-			echo ""$DEBINFO":  `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
+			echo ""$DEBINFO":  "$MD5NEW"" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
 			read DEBINX < /tmp/debinx
 			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		else
+			DEBINX=/tmp/debinxmd5
 			if [ -f "$DEBS"/"$THISDEB" ]; then
 				MD5NEW=$(getMd5sum "$DEBINFO")
 				MD5OLD=$(md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
@@ -341,8 +378,10 @@ for DEBINFO in `ls -t /tmp/work`; do
 				exit 1
 			fi
 		
-			echo ""$DEBINFO":  `md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
-			
+			echo ""$DEBINFO":  "$MD5NEW"" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
+			read DEBINX < /tmp/debinx
+			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
+			read MIRROR < /opt/debmirror
 		fi	
 	 fi
 done
