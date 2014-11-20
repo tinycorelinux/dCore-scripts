@@ -46,7 +46,7 @@ tar xf "$PKGDIR"/"$CONFIG_TAR" -C "$CFG" || exit 1
 # Set Tiny Core custom script support.
 #cd "$PKG"
 read IMPORTMIRROR < /opt/tcemirror                                                                             
-IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"   
+IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"   
 		
 cd /tmp
 if sudo tar xzf /tmp/deb2sce.tar.gz "${BASENAME}".deb2sce > /dev/null 2>&1
@@ -60,32 +60,26 @@ then
 fi
 cd "$HERE"
 
-if grep "^${BASENAME}-data.tar.gz" /tmp/.pkgextrafiles >/dev/null; then
+if grep "^$BASENAME": /tmp/.pkgextrafilemd5sumlist >/dev/null; then
 cd "$DEBS"
-  if [ -f "${BASENAME}"-data.tar.gz  ]; then
-	[ -f "${BASENAME}"-data.tar.gz.md5.txt ] && rm "${BASENAME}"-data.tar.gz.md5.txt
-	wget -O "${BASENAME}"-data.tar.gz.md5.txt "$IMPORTMIRROR"/"${BASENAME}"-data.tar.gz.md5.txt > /dev/null 2>&1 || exit 1
+  if [ -f "$BASENAME"-data.tar.gz ]; then
 
-	if ! md5sum -c "${BASENAME}"-data.tar.gz.md5.txt > /dev/null 2>&1; then
-        	echo "Fetching updated extra files for "${BASENAME}": "${BASENAME}"-data.tar.gz"
-	    	rm "${BASENAME}"-data.tar.gz*
-  		wget -O "${BASENAME}"-data.tar.gz -c "$IMPORTMIRROR"/"${BASENAME}"-data.tar.gz || exit 1
-  		wget -O "${BASENAME}"-data.tar.gz.md5.txt -c "$IMPORTMIRROR"/"${BASENAME}"-data.tar.gz.md5.txt 	|| exit 1
-  	fi
+	if [ `md5sum "$BASENAME"-data.tar.gz | cut -f1 -d" "` != `grep "^$BASENAME": /tmp/.pkgextrafilemd5sumlist | cut -f2 -d" "` ]; then
+		echo "Fetching updated "$BASENAME"-data.tar.gz.."
+		rm "$BASENAME"-data.tar.gz*
+		wget -O "$BASENAME"-data.tar.gz "$IMPORTMIRROR"/"$BASENAME"-data.tar.gz || exit 1
+	fi
+
 
   else
-	[ -f "$DEBS"/"${BASENAME}"-data.tar.gz ] && rm "$DEBS"/"${BASENAME}"-data.tar.gz
-	[ -f "$DEBS"/"${BASENAME}"-data.tar.gz.md5.txt ] && rm "$DEBS"/"${BASENAME}"-data.tar.gz.md5.txt
-	wget -O "$DEBS"/"${BASENAME}"-data.tar.gz -c "$IMPORTMIRROR"/"${BASENAME}"-data.tar.gz || exit 1
-  	wget -O "$DEBS"/"${BASENAME}"-data.tar.gz.md5.txt -c "$IMPORTMIRROR"/"${BASENAME}"-data.tar.gz.md5.txt || exit 1
+	wget -O "$DEBS"/"$BASENAME"-data.tar.gz -c "$IMPORTMIRROR"/"$BASENAME"-data.tar.gz || exit 1
   fi
 
-  if md5sum -c "${BASENAME}"-data.tar.gz.md5.txt >/dev/null
-  then
-    echo "Merging extra files for "${BASENAME}": "${BASENAME}-data".tar.gz"
-    tar xf "${BASENAME}-data.tar.gz" -C "$PKG" || exit 1
+  if [ `md5sum "$BASENAME"-data.tar.gz | cut -f1 -d" "` == `grep "^$BASENAME": /tmp/.pkgextrafilemd5sumlist | cut -f2 -d" "` ]; then
+    echo "Merging extra files for "${BASENAME}": "$BASENAME"-data.tar.gz"
+    tar xf "$BASENAME"-data.tar.gz -C "$PKG" || exit 1
   else
-    echo "Md5sum failed for "${BASENAME}"-data.tar.gz, exiting..."
+    echo "Md5sum failed for "$BASENAME"-data.tar.gz, exiting..."
     exit 1
   fi
   cd "$PKG"
@@ -115,4 +109,4 @@ echo "Merging $BASENAME "
 if [ "$?" != "0" ]; then
 	exit 1
 fi	
-rm -r "$CFG"
+sudo rm -r "$CFG"

@@ -320,8 +320,8 @@ cd "$SAVED_DIR"
 [ "$BOOTING" ] && exit 0
 if [ -n "$DISPLAY" ]
 then
-	[ $(which "$DESKTOP"_restart) ] && "$DESKTOP"_restart 2>/dev/null
-	[ $(which wbar) ] && pkill wbar && wbar.sh
+	[ $(which "$DESKTOP"_restart) ] && "$DESKTOP"_restart > /dev/null 2>&1
+	[ $(which wbar) ] && pkill wbar && wbar.sh > /dev/null 2>&1
 fi
 
 exit 0

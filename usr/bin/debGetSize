@@ -29,8 +29,8 @@ cat "$DEBINX" | sed -e '/^Depends:/d' -e '/^Filename:/d' -e '/^MD5sum:/d' > /tmp
 [ -f /tmp/.importsizelist ] && rm /tmp/.importsizelist
 
 read IMPORTMIRROR < /opt/tcemirror                                                                             
-PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
-IMPORTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/import"
+PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
+IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 wget -O /tmp/.importsizelist "$PREBUILTMIRROR"/.importsizelist > /dev/null 2>&1
 
