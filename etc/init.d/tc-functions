@@ -334,8 +334,7 @@ getMirror() {
 BUILD="$1"
 [ -z "$BUILD" ] && BUILD=$(getBuild)
 read MIRROR < /opt/tcemirror
-#MIRROR="${MIRROR%/}/$(getMajorVer).x/x86/tcz"
-MIRROR="${MIRROR%/}/$(getMajorVer).x/$BUILD/tcz"
+MIRROR="${MIRROR%/}/dCore/$BUILD"
 }
 
 installed() {
