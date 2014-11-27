@@ -268,7 +268,15 @@ then
 		else
 			TARGETDIR="$TCEDIR"/sce/
 		fi
-
+		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ]; then
+			cd "$TARGETDIR"
+			md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
+			if [ "$?" != 0 ]; then
+				echo "Md5sum error on "$TARGETDIR"/"$THISSCE".  Exiting.."
+				cd "$SAVED_DIR"
+			fi
+		fi
+		
 		if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
 			DEPLIST=" $THISSCENAME "
 			for I in `cat "$TARGETDIR"/"$THISSCE".dep`; do 
@@ -293,6 +301,15 @@ else
 			TARGETDIR=`dirname "$THISSCE"`
 		else
 			TARGETDIR="$TCEDIR"/sce/
+		fi
+
+		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ]; then
+			cd "$TARGETDIR"
+			md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
+			if [ "$?" != 0 ]; then
+				echo "Md5sum error on "$TARGETDIR"/"$THISSCE".  Exiting.."
+				cd "$SAVED_DIR"
+			fi
 		fi
 
 		if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then

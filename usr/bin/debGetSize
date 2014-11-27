@@ -12,7 +12,7 @@ DEBDIR="/etc/sysconfig/tcedir/import/debs"
 UNPACKDIR=/etc/sysconfig/tcedir/import/
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/$DEBINX"
-DEBINX1="/tmp/debinx1"
+DEBINXSIZE=/tmp/debinxsize
 TARGET="$1"
 BUILD=`getBuild`
 if [ "$BUILD" == "x86" ]; then
@@ -21,7 +21,7 @@ elif [ "$BUILD" == "armv7" ]; then
 	DEBBUILD="armhf"
 fi
 # Further strip and echo the main debinx to /tmp for quicker searching.
-cat "$DEBINX" | sed -e '/^Depends:/d' -e '/^Filename:/d' -e '/^MD5sum:/d' > /tmp/debinx1
+cat "$DEBINX" | sed -e '/^Depends:/d' -e '/^Filename:/d' -e '/^MD5sum:/d' > /tmp/debinxsize
 
 #Combine other debinx's from the other mirrors to the main one in /tmp for searching.
 #for I in `ls /tmp/debinx.*`; do cat "$I" >> /tmp/debinx1; done
@@ -34,22 +34,9 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 wget -O /tmp/.importsizelist "$PREBUILTMIRROR"/.importsizelist > /dev/null 2>&1
 
-
 getdsize_main() {
-> /tmp/"$1".pkgdsizelist
-grep -B 1 -A 6 "^Package: $1$" "$DEBINX" > /tmp/"$1".pkgdsizelist
-grep "^Size:" /tmp/"$1".pkgdsizelist | cut -f2 -d":"
-rm /tmp/"$1".pkgdsizelist
-}
 
-getisize_main() {
-> /tmp/"$1".pkgisizelist
-grep -B 1 -A 6 "^Package: $1$" "$DEBINX" > /tmp/"$1".pkgisizelist
-grep "^Installed-Size:" /tmp/"$1".pkgisizelist | cut -f2 -d":"
-rm /tmp/"$1".pkgisizelist
-}
-
-getdsize_extra() {
+sed -n "/^Package: "$1"$/,/^$/{/./p}" "$DEBINXSIZE" > /tmp/"$1".pkgdsizemain
 	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
 	BEGIN {
 		RS=""
@@ -75,10 +62,12 @@ getdsize_extra() {
 		
 		}
 		
-	} ' < "$DEBINX1"
+	} ' < /tmp/"$1".pkgdsizemain
+	[ -f /tmp/"$1".pkgdsizemain ] && sudo rm /tmp/"$1".pkgdsizemain
 }
 
-getisize_extra() {
+getisize_main() {
+	sed -n "/^Package: "$1"$/,/^$/{/./p}" "$DEBINXSIZE" > /tmp/"$1".pkgisizemain
 	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
 	BEGIN {
 		RS=""
@@ -104,11 +93,71 @@ getisize_extra() {
 		
 		}
 		
-	} ' < "$DEBINX1"
+	} ' < /tmp/"$1".pkgisizemain
+	[ -f /tmp/"$1".pkgisizemain ] && sudo rm /tmp/"$1".pkgisizemain
 }
 
+getdsize_extra() {
+	sed -n "/^Package: "$1"$/,/^$/{/./p}" "$DEBINX1" > /tmp/"$1".pkgdsizeextra
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
 
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
 
+				if ( f[1] == "Size" )
+					print f[2] 
+			}
+		
+		}
+		
+	} ' < /tmp/"$1".pkgdsizeextra
+	[ -f /tmp/"$1".pkgdsizeextra ] && sudo rm /tmp/"$1".pkgdsizeextra
+}
+
+getisize_extra() {
+	sed -n "/^Package: "$1"$/,/^$/{/./p}" "$DEBINX1" > /tmp/"$1".pkgisizeextra
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+
+				if ( f[1] == "Installed-Size" )
+					print f[2] 
+			}
+		
+		}
+		
+	} ' < /tmp/"$1".pkgisizeextra
+	[ -f /tmp/"$1".pkgisizeextra ] && sudo rm /tmp/"$1".pkgisizeextra
+}
 
 for I in `ls /tmp/work`; do 
 grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 && continue
@@ -140,7 +189,7 @@ else
    		ISIZE=`grep ^"$I"-data: /tmp/.importsizelist | awk '{print $3}'`
    		[ ! -f "$DEBDIR"/"$I"-data.tar.gz ] && [ ! -z "$DSIZE" ] && [ "$DSIZE" -eq "$DSIZE" ] && echo $DSIZE >> /tmp/.importdsize
    		[ ! -z "$ISIZE" ] && [ "$ISIZE" -eq "$ISIZE" ] && echo "$ISIZE" >> /tmp/.importisize
-		DEBINX1="/tmp/debinx1"
+		
 	else
 		read FULLPATH < /tmp/work/"$I"
        		THISDEB="${FULLPATH##*/}"
@@ -257,11 +306,4 @@ echo " "
 [ -f /tmp/.importsizelist ] && sudo rm /tmp/.importsizelist
 [ -f /tmp/.oldsize ] && sudo rm /tmp/.oldsize
 
-rm "$DEBINX1"
-
-
-
-
-
-
-
+[ -f "$DEBINXSIZE" ] && sudo rm "$DEBINXSIZE"

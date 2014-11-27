@@ -65,13 +65,7 @@ selectDeb() {
 }
 
 getMd5sum() {
-> /tmp/"$1".pkglist
-grep -B 1 -A 2 "^Package: $1$" "$DEBINX" > /tmp/"$1".pkglist
-grep "^MD5sum:" /tmp/"$1".pkglist | cut -f2 -d" " 
-rm /tmp/"$1".pkglist
-}
-
-getMd5sum1() {
+	sed -n "/^Package: "$1"$/,/^$/{/./p}" "$DEBINX" > /tmp/"$1".pkgmd5
 	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
 	BEGIN {
 		RS=""
@@ -97,7 +91,8 @@ getMd5sum1() {
 		
 		}
 		
-	} ' < "$DEBINX"
+	} ' < /tmp/"$1".pkgmd5
+	[ -f /tmp/"$1".pkgmd5 ] && sudo rm /tmp/"$1".pkgmd5
 }
 
 
@@ -225,7 +220,7 @@ if [ -s /tmp/.targetfile ]; then
 	/usr/bin/rotdash $!
 else
 	echo "Gathering dependency info.."
-	debGetDeps "$TARGET" > /dev/null 2>&1 &
+	time debGetDeps "$TARGET" > /dev/null 2>&1 &
 	/usr/bin/rotdash $!
 fi
 
@@ -338,7 +333,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			MIRRORFILE=`echo "$DEBINX" | sed 's:/tmp/debinx.::'`
 			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
 			if [ -f "$DEBS"/"$THISDEB" ]; then
-				MD5NEW=$(getMd5sum1 "$DEBINFO")
+				MD5NEW=$(getMd5sum "$DEBINFO")
 				MD5OLD=$(md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
@@ -407,8 +402,19 @@ sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&
 if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && mount | grep " /tmp/tcloop/"$TARGET" " > /dev/null 2>&1; then
 	[ -d "$TCEDIR"/sce/update ] || mkdir -p "$TCEDIR"/sce/update
 	mksquashfs "$TARGET" "$TCEDIR"/sce/update/"$TARGET".sce -noappend
+	if [ "$?" == "0" ]; then
+		cd "$TCEDIR"/sce/update/
+		md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
+		cd "$IMPORT"
+	fi
+	
 else
 	mksquashfs "$TARGET" "$TCEDIR"/sce/"$TARGET".sce -noappend
+	if [ "$?" == "0" ]; then
+		cd "$TCEDIR"/sce/
+		md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
+		cd "$IMPORT"
+	fi
 fi
 
 if [ "$?" == "0" ]

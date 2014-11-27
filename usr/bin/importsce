@@ -104,11 +104,6 @@ shift `expr $OPTIND - 1`
 
 TARGET="$1"
 
-# Strip .sce suffix of package and preceding directory 
-# and preceding directory if specified on command line.
-TARGET=`basename "$TARGET"`
-TARGET=${TARGET%%.sce}
-
 # Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
 if [ "$PACKAGELIST" ]; then
   TARGETFILE=`readlink -f "$TARGET"`
@@ -119,6 +114,11 @@ elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
   cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
   PACKAGELIST=TRUE
 fi
+
+# Strip .sce suffix of package and preceding directory 
+# and preceding directory if specified on command line.
+TARGET=`basename "$TARGET"`
+TARGET=${TARGET%%.sce}
 
 # Determine if the -d option or the existence of a dep file
 # is present and use dep file if found.
