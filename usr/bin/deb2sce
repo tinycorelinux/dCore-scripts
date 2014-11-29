@@ -65,7 +65,13 @@ selectDeb() {
 }
 
 getMd5sum() {
-	sed -n "/^Package: "$1"$/,/^$/{/./p}" "$DEBINX" > /tmp/"$1".pkgmd5
+> /tmp/"$1".pkglist
+grep -B 1 -A 8 "^Package: $1$" "$DEBINX" |  grep -B8 "^$" > /tmp/"$1".pkglist
+grep "^MD5sum:" /tmp/"$1".pkglist | cut -f2 -d" " 
+rm /tmp/"$1".pkglist
+}
+
+getMd5sum1() {
 	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
 	BEGIN {
 		RS=""
@@ -91,8 +97,7 @@ getMd5sum() {
 		
 		}
 		
-	} ' < /tmp/"$1".pkgmd5
-	[ -f /tmp/"$1".pkgmd5 ] && sudo rm /tmp/"$1".pkgmd5
+	} ' < "$DEBINX"
 }
 
 
@@ -123,8 +128,7 @@ cleanup() {
 	[ -f /tmp/data.tar.xz ] && sudo rm /tmp/data.tar.xz
 	[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
 	[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
-	[ -f /tmp/debinxmd5 ] && sudo rm /tmp/debinxmd5
-	[ -f /tmp/debinxdep ] && sudo rm /tmp/debinxdep
+	[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
 }
 
 # Main
@@ -158,12 +162,6 @@ read MIRROR < /opt/debmirror
 echo "Using "$DISTRO" Mirror: $MIRROR"
 echo
 unset META
-#RESULTS="$(debQuery "$TARGET")"
-#if [ ! "$RESULTS" ]
-
-# Further strip and echo the main debinx to /tmp for quicker searching.
-cat "$DEBINX" | sed -e '/^Installed-Size:/d' -e '/^Size:/d' -e '/^MD5sum:/d' > /tmp/debinxdep
-cat "$DEBINX" | sed -e '/^Depends:/d' -e '/^Filename:/d' -e '/^Installed-Size:/d' -e '/^Size:/d' > /tmp/debinxmd5
 
 if [ -s /tmp/.targetfile ]; then
 	echo "$TARGET is from your own custom package list:"
@@ -174,7 +172,7 @@ elif sudo grep -q "^$TARGET:" /tmp/.depfile && ! sudo grep "^Package: $TARGET" "
 	echo "$TARGET is a meta package of related "$DISTRO" ones."
 	META="$TARGET"
 elif sudo grep "^Package: $TARGET$" /tmp/debinx.* > /dev/null 2>&1; then
-	EXTRAINX=`grep -l "^Package: $TARGET$" /tmp/debinx.* | head -n 1`
+	EXTRAINX=`grep -l "^Package: $TARGET$" /tmp/debinx.* | head -n 1 | cut -f1 -d:`
 	MIRRORFILE=`echo "$EXTRAINX" | sed 's:/tmp/debinx.::'`
 	EXTRAMIRROR=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $1}'`
 	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
@@ -220,7 +218,7 @@ if [ -s /tmp/.targetfile ]; then
 	/usr/bin/rotdash $!
 else
 	echo "Gathering dependency info.."
-	time debGetDeps "$TARGET" > /dev/null 2>&1 &
+	debGetDeps "$TARGET" > /dev/null 2>&1 &
 	/usr/bin/rotdash $!
 fi
 
@@ -301,7 +299,8 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 read IMPORTMIRROR < /opt/tcemirror                                                                             
 	 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 	 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
-	 if [ -z "$FULLPATH" ] && grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null; then
+	 if grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null && ! grep "^Package: $DEBINFO$" /tmp/debinx.* > /dev/null 2>&1 ; then
+	 #if [ -z "$FULLPATH" ] && grep "^${DEBINFO}:" /tmp/.pkgprebuilt >/dev/null; then
 		if grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist > /dev/null 2>&1; then
 			cd "$DEBS"
 			if [ -f "${DEBINFO}".tar.gz ]; then
@@ -333,7 +332,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			MIRRORFILE=`echo "$DEBINX" | sed 's:/tmp/debinx.::'`
 			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
 			if [ -f "$DEBS"/"$THISDEB" ]; then
-				MD5NEW=$(getMd5sum "$DEBINFO")
+				MD5NEW=$(getMd5sum1 "$DEBINFO")
 				MD5OLD=$(md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
@@ -354,7 +353,6 @@ for DEBINFO in `ls -t /tmp/work`; do
 			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		else
-			DEBINX=/tmp/debinxmd5
 			if [ -f "$DEBS"/"$THISDEB" ]; then
 				MD5NEW=$(getMd5sum "$DEBINFO")
 				MD5OLD=$(md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
