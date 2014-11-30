@@ -42,7 +42,7 @@ setupStartupScript() {
 
 fetchDeb() {
 
-		sudo wget -O "$DEBS"/"$THISDEB"  ${MIRROR}/${1}
+		sudo /bb/wget -O "$DEBS"/"$THISDEB"  ${MIRROR}/${1}
 		if [ "$?" != 0 ]
 		then
 			echo "failed on download of $1"
@@ -56,7 +56,7 @@ selectDeb() {
 	FULLPATH=${1}
 	SELECT_PATH="${FULLPATH%/*}"
 	PKG="${1##*/}"
-	wget -q -O - "$MIRROR"/"$SELECT_PATH" | awk 'BEGIN{FS=" href="}{print $2}' | awk 'BEGIN{FS="\""}{print $2}' | grep "^${PKG%%_*}" | grep ".deb$" | select "Select Package for ${PKG}" "-"
+	/bb/wget -q -O - "$MIRROR"/"$SELECT_PATH" | awk 'BEGIN{FS=" href="}{print $2}' | awk 'BEGIN{FS="\""}{print $2}' | grep "^${PKG%%_*}" | grep ".deb$" | select "Select Package for ${PKG}" "-"
 	read DEB < /tmp/select.ans
 	if [ "$DEB" != "q" ]
 	then
@@ -304,18 +304,18 @@ for DEBINFO in `ls -t /tmp/work`; do
 		if grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist > /dev/null 2>&1; then
 			cd "$DEBS"
 			if [ -f "${DEBINFO}".tar.gz ]; then
-				if [ `md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` != `grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist | cut -f2 -d" "` ]; then
+				if [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` != `grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist | cut -f2 -d" "` ]; then
 					echo "Fetching updated "${DEBINFO}".tar.gz.."
 					rm "${DEBINFO}".tar.gz*
-					wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
+					/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
 				fi
 				
 			else
-				wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
+				/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
 			fi
 	
-			if [ -f "${DEBINFO}".tar.gz ] && [ `md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist | cut -f2 -d" "` ]; then	 
-				echo "${DEBINFO}: `md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		  
+			if [ -f "${DEBINFO}".tar.gz ] && [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/.prebuiltmd5sumlist | cut -f2 -d" "` ]; then	 
+				echo "${DEBINFO}: `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		  
 				echo "Merging "${DEBINFO}":"
 	    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET"        		  
 			else 
@@ -333,7 +333,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
 			if [ -f "$DEBS"/"$THISDEB" ]; then
 				MD5NEW=$(getMd5sum1 "$DEBINFO")
-				MD5OLD=$(md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
+				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
 					echo "Fetching updated "$THISDEB".."
@@ -355,7 +355,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 		else
 			if [ -f "$DEBS"/"$THISDEB" ]; then
 				MD5NEW=$(getMd5sum "$DEBINFO")
-				MD5OLD=$(md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
+				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
 					echo "Fetching updated "$THISDEB".."
@@ -402,7 +402,7 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && mount | grep " /tmp/tcloop/"$TARGET" " 
 	mksquashfs "$TARGET" "$TCEDIR"/sce/update/"$TARGET".sce -noappend
 	if [ "$?" == "0" ]; then
 		cd "$TCEDIR"/sce/update/
-		md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
+		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
 		cd "$IMPORT"
 	fi
 	
@@ -410,7 +410,7 @@ else
 	mksquashfs "$TARGET" "$TCEDIR"/sce/"$TARGET".sce -noappend
 	if [ "$?" == "0" ]; then
 		cd "$TCEDIR"/sce/
-		md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
+		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
 		cd "$IMPORT"
 	fi
 fi
