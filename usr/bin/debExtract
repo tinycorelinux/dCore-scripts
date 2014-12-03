@@ -7,8 +7,8 @@
 
 . /etc/init.d/tc-functions
 
-#PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
-#export PATH
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
 
 checkroot
 BUILD=`getBuild`
