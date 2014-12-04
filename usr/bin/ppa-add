@@ -1,0 +1,32 @@
+#!/bin/sh
+
+SERVER="http://ppa.launchpad.net"
+ENTRY=`echo "$1" | awk ' BEGIN{FS=":"} { print $2 } '`
+DISTRO=`cat /usr/share/doc/tc/distro.txt`
+VERSION=`cat /usr/share/doc/tc/repo.txt`
+REPO="$2"
+SOURCESLISTDIR="/opt/debextra"
+
+[ -d "$SOURCESLISTDIR" ] || sudo mkdir -p "$SOURCESLISTDIR"
+
+if [ ! -n "$1" ]; then
+	echo "Please specify a PPA.  Exiting.."
+	exit 1
+fi
+
+if [ ! -n "$2" ]; then
+	REPO=main
+fi
+
+FILE="`echo "$1" | awk ' BEGIN{FS=":"} { print $2 } ' | sed 's/\//-/g'`"
+FILENAME="$FILE"-"$REPO"
+if [ -f "$SOURCESLISTDIR"/"$FILENAME" ]; then
+	echo ""$SOURCESLISTDIR"/"$FILENAME" already exists.  Exiting.."
+	exit 1
+else
+	echo " "
+	echo "Adding below to "$SOURCESLISTDIR"/"$FILENAME"":
+	echo " "
+	echo ""$SERVER"/"$ENTRY"/"$DISTRO" "$VERSION" "$REPO"" | sudo tee -a "$SOURCESLISTDIR"/"$FILENAME"
+	echo " "
+fi
