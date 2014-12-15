@@ -12,6 +12,7 @@ TCEDIR=`readlink /etc/sysconfig/tcedir`
 SCEBOOTLST=""$TCEDIR"/sceboot.lst"
 checknotroot
 BUILD=`getBuild`
+HERE=`pwd`
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "Usage:"
@@ -23,6 +24,8 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"importsce -d"' to make use of existing SCE packages as dependencies.  A select menu will appear."
 	echo "'"importsce -o"' to add resulting SCE package to ondemand."
 	echo "'"importsce -n"' for non interactive mode."
+	echo "'"importsce -u"' for update mode, syncing a new debinx files."
+	echo "'"importsce -p"' for preserve debinx mode, use existing rather than fetch new for better performance." 
 exit 1
 fi
 
@@ -63,18 +66,14 @@ exit_tcnet() {
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
-wget -O /tmp/.extrarepodep -cq "$IMPORTMIRROR"/PKGEXTRAREPODEP 2>/dev/null || exit_tcnet
-wget -O /tmp/.depfile -cq "$IMPORTMIRROR"/PKGADDDEP 2>/dev/null || exit_tcnet
-wget -O /tmp/.pkgextrafiles -cq "$IMPORTMIRROR"/PKGEXTRAFILES 2>/dev/null || exit_tcnet
-wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null ||  exit_tcnet
-wget -O /tmp/deb2sce.tar.gz -cq "$IMPORTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
-wget -O /tmp/.prebuiltmd5sumlist -cq "$PREBUILTMIRROR"/PREBUILTMD5SUMLIST ||  exit_tcnet
-wget -O /tmp/.pkgextrafilemd5sumlist -cq "$IMPORTMIRROR"/PKGEXTRAFILEMD5SUMLIST ||  exit_tcnet
+
 
 unset FLAGS PACKAGELIST
-while getopts drsbolkn OPTION
+while getopts drsbolknup OPTION
 do
 	case ${OPTION} in
+		u) UPDATEDEBINXMODE=TRUE ;;
+		p) PRESERVEDEBINXMODE=TRUE ;;
 		n) NONINTERACTIVE=TRUE ;;
 		k) KEEPDOC=TRUE ;;
 		d) DEPS=TRUE ;;
@@ -99,10 +98,11 @@ if grep -i "^ONDEMAND=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	FLAGS="$FLAGS"o
 fi
 
+
 shift `expr $OPTIND - 1`
+
 [ "$FLAGS" ] && FLAGS="-$FLAGS"
 
-TARGET="$1"
 
 # Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
 if [ "$PACKAGELIST" ]; then
@@ -115,10 +115,7 @@ elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
   PACKAGELIST=TRUE
 fi
 
-# Strip .sce suffix of package and preceding directory 
-# and preceding directory if specified on command line.
-TARGET=`basename "$TARGET"`
-TARGET=${TARGET%%.sce}
+
 
 # Determine if the -d option or the existence of a dep file
 # is present and use dep file if found.
@@ -169,6 +166,45 @@ elif [ "$NONINTERACTIVE" == "TRUE" ]; then
 	echo "Using the -n option."
 fi
 
+if grep -i "^PRESERVEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+	PRESERVEDEBINXMODE=TRUE
+	echo "Using the -p option."
+elif [ "$PRESERVEDEBINXMODE" == "TRUE" ]; then
+	PRESERVEDEBINXMODE=TRUE
+	echo "Using the -p option."
+else
+	UPDATEDEBINXMODE=TRUE
+	PRESERVEDEBINXMODE=FALSE
+fi
+
+if grep -i "^UPDATEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+	UPDATEDEBINXMODE=TRUE
+	PRESERVEDEBINXMODE=FALSE
+	echo "Using the -u option."
+elif [ "$UPDATEDEBINXMODE" == "TRUE" ]; then
+	PRESERVEDEBINXMODE=FALSE
+	echo "Using the -u option."
+fi
+
+
+TARGET="$1"
+
+# Strip .sce suffix of package and preceding directory 
+# and preceding directory if specified on command line.
+TARGET=`basename "$TARGET"`
+TARGET=${TARGET%%.sce}
+cd /tmp
+
+wget -O deb2sce.tar.gz -cq "$IMPORTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
+
+tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
+cd "$HERE"
+
 # Check for MS Windows filesystem of TCEDIR, and only continue of RAM 
 # is being used for unpacking.
 MS_MNTS=`mount|awk '$5~/fat|vfat|msdos|ntfs/{printf "%s ",$1}'`
@@ -198,8 +234,13 @@ fi
 
 # Below is where the package is found either in prebuilt, main
 # Packages file, or in extra repos.  And then proceeds to deb2sce.
-#[ -s /tmp/debinx ] || sudo debGetEnv "$2"
-sudo debGetEnv
+
+if [ "$UPDATEDEBINXMODE" == "TRUE" ]; then
+	sudo debGetEnv "$2"
+else
+	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
+fi
+
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/$DEBINX"
 # Below is where -l list file option is being used.
@@ -228,24 +269,24 @@ elif [ "$PACKAGELIST" ] && [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   fi  
 # Below checks for package in the extra repos first, then the 
 # Debian main repos, then in the prebuilt section, in that order.
-elif sudo grep -i "^Package: $TARGET" /tmp/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
+elif sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
   if [ -f /tmp/.importinteractive ]; then
-	if sudo grep -i "^Package: $TARGET$" /tmp/debinx* > /dev/null 2>&1; then
-		DEB=`sudo grep -i "^Package: $TARGET$" /tmp/debinx* | awk '{print $2}'`
+	if sudo grep -i "^Package: $TARGET$" "$TCEDIR"/debinx* > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^Package: $TARGET$" "$TCEDIR"/debinx* | awk '{print $2}'`
 	elif sudo grep -i "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
 		DEB=`sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
-	elif sudo grep -i "^$TARGET:" /tmp/.depfile > /dev/null 2>&1; then
-		DEB=`sudo grep -i "^$TARGET:" /tmp/.depfile | cut -f1 -d:`
-	elif sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt  > /dev/null 2>&1; then
-		DEB=`sudo grep -i "^$TARGET:" /tmp/.pkgprebuilt | cut -f1 -d:`
+	elif sudo grep -i "^$TARGET:" /tmp/PKGADDDEP > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^$TARGET:" /tmp/PKGADDDEP | cut -f1 -d:`
+	elif sudo grep -i "^$TARGET:" /tmp/PKGPREBUILTDEP  > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^$TARGET:" /tmp/PKGPREBUILTDEP | cut -f1 -d:`
 	fi
 	if [ -z "$DEB" ]; then
-		{ sudo grep -i "^Package: $TARGET" /tmp/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+		{ sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   		read DEB < /tmp/select.ans                                                                           
   		[ "$DEB" == "q" ] && exit 1
 	fi     
   else
-	{ sudo grep -i "^Package: $TARGET" /tmp/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/.depfile | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/.pkgprebuilt | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+	{ sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   	read DEB < /tmp/select.ans                                                                           
   	[ "$DEB" == "q" ] && exit 1     
   fi 

@@ -42,6 +42,11 @@ ar p "$FILE" "$DATA_TAR" > "$PKGDIR"/"$DATA_TAR" || exit 1
 ar p "$FILE" "$CONFIG_TAR" > "$PKGDIR"/"$CONFIG_TAR" || exit 1
 tar xf "$PKGDIR"/"$DATA_TAR" -C "$PKG" || exit 1
 tar xf "$PKGDIR"/"$CONFIG_TAR" -C "$CFG" || exit 1
+
+if [ ! -f /tmp/.keepdoc ]; then
+	[ -d "$PKG"/usr/share/doc ] && rm -r "$PKG"/usr/share/doc
+	[ -d "$PKG"/usr/share/man ] && rm -r "$PKG"/usr/share/man
+fi
 	
 # Set Tiny Core custom script support.
 #cd "$PKG"
@@ -58,16 +63,16 @@ then
 	chown -R root.staff "$PKG/usr/local/tce.installed/"
 	sudo rm /tmp/"${BASENAME}.deb2sce"
 fi
-cd "$HERE"
+cd "$PKG"
 
-if grep "^$BASENAME": /tmp/.pkgextrafilemd5sumlist >/dev/null; then
-cd "$DEBS"
-  if [ -f "$BASENAME"-data.tar.gz ]; then
+if grep "^$BASENAME": /tmp/PKGEXTRAFILEMD5SUMLIST >/dev/null; then
 
-	if [ `md5sum "$BASENAME"-data.tar.gz | cut -f1 -d" "` != `grep "^$BASENAME": /tmp/.pkgextrafilemd5sumlist | cut -f2 -d" "` ]; then
+  if [ -f "$DEBS"/"$BASENAME"-data.tar.gz ]; then
+
+	if [ `md5sum "$DEBS"/"$BASENAME"-data.tar.gz | cut -f1 -d" "` != `grep "^$BASENAME": /tmp/PKGEXTRAFILEMD5SUMLIST | cut -f2 -d" "` ]; then
 		echo "Fetching updated "$BASENAME"-data.tar.gz.."
 		rm "$BASENAME"-data.tar.gz*
-		wget -O "$BASENAME"-data.tar.gz "$IMPORTMIRROR"/"$BASENAME"-data.tar.gz || exit 1
+		wget -O "$DEBS"/"$BASENAME"-data.tar.gz "$IMPORTMIRROR"/"$BASENAME"-data.tar.gz || exit 1
 	fi
 
 
@@ -75,14 +80,14 @@ cd "$DEBS"
 	wget -O "$DEBS"/"$BASENAME"-data.tar.gz -c "$IMPORTMIRROR"/"$BASENAME"-data.tar.gz || exit 1
   fi
 
-  if [ `md5sum "$BASENAME"-data.tar.gz | cut -f1 -d" "` == `grep "^$BASENAME": /tmp/.pkgextrafilemd5sumlist | cut -f2 -d" "` ]; then
+  if [ `md5sum "$DEBS"/"$BASENAME"-data.tar.gz | cut -f1 -d" "` == `grep "^$BASENAME": /tmp/PKGEXTRAFILEMD5SUMLIST | cut -f2 -d" "` ]; then
     echo "Merging extra files for "${BASENAME}": "$BASENAME"-data.tar.gz"
-    tar xf "$BASENAME"-data.tar.gz -C "$PKG" || exit 1
+    tar xf "$DEBS"/"$BASENAME"-data.tar.gz -C "$PKG"|| exit 1
   else
     echo "Md5sum failed for "$BASENAME"-data.tar.gz, exiting..."
     exit 1
   fi
-  cd "$PKG"
+
 fi
 
 	
@@ -103,6 +108,7 @@ if [ -f "$CFG"/postinst ]; then
 fi
 
 #	cd pkg
+
 echo "Merging $BASENAME "
 #find . -depth | cpio -pmd "$PKG" 2>&1 > /dev/null
 #(tar -cf - .) | (cd "$PKG" && tar -xpf -)

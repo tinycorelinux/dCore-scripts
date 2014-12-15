@@ -18,14 +18,14 @@ getDeps()
 	
 	echo "$PKG"
 	touch /tmp/work/"$PKG"
-	if grep "^Package: $PKG$" /tmp/debinx.* > /dev/null 2>&1 ; then
+	if grep "^Package: $PKG$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
 		DEPLIST=`debGetPkgList $PKG 2>/dev/null`
-		[ -s /tmp/.extrarepodep ] &&  DEPLIST="$DEPLIST `grep "^$PKG:" /tmp/.extrarepodep | cut -f2 -d:`"
-	elif grep "^$PKG:" /tmp/.pkgprebuilt > /dev/null 2>&1; then
-		DEPLIST="$DEPLIST `grep "^$PKG:" /tmp/.pkgprebuilt | cut -f2 -d:`"
+		[ -s /tmp/PKGEXTRAREPODEP ] &&  DEPLIST="$DEPLIST `grep "^$PKG:" /tmp/PKGEXTRAREPODEP | cut -f2 -d:`"
+	elif grep "^$PKG:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
+		DEPLIST="$DEPLIST `grep "^$PKG:" /tmp/PKGPREBUILTDEP | cut -f2 -d:`"
 	else
 		DEPLIST=`debGetPkgList $PKG 2>/dev/null`
-		[ -s /tmp/.depfile ] &&  DEPLIST="$DEPLIST `grep "^$PKG:" /tmp/.depfile | cut -f2 -d:`"
+		[ -s /tmp/PKGADDDEP ] &&  DEPLIST="$DEPLIST `grep "^$PKG:" /tmp/PKGADDDEP | cut -f2 -d:`"
 	fi
 	for D in $DEPLIST; do getDeps $D; done
 }
