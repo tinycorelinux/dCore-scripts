@@ -167,12 +167,14 @@ echo
 unset META
 
 # Remove unused debinx files in TCEDIR that will cause confusion if their /opt/debextra entries do not exist.
-for I in `ls "$TCEDIR"/debinx.*`; do 
-H=`basename "$I" | sed 's:debinx.::'`
-if [ ! -f /opt/debextra/"$H" ]; then
-	rm "$I"
-fi 
-done
+if ls "$TCEDIR"/debinx.* > /dev/null 2>&1; then
+	for I in `ls "$TCEDIR"/debinx.*`; do 
+	H=`basename "$I" | sed 's:debinx.::'`
+	if [ ! -f /opt/debextra/"$H" ]; then
+		rm "$I"
+	fi 
+	done
+fi
 
 
 if [ -s /tmp/.targetfile ]; then
@@ -234,6 +236,17 @@ else
 	/usr/bin/rotdash $!
 fi
 
+if [ -s /tmp/.blocked ]; then
+	cat /tmp.blocked
+	echo -n "The above packages are blocked dependencies of $TARGET and will not be included in \
+the final SCE. This can cause problems.  Proceed anyway? (y/N): "
+	read ans
+	if [ "$ans" != "y" ] || [ "$ans" != "Y" ]; then
+		echo "Exiting.."
+		exit 0
+	fi
+fi
+
 if [ -f /tmp/.importdep ]; then
 	debGetSceDep "$TARGET"
 fi
@@ -273,7 +286,7 @@ if [ -s /tmp/.importfree ]; then
 	echo "The above errors have occured. Do you wish to continue"
 	echo -n "importing "$TARGET" despite the warnings? (y/N):"
 	read ans
-	if [ "$ans" != "y" ]; then
+	if [ "$ans" != "y" ] || [ "$ans" != "Y" ]; then
 		cleanup
 		exit 1
 	fi
@@ -287,14 +300,14 @@ if [ ! -f /tmp/.importinteractive ]; then
 	echo "will consist of? Enter y to view and q to exit reading"
 	echo -n "the package list. (y/N): "
 	read ans
-	if [ "$ans" == "y" ]; then
+	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 		less /tmp/.pkglist
 	fi
 	echo
 	echo
 	echo -n "Proceed to create $TARGET.sce? (y/N): "
 	read ans
-	if [ "$ans" != "y" ]; then
+	if [ "$ans" != "y" ] || [ "$ans" != "Y" ]; then
 		cleanup
 		exit 1
 	fi

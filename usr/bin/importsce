@@ -14,6 +14,7 @@ checknotroot
 BUILD=`getBuild`
 HERE=`pwd`
 
+
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "Usage:"
 	echo "'"importsce"' with no options will prompt for characters of desired package name."
@@ -62,6 +63,7 @@ exit_tcnet() {
 [ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
 [ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
+[ -f /tmp/.blocked ] && sudo rm /tmp/.blocked
 
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
@@ -98,20 +100,43 @@ if grep -i "^ONDEMAND=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	FLAGS="$FLAGS"o
 fi
 
-
 shift `expr $OPTIND - 1`
 
 [ "$FLAGS" ] && FLAGS="-$FLAGS"
+TARGET="$1"
 
+# Strip .sce suffix of package and preceding directory 
+# and preceding directory if specified on command line.
+TARGET=`basename "$TARGET"`
+TARGET=${TARGET%%.sce}
+cd /tmp
+
+wget -O deb2sce.tar.gz -cq "$IMPORTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
+
+tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
+[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST
+tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
+cd "$HERE"
+
+if grep -wq "^$TARGET$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
+	echo " "
+	echo "$TARGET is a blocked package.  Exiting.."
+	echo " "
+	exit 0
+fi
 
 # Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
-if [ "$PACKAGELIST" ]; then
-  TARGETFILE=`readlink -f "$TARGET"`
-  cp $TARGETFILE /tmp/.targetfile
-  TARGET=`basename $TARGET`
+if [ "$PACKAGELIST" == "TRUE" ]; then
+  TARGETFILE=`readlink -f "$1"`
+  sudo cp $TARGETFILE /tmp/.targetfile
+  TARGET=`basename $1`
 elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
   TARGETFILE="$TCEDIR"/sce/"$1".sce.lst
-  cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
+  sudo cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
   PACKAGELIST=TRUE
 fi
 
@@ -187,23 +212,6 @@ elif [ "$UPDATEDEBINXMODE" == "TRUE" ]; then
 fi
 
 
-TARGET="$1"
-
-# Strip .sce suffix of package and preceding directory 
-# and preceding directory if specified on command line.
-TARGET=`basename "$TARGET"`
-TARGET=${TARGET%%.sce}
-cd /tmp
-
-wget -O deb2sce.tar.gz -cq "$IMPORTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
-
-tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
-cd "$HERE"
 
 # Check for MS Windows filesystem of TCEDIR, and only continue of RAM 
 # is being used for unpacking.

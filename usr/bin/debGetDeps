@@ -14,7 +14,10 @@ getDeps()
 {
         PKG=${1}
 	[ -e /tmp/work/"$PKG" ] && return
-#	grep -wq "$PKG" "$TCEDIR"/import/exclude.lst && return
+	if grep -wq "^$PKG$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
+		echo "$PKG" >> /tmp/.blocked
+		return
+	fi
 	
 	echo "$PKG"
 	touch /tmp/work/"$PKG"
