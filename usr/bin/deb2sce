@@ -241,9 +241,12 @@ if [ -s /tmp/.blocked ]; then
 	echo -n "The above packages are blocked dependencies of $TARGET and will not be included in \
 the final SCE. This can cause problems.  Proceed anyway? (y/N): "
 	read ans
-	if [ "$ans" != "y" ] || [ "$ans" != "Y" ]; then
+	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+		:
+	else
 		echo "Exiting.."
-		exit 0
+		cleanup
+		exit 1
 	fi
 fi
 
@@ -286,7 +289,10 @@ if [ -s /tmp/.importfree ]; then
 	echo "The above errors have occured. Do you wish to continue"
 	echo -n "importing "$TARGET" despite the warnings? (y/N):"
 	read ans
-	if [ "$ans" != "y" ] || [ "$ans" != "Y" ]; then
+	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+		:
+	else
+		echo "Exiting.."
 		cleanup
 		exit 1
 	fi
@@ -307,7 +313,10 @@ if [ ! -f /tmp/.importinteractive ]; then
 	echo
 	echo -n "Proceed to create $TARGET.sce? (y/N): "
 	read ans
-	if [ "$ans" != "y" ] || [ "$ans" != "Y" ]; then
+	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+		:
+	else
+		echo "Exiting.."
 		cleanup
 		exit 1
 	fi
