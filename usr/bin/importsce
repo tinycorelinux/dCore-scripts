@@ -111,10 +111,10 @@ TARGET=`basename "$TARGET"`
 TARGET=${TARGET%%.sce}
 cd /tmp
 
-wget -O deb2sce.tar.gz -cq "$IMPORTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
+wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
 
 tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
-[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST
+[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
