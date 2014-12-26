@@ -294,7 +294,7 @@ elif sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx* > /dev/null 2>&1 ||  sud
   		[ "$DEB" == "q" ] && exit 1
 	fi     
   else
-	{ sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+	{ ls "$TCEDIR"/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   	read DEB < /tmp/select.ans                                                                           
   	[ "$DEB" == "q" ] && exit 1     
   fi 
