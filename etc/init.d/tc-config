@@ -64,6 +64,7 @@ for i in `cat /proc/cmdline`; do
 		;;
 		*)
 			case $i in
+				checkfs) CHECKFS=1 ;;
 				nozswap) NOZSWAP=1 ;;
 				nofstab) NOFSTAB=1 ;;
 				nortc) NORTC=1 ;;
@@ -179,6 +180,35 @@ else
 	mv /tmp/98-tc.rules /etc/udev/rules.d/. 2>/dev/null
 	/sbin/udevadm control --reload-rules &
 fi
+
+checkfs() {
+	FS=/dev/"$1"
+	if ! grep "^$FS$" /tmp/checkfs > /dev/null 2>&1; then
+     		if grep "$FS" /etc/mtab > /dev/null 2>&1; then
+     			:
+     		else
+			  if grep "$FS" /etc/fstab | grep ext[2,3,4] > /dev/null 2>&1; then
+        		  	e2fsck -n "$FS" > /tmp/checkfs."$1" 2>&1
+				if [ "$?" != "0" ]; then
+					echo "$FS" "$2" >> /tmp/checkfs.errors
+				
+					echo -n "${YELLOW}"$FS" ${RED}being used for "$2" contains filesystem errors.  Advised to reboot \
+with "base" option to fix them.  Proceed anyway?  (y/N:)"
+					read ans
+					if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+						:
+					else
+						echo "${YELLOW}Rebooting..${NORMAL}"
+						/bb/reboot
+					fi
+				fi
+				echo "$FS" >> /tmp/checkfs	
+			  else
+				echo "Filesystem is not ext[2,3,4] and cannot be checked." > /tmp/checkfs."$1"
+			  fi 
+    		 fi
+ 	fi
+}
 
 if [ -n "$SYSLOG" ]; then
 	 [ -z "$RSYSLOG" ] || SOPTS=" -L -R $RSYSLOG "
@@ -422,6 +452,10 @@ if [ -n "$MYHOME" ]; then
 	PARTITION=${MYHOME##/dev/}
 	find_mountpoint "$PARTITION"
 	if [ -n "$MOUNTPOINT" ]; then
+		if [ "$CHECKFS" == "1" ]; then
+			THISDEV=`echo "$MOUNTPOINT" | sed 's:/mnt/::'`
+			checkfs "$THISDEV" HOME
+		fi
 		[ "$MOUNTED" == "yes" ] || mount "$MOUNTPOINT"
 
 		MS_MNTS=`mount|awk '$5~/fat|vfat|msdos|ntfs/{printf "%s ",$3}'`
@@ -433,9 +467,11 @@ if [ -n "$MYHOME" ]; then
 			;;
 			* )
 				if [ -d "$MOUNTPOINT/home/$USER" ]; then
+					echo "${GREEN}Mounting ${YELLOW}/home ${GREEN} on ${YELLOW}"$MOUNTPOINT"/home.${NORMAL}"
 					mount --bind "$MOUNTPOINT/home" /home
 					HOME_SETUP=1
 				else
+					echo "${GREEN}Mounting ${YELLOW}/home ${GREEN} on ${YELLOW}"$MOUNTPOINT"/home.${NORMAL}"
 					mkdir -p "$MOUNTPOINT/home/$USER"
 					mount --bind "$MOUNTPOINT/home" /home
 				fi
@@ -455,6 +491,10 @@ if [ -n "$MYOPT" ]; then
 	PARTITION=${MYOPT##/dev/}
 	find_mountpoint "$PARTITION"
 	if [ -n "$MOUNTPOINT" ]; then
+		if [ "$CHECKFS" == "1" ]; then
+			THISDEV=`echo "$MOUNTPOINT" | sed 's:/mnt/::'`
+			checkfs "$THISDEV" OPT
+		fi
 		[ "$MOUNTED" == "yes" ] || mount "$MOUNTPOINT"
 
 		MS_MNTS=`mount|awk '$5~/fat|vfat|msdos|ntfs/{printf "%s ",$3}'`
@@ -465,6 +505,7 @@ if [ -n "$MYOPT" ]; then
 				echo -n "${RED}Press Enter key.${NORMAL}"; read ans
 			;;
 			* )
+				echo "${GREEN}Mounting ${YELLOW}/opt ${GREEN} on ${YELLOW}"$MOUNTPOINT"/opt.${NORMAL}"
 				[ -d "$MOUNTPOINT"/opt ] || mkdir "$MOUNTPOINT"/opt
 				yes n | cp -ai /opt/. "$MOUNTPOINT"/opt/ 2>/dev/null
 				mount --bind "$MOUNTPOINT"/opt/ /opt/
@@ -535,6 +576,23 @@ fi
 sync
 
 wait $fstab_pid
+if [ "$CHECKFS" == "1" ]; then
+
+	for i in `cat /proc/cmdline`; do
+		case $i in
+			tce=*) TCE=${i#*=} ;;
+		esac
+	done
+	[ -z "$TCE" ] && TCE="$(autoscan 'tce' 'd')"/tce
+	if [ "$TCE" != "/tce" ]; then
+		TCE_DEVICE="${TCE%%/*}"
+		find_mountpoint "$TCE_DEVICE"
+		THISDEV=`echo "$MOUNTPOINT" | sed 's:/mnt/::'`
+		checkfs "$THISDEV" TCE
+	fi
+
+fi
+
 MSSG="${BLUE}Loading extensions...${NORMAL}"
 if [ -n "$SHOWAPPS" ]; then
 	touch /etc/sysconfig/showapps
@@ -626,6 +684,7 @@ rm /etc/udev/rules.d/60-persistent-storage.rules
 
 
 [ -n "$NOAUTOLOGIN" ] && echo "booting" > /etc/sysconfig/noautologin
+	
 
 if [ -n "$PAUSE" ]; then
 	echo -n "${BLUE}Boot time configuration completed. Press <Enter> to continue.${NORMAL}"
