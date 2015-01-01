@@ -365,8 +365,8 @@ for DEBINFO in `ls -t /tmp/work`; do
 			DEBINX=`grep "^Package: $DEBINFO$" "$TCEDIR"/debinx* | head -n 1 | cut -f1 -d:`
 			MIRRORFILE=`echo "$DEBINX" | sed "s:"$TCEDIR"/debinx.::"`
 			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
+			MD5NEW=$(getMd5sum1 "$DEBINFO")
 			if [ -f "$DEBS"/"$THISDEB" ]; then
-				MD5NEW=$(getMd5sum1 "$DEBINFO")
 				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
@@ -387,8 +387,8 @@ for DEBINFO in `ls -t /tmp/work`; do
 			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		else
+			MD5NEW=$(getMd5sum "$DEBINFO")
 			if [ -f "$DEBS"/"$THISDEB" ]; then
-				MD5NEW=$(getMd5sum "$DEBINFO")
 				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
