@@ -128,6 +128,7 @@ cleanup() {
 	[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
 	[ -f /tmp/PKGADDDEP ] && sudo rm /tmp/PKGADDDEP
 	[ -f /tmp/PKGEXTRAFILEMD5SUMLIST ] && sudo rm /tmp/PKGEXTRAFILEMD5SUMLIST
+	[ -f /tmp/PKGDATAFILEMD5SUMLIST ] && sudo rm /tmp/PKGDATAFILEMD5SUMLIST
 	[ -f /tmp/PKGEXTRAFILES ] && sudo rm /tmp/PKGEXTRAFILES
 	[ -f /tmp/PKGEXTRAREPODEP ] && sudo rm /tmp/PKGEXTRAREPODEP
 	[ -f /tmp/PKGPREBUILTDEP ] && sudo rm /tmp/PKGPREBUILTDEP
@@ -376,7 +377,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			else
 				fetchDeb "$FULLPATH"
 			fi
-			sudo debExtract "$DEBS"/"$THISDEB"
+			sudo debExtract "$DEBS"/"$THISDEB" "$TARGET"
 			if [ "$?" != "0" ]; then
 				echo "Failure to extract "$THISDEB", exiting.."
 				cleanup
@@ -398,7 +399,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			else
 				fetchDeb "$FULLPATH"
 			fi
-			sudo debExtract "$DEBS"/"$THISDEB"
+			sudo debExtract "$DEBS"/"$THISDEB" "$TARGET"
 			if [ "$?" != "0" ]; then
 				echo "Failure to extract "$THISDEB", exiting.."
 				cleanup

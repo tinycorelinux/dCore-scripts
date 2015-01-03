@@ -28,7 +28,7 @@ read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
-wget -O /tmp/.importsizelist "$PREBUILTMIRROR"/.importsizelist > /dev/null 2>&1
+/bb/wget -O /tmp/.importsizelist "$PREBUILTMIRROR"/.importsizelist > /dev/null 2>&1
 
 
 getdsize_main() {
@@ -160,14 +160,14 @@ else
 	fi
 fi
 done
-alias df='df'
+
 DSIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importdsize` | awk '{printf("%.2f\n", $1)}')
 ISIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importisize` | awk '{printf("%.2f\n", $1)}')
 ARCHSIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.importarchsize` | awk '{printf("%.2f\n", $1)}')
 SCESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024*2}' /tmp/.importarchsize` | awk '{printf("%.2f\n", $1)}')
 
 RAM=`free -m | grep Mem | awk '{print $4}'`
-HDFREE=$(echo `df /etc/sysconfig/tcedir/ | grep -v Filesystem | awk '{print $4/1024}'` | awk '{printf("%.2f\n", $1)}')
+HDFREE=$(echo `/bb/df /etc/sysconfig/tcedir/ | grep -v Filesystem | awk '{print $4/1024}'` | awk '{printf("%.2f\n", $1)}')
 
 if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce ] && ! mount | grep " /tmp/tcloop/"$TARGET" " > /dev/null 2>&1; then
   HDNEEDED="$DSIZEFINAL"

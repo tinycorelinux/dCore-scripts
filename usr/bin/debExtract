@@ -19,6 +19,7 @@ PKGDIR=/tmp
 PKG="$HERE"
 CFG="$PKG"/cfg
 FILE="$1"
+TARGET="$2"
 BASENAME="${FILE%%_*}"
 BASENAME="${BASENAME##/*/}"
 DEBS="$TCEDIR"/import/debs
@@ -56,20 +57,21 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 cd /tmp
 if sudo tar xzf /tmp/deb2sce.tar.gz "${BASENAME}".deb2sce > /dev/null 2>&1
 then
+	[ -d "$PKG"/usr/local/sce/"$BASENAME" ] || mkdir -p "$PKG"/usr/local/sce/"$BASENAME"
 	echo Merging Tiny Core custom start script for ${BASENAME}: "${BASENAME}.deb2sce"
 	setupStartupScript
 	cat /tmp/"${BASENAME}.deb2sce" > "$PKG/usr/local/tce.installed/${BASENAME}"
+	echo ""$BASENAME"-deb2sce: `md5sum ${BASENAME}.deb2sce | cut -f1 -d" "`" >> "$PKG"/usr/local/sce/"$TARGET"/"$TARGET"-data.md5sum
 	chmod -R 775 "$PKG/usr/local/tce.installed/"
 	chown -R root.staff "$PKG/usr/local/tce.installed/"
 	sudo rm /tmp/"${BASENAME}.deb2sce"
 fi
-cd "$PKG"
 
-if grep "^$BASENAME": /tmp/PKGEXTRAFILEMD5SUMLIST >/dev/null; then
-
+if grep "^$BASENAME"-data: /tmp/PKGDATAFILEMD5SUMLIST >/dev/null; then
+  [ -d "$PKG"/usr/local/sce/"$BASENAME" ] || mkdir -p "$PKG"/usr/local/sce/"$BASENAME"	
   if [ -f "$DEBS"/"$BASENAME"-data.tar.gz ]; then
 
-	if [ `md5sum "$DEBS"/"$BASENAME"-data.tar.gz | cut -f1 -d" "` != `grep "^$BASENAME": /tmp/PKGEXTRAFILEMD5SUMLIST | cut -f2 -d" "` ]; then
+	if [ `md5sum "$DEBS"/"$BASENAME"-data.tar.gz | cut -f1 -d" "` != `grep "^$BASENAME"-data: /tmp/PKGDATAFILEMD5SUMLIST | cut -f2 -d" "` ]; then
 		echo "Fetching updated "$BASENAME"-data.tar.gz.."
 		rm "$BASENAME"-data.tar.gz*
 		wget -O "$DEBS"/"$BASENAME"-data.tar.gz "$IMPORTMIRROR"/"$BASENAME"-data.tar.gz || exit 1
@@ -80,8 +82,9 @@ if grep "^$BASENAME": /tmp/PKGEXTRAFILEMD5SUMLIST >/dev/null; then
 	wget -O "$DEBS"/"$BASENAME"-data.tar.gz -c "$IMPORTMIRROR"/"$BASENAME"-data.tar.gz || exit 1
   fi
 
-  if [ `md5sum "$DEBS"/"$BASENAME"-data.tar.gz | cut -f1 -d" "` == `grep "^$BASENAME": /tmp/PKGEXTRAFILEMD5SUMLIST | cut -f2 -d" "` ]; then
+  if [ `md5sum "$DEBS"/"$BASENAME"-data.tar.gz | cut -f1 -d" "` == `grep "^$BASENAME"-data: /tmp/PKGDATAFILEMD5SUMLIST | cut -f2 -d" "` ]; then
     echo "Merging extra files for "${BASENAME}": "$BASENAME"-data.tar.gz"
+    echo ""$BASENAME"-data: `grep "^$BASENAME"-data: /tmp/PKGDATAFILEMD5SUMLIST | cut -f2 -d" "`" >> "$PKG"/usr/local/sce/"$TARGET"/"$TARGET"-data.md5sum
     tar xf "$DEBS"/"$BASENAME"-data.tar.gz -C "$PKG"|| exit 1
   else
     echo "Md5sum failed for "$BASENAME"-data.tar.gz, exiting..."
@@ -89,7 +92,7 @@ if grep "^$BASENAME": /tmp/PKGEXTRAFILEMD5SUMLIST >/dev/null; then
   fi
 
 fi
-
+cd "$PKG"
 	
 # Setup Debian postinst script.
 cd "$PKG"

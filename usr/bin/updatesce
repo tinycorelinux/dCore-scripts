@@ -5,7 +5,7 @@
 . /etc/init.d/tc-functions
 checknotroot
 SCEDIR="/etc/sysconfig/tcedir/sce"
-
+BUILD=`getBuild`
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "Usage:"
 	echo "'"updatesce"' with no options will bring up a menu of SCEs to choose to update."
@@ -53,13 +53,15 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 sudo debGetEnv "$2"
 read DEBINX < /tmp/debinx
 cd /tmp
+
 [ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
-/bb/wget -O /tmp/deb2sce.tar.gz -cq "$IMPORTMIRROR"/deb2sce.tar.gz ||  exit_tcnet
+/bb/wget -O /tmp/deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz ||  exit_tcnet
+[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
 cd "$SCEDIR"
 }
@@ -73,8 +75,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	for I in `ls *.sce | sed 's:.sce::' | sort`; do 
 		echo "$I"
 		importupdatecheck "$I" > /dev/null 2>&1
-	done &
-	/usr/bin/rotdash $!
+	done
 	##
 	echo " "
 	if [ "$CHECKONLY" == "TRUE" ]; then
@@ -128,8 +129,7 @@ elif [ -f "$1".sce ]; then
 	updateenv
 	echo " "
 	echo "Searching for available updates for "$1".sce."
-	importupdatecheck "$1" > /dev/null 2>&1 &
-	/usr/bin/rotdash $!
+	importupdatecheck "$1" > /dev/null 2>&1 
 	if [ "$CHECKONLY" == "TRUE" ]; then
 		if [ -s /tmp/.sceupdatelist ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
@@ -203,8 +203,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 		for I in `cat /tmp/.sceupdatechoose | tr -d :`; do
 			echo " "
 			echo "Checking for updates for "$I".sce.."
-			importupdatecheck "$I" > /dev/null 2>&1 &
-			/usr/bin/rotdash $!
+			importupdatecheck "$I" > /dev/null 2>&1
 		done
 		if [ "$CHECKONLY" == "TRUE" ]; then
 			if [ -s /tmp/.sceupdatelist ]; then
@@ -268,12 +267,20 @@ fi
 [ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
 [ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
 [ -f /tmp/PKGADDDEP ] && sudo rm /tmp/PKGADDDEP
-[ -f /tmp/PKGEXTRAFILEMD5SUMLIST ] && sudo rm /tmp/PKGEXTRAFILEMD5SUMLIST
+[ -f /tmp/PKGDATAFILEMD5SUMLIST ] && sudo rm /tmp/PKGDATAFILEMD5SUMLIST
 [ -f /tmp/PKGEXTRAFILES ] && sudo rm /tmp/PKGEXTRAFILES
 [ -f /tmp/PKGEXTRAREPODEP ] && sudo rm /tmp/PKGEXTRAREPODEP
 [ -f /tmp/PKGPREBUILTDEP ] && sudo rm /tmp/PKGPREBUILTDEP
 [ -f /tmp/PREBUILTMD5SUMLIST ] && sudo rm /tmp/PREBUILTMD5SUMLIST
-
+[ -f /tmp/importupdates ] && sudo rm /tmp/importupdates
+[ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
+ls /tmp/*.md5sum > /dev/null 2>&1 && sudo rm /tmp/*.md5sum
+[ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
+[ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
+[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
+[ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
+[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
+[ -d /tmp/work ] && sudo rm -r /tmp/work
 
 if ls /tmp/*.pkglist > /dev/null 2>&1; then 
 	sudo rm /tmp/*.pkglist
