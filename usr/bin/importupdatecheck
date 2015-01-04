@@ -41,14 +41,17 @@ fi
 if [ -f "$SCEDIR"/update/"$SCE".sce ]; then
    [ -d /tmp/sceupdatetest ] || mkdir /tmp/sceupdatetest
    sudo mount "$SCEDIR"/update/"$SCE".sce /tmp/sceupdatetest
+   DATADIR=/tmp/sceupdatetest/usr/local/sce/"$SCE"
    FILE=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE".md5sum
    FILEDATA=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE"-data.md5sum
    SSDIR="/tmp/sceupdatetest/usr/local/tce.installed"
 elif sudo mount | grep "/tmp/tcloop/$SCE " > /dev/null 2>&1; then
+   DATADIR=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"
    FILE=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"/"$SCE".md5sum
    FILEDATA=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"/"$SCE"-data.md5sum
    SSDIR="/tmp/tcloop/"$SCE"/usr/local/tce.installed"
 elif [ -f "$SCEDIR"/"$SCE".sce ]; then
+   DATADIR=/tmp/sceupdatetest/usr/local/sce/"$SCE"
    [ -d /tmp/sceupdatetest ] || mkdir /tmp/sceupdatetest
    sudo mount "$SCEDIR"/"$SCE".sce /tmp/sceupdatetest
    FILE=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE".md5sum
@@ -70,8 +73,9 @@ fi
 sudo debGetDeps "$SCE"
 
 for I in `ls /tmp/work`; do
-
-sudo debGetUpdateList "$I" 
+	if ! grep "^$I$" "$DATADIR"/*.debs > /dev/null 2>&1; then
+		sudo debGetUpdateList "$I"
+	fi 
 
 done 
 
