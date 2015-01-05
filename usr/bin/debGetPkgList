@@ -15,9 +15,11 @@ fi
 getDeps1() {
 > /tmp/"$1".pkglist
 grep -B 1 -A 8 "^Package: $1$" "$DEBINX" |  grep -B8 "^$" > /tmp/"$1".pkglist
-grep "^Depends:" /tmp/"$1".pkglist | cut -f2 -d":" | tr -d ',' | tr -d '|'
-grep "^Filename:" /tmp/"$1".pkglist | cut -f2 -d":" | tr -d ' ' > /tmp/work/"$1"
-#rm /tmp/"$1".pkglist
+DEBINX=/tmp/"$1".pkglist
+getDeps2 $1
+#grep "^Depends:" /tmp/"$1".pkglist | cut -f2 -d":" | tr -d ',' | tr -d '|'
+#grep "^Filename:" /tmp/"$1".pkglist | cut -f2 -d":" | tr -d ' ' > /tmp/work/"$1"
+rm /tmp/"$1".pkglist
 }
 
 getDeps2() {
@@ -59,7 +61,7 @@ getDeps2() {
 
 		}
 		
-	} ' < "$DEBINX" 
+	} ' < "$DEBINX"
 
 
 }
