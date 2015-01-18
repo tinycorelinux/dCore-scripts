@@ -70,7 +70,13 @@ fi
 
 [ -d /tmp/work ] && sudo rm -r /tmp/work
 
-sudo debGetDeps "$SCE"
+if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
+	for I in `cat "$TCEDIR"/sce/"$SCE".sce.lst`; do 
+		sudo debGetDeps "$I"
+	done
+else
+	sudo debGetDeps "$SCE"
+fi
 
 for I in `ls /tmp/work`; do
 	if ! grep "^$I$" "$DATADIR"/*.debs > /dev/null 2>&1; then
