@@ -270,7 +270,7 @@ then
 		else
 			TARGETDIR="$TCEDIR"/sce/
 		fi
-		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ]; then
+		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ] && ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
 			cd "$TARGETDIR"
 			md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
 			if [ "$?" != 0 ]; then
@@ -305,7 +305,7 @@ else
 			TARGETDIR="$TCEDIR"/sce/
 		fi
 
-		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ]; then
+		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ] && ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
 			cd "$TARGETDIR"
 			md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
 			if [ "$?" != 0 ]; then
