@@ -6,6 +6,7 @@
 checknotroot
 SCEDIR="/etc/sysconfig/tcedir/sce"
 BUILD=`getBuild`
+unset DEPLIST
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "Usage:"
 	echo "'"updatesce"' with no options will bring up a menu of SCEs to choose to update."
@@ -24,6 +25,7 @@ do
 done
 
 shift `expr $OPTIND - 1`
+UPDATETARGET="$1"
 #[ "$OPTS" ] && "$OPTS"="-$OPTS"
 
 if [ -z "$1" ]; then
@@ -37,6 +39,7 @@ fi
 [ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
 [ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
 [ -f /tmp/updateavailable ] && sudo rm /tmp/updateavailable
+[ -f /tmp/importupdated ] && sudo rm /tmp/importupdated
 
 cd /etc/sysconfig/tcedir/sce
 
@@ -64,6 +67,22 @@ tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
 cd "$SCEDIR"
+}
+
+
+getDeps() {
+DEPLIST=" $1 $DEPLIST "
+
+if [ -f "$SCEDIR"/"$1".sce.dep ]; then
+	for E in `cat "$SCEDIR"/"$1".sce.dep`; do 
+		H=" $E "
+		if echo "$DEPLIST" | grep "$H" > /dev/null 2>&1; then
+			continue
+		else 
+			getDeps "$E"
+		fi
+	done
+fi
 }
 
 
@@ -103,19 +122,29 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$NONINTERACTIVE" == "TRUE" ]; then
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				importsce -nsp "$I"
+				getDeps "$I"
+			done
+			for D in `echo "$DEPLIST"`; do
+				grep "^D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
+				echo "$D" >> /tmp/importupdated
 			done
 			echo "Refer to /tmp/updateavailable for details of package updates."
 		else
-			echo " "
+			clear
 			cat /tmp/.sceupdatelist | tr -d :
-			read -p "The above SCEs are about to be updated.  Press Enter to proceed, y to view updates, or Ctrl-C in the next 10 seconds to abort update.."
+			echo " "
+			echo " "
+			read -p "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
 			if [ "$ans" == "y" ]; then
 				less /tmp/updateavailable
 			fi
 			## Update all SCEs
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				importsce -nsp "$I"
+				getDeps "$I"
+			done
+			for D in `echo "$DEPLIST"`; do
+				grep "^D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
+				echo "$D" >> /tmp/importupdated
 			done
 		fi
 		##
@@ -125,11 +154,16 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		echo "No updates available for chosen SCEs at this time."
 		exit 1
 	fi
-elif [ -f "$1".sce ]; then
+elif [ -f "$UPDATETARGET".sce ]; then
 	updateenv
 	echo " "
-	echo "Searching for available updates for "$1".sce."
-	importupdatecheck "$1" > /dev/null 2>&1 
+	echo "Searching for available updates for "$UPDATETARGET".sce."
+	unset DEPLIST
+	getDeps "$UPDATETARGET"
+	for I in `echo "$DEPLIST"`; do
+		importupdatecheck "$I" > /dev/null 2>&1
+	done
+	unset DEPLIST
 	if [ "$CHECKONLY" == "TRUE" ]; then
 		if [ -s /tmp/.sceupdatelist ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
@@ -153,19 +187,29 @@ elif [ -f "$1".sce ]; then
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$NONINTERACTIVE" == "TRUE" ]; then
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				importsce -nsp "$I"
+				getDeps "$I"
+			done
+			for D in `echo "$DEPLIST"`; do
+				grep "^D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
+				echo "$D" >> /tmp/importupdated
 			done
 			echo "Refer to /tmp/updateavailable for details of package updates."
 		else
-			echo " "
+			clear
 			cat /tmp/.sceupdatelist | tr -d :
-			read -p "The above SCEs are about to be updated.  Press Enter to proceed, y to view updates, or Ctrl-C in the next 10 seconds to abort update.."
+			echo " "
+			echo " "
+			read -p "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
 			if [ "$ans" == "y" ]; then
 				less /tmp/updateavailable
 			fi
 			## Update all SCEs
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				importsce -nsp "$I"
+				getDeps "$I"
+			done
+			for D in `echo "$DEPLIST"`; do
+				grep "^D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
+				echo "$D" >> /tmp/importupdated
 			done
 		fi
 		##
@@ -203,7 +247,12 @@ You can choose more than one, and enter "q" for quit when you have completed you
 		for I in `cat /tmp/.sceupdatechoose | tr -d :`; do
 			echo " "
 			echo "Checking for updates for "$I".sce.."
-			importupdatecheck "$I" > /dev/null 2>&1
+			unset DEPLIST
+			getDeps "$I"
+			for D in `echo "$DEPLIST"`; do
+				importupdatecheck "$D" > /dev/null 2>&1
+			done
+			unset DEPLIST
 		done
 		if [ "$CHECKONLY" == "TRUE" ]; then
 			if [ -s /tmp/.sceupdatelist ]; then
@@ -230,20 +279,30 @@ You can choose more than one, and enter "q" for quit when you have completed you
 		if [ -s /tmp/.sceupdatelist ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
 				for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-					importsce -nsp "$I"
-				done
-				echo "Refer to /tmp/updateavailable for package update details."
+				getDeps "$I"
+			done
+			for D in `echo "$DEPLIST"`; do
+				grep "^D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
+				echo "$D" >> /tmp/importupdated
+			done
+			echo "Refer to /tmp/updateavailable for package update details."
 			else
-				echo " "
+				clear
 				cat /tmp/.sceupdatelist | tr -d :
-				read -p "The above SCEs are about to be updated.  Press Enter to proceed, y to view updates, or Ctrl-C to abort update.."
+				echo " "
+				echo " "
+				read -p "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
 				if [ "$ans" == "y" ]; then
 					less /tmp/updateavailable
 				fi
 				## Update all SCEs
 				for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-					importsce -nsp "$I"
-				done
+				getDeps "$I"
+			done
+			for D in `echo "$DEPLIST"`; do
+				grep "^D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
+				echo "$D" >> /tmp/importupdated
+			done
 			fi
 			##
 	
@@ -257,7 +316,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 		echo "Exit was chosen, no action will be taken."
 	fi
 else
-	echo ""$1" is not an existing SCE file.  Exiting.."
+	echo ""$UPDATETARGET" is not an existing SCE file.  Exiting.."
 fi
 
 [ -f /tmp/.sceupdatechoose ] && sudo rm /tmp/.sceupdatechoose

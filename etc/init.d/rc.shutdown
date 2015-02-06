@@ -5,8 +5,9 @@
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
-
+TCEDIR=/etc/sysconfig/tcedir
 clear 
+# Move updated SCE extensions to SCE directory
 # Sync all filesystems.
 echo "${BLUE}Syncing all filesystems."
 sync; sync
@@ -28,6 +29,13 @@ echo -n "${NORMAL}"
 for loop in $(mount | awk '/\/tmp\/tcloop/{print substr($1,10,3)}'|sort -nr); do umount -d /dev/loop"$loop" 2>/dev/null; done
 # Unmount all scm extensions that were mounted into /apps via loopback 
 for loop in $(mount | awk '/\/apps/{print substr($1,10,3)}'|sort -nr); do umount -d /dev/loop"$loop" 2>/dev/null; done
+
+# Move updated SCE extensions to the SCE directory
+
+if ls "$TCEDIR"/sce/update/* > /dev/null 2>&1; then
+	echo "${BLUE}Moving updated SCE extensions to the SCE directory:"
+	mv "$TCEDIR"/sce/update/* "$TCEDIR"/sce/ > /dev/null 2>&1
+fi
 
 if [ -s /tmp/audit_marked.lst ]; then
    echo "${BLUE}Removing requested extensions:"

@@ -67,6 +67,31 @@ if [ ! -f "$FILE" ]; then
    [ -d /tmp/sceupdatetest ] && sudo rmdir /tmp/sceupdatetest
    exit 1
 fi
+unset DEPLIST
+getDeps() {
+DEPLIST=" $1 $DEPLIST "
+
+if [ -f "$SCEDIR"/"$SCE".sce.dep ]; then
+	for E in `cat "$SCEDIR"/"$SCE".sce.dep`; do 
+		H=" $E "
+		if echo "$DEPLIST" | grep "$H" > /dev/null 2>&1; then
+			continue
+		else 
+			getDeps "$E"
+		fi
+	done
+fi
+}
+
+getDeps "$SCE"
+for I in `ls "$DATADIR"/*.debs`; do
+	DEP=`basename "$I" | sed 's:.debs::g'`
+	if ! grep " $DEP " "$DEPLIST" > /dev/null 2>&1; then
+		grep "^$SCE$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$SCE" >> /tmp/.sceupdatelist
+	fi
+done
+		
+	
 
 [ -d /tmp/work ] && sudo rm -r /tmp/work
 
@@ -88,7 +113,7 @@ done
 echo " " 
 
 echo "SCE:  "$SCE"" >> /tmp/updateavailable
-echo "Available package updates:" >> /tmp/updateavailable
+echo "  Available package updates:" >> /tmp/updateavailable
 while read line; do 
 	E=`echo $line | cut -f1 -d:`
         F=`echo $line | awk '{print $2}'`
@@ -135,7 +160,7 @@ done < /tmp/sce.md5new
 if [ -s /tmp/.importupdates ]; then
 	for I in `cat /tmp/.importupdates | sort | uniq`; do 
 		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
-		echo "   "$I"       "$A" " >> /tmp/updateavailable
+		echo "    "$I"       "$A" " >> /tmp/updateavailable
  	done  
  	grep "^$1:" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1:" >> /tmp/.sceupdatelist
 fi

@@ -73,7 +73,11 @@ unset PKGEXISTS
 		else
 		  	DIR1=/tmp/"$I".tmp
 		  	[ -d "$DIR1" ] || mkdir -p "$DIR1"
-		  	sudo mount /etc/sysconfig/tcedir/sce/"$I".sce "$DIR1" > /dev/null 2>&1
+			if [ -f /etc/sysconfig/tcedir/sce/update/"$I".sce ]; then
+		  		sudo mount /etc/sysconfig/tcedir/sce/update/"$I".sce "$DIR1" > /dev/null 2>&1
+			elif [ -f /etc/sysconfig/tcedir/sce/"$I".sce ]; then
+				sudo mount /etc/sysconfig/tcedir/sce/"$I".sce "$DIR1" > /dev/null 2>&1
+			fi
 		  	# yes n | cp -ai "$DIR1"/* "$OUTDIR"/ > /dev/null 2>&1
 			if grep "^$1:" "$DIR1"/usr/local/sce/"$I"/"$I".md5sum > /dev/null 2>&1; then
 				echo "$I" >> /tmp/.pkgexists
