@@ -37,7 +37,7 @@ fi
 if sudo mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then
  sudo umount /tmp/sceupdatetest
 fi
-
+## Determine if SCE exists in SCE dir, SCE/update dir, or is mounted and then mount.
 if [ -f "$SCEDIR"/update/"$SCE".sce ]; then
    [ -d /tmp/sceupdatetest ] || mkdir /tmp/sceupdatetest
    sudo mount "$SCEDIR"/update/"$SCE".sce /tmp/sceupdatetest
@@ -58,7 +58,9 @@ elif [ -f "$SCEDIR"/"$SCE".sce ]; then
    FILEDATA=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE"-data.md5sum
    SSDIR="/tmp/sceupdatetest/usr/local/tce.installed"
 fi
+##
 
+## Find if needed md5sum file inside SCE exists.
 if [ ! -f "$FILE" ]; then
    echo ""$1" does not have the needed md5sum list, exiting.."
    if sudo mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
@@ -67,12 +69,16 @@ if [ ! -f "$FILE" ]; then
    [ -d /tmp/sceupdatetest ] && sudo rmdir /tmp/sceupdatetest
    exit 1
 fi
-unset DEPLIST
-getDeps() {
-DEPLIST=" $1 $DEPLIST "
+##
 
-if [ -f "$SCEDIR"/"$SCE".sce.dep ]; then
-	for E in `cat "$SCEDIR"/"$SCE".sce.dep`; do 
+unset DEPLIST
+
+## Get dependency tree of SCE.dep file
+getDeps() {
+DEPLIST=" "$1" "$DEPLIST" "
+
+if [ -f "$SCEDIR"/"$1".sce.dep ]; then
+	for E in `cat "$SCEDIR"/"$1".sce.dep`; do 
 		H=" $E "
 		if echo "$DEPLIST" | grep "$H" > /dev/null 2>&1; then
 			continue
@@ -82,19 +88,22 @@ if [ -f "$SCEDIR"/"$SCE".sce.dep ]; then
 	done
 fi
 }
+##
 
+## Find if dep file is missing any needed entries, re-import to fix if so.
 getDeps "$SCE"
 for I in `ls "$DATADIR"/*.debs`; do
 	DEP=`basename "$I" | sed 's:.debs::g'`
-	if ! grep " $DEP " "$DEPLIST" > /dev/null 2>&1; then
+	if ! echo "$DEPLIST" | grep " $DEP " > /dev/null 2>&1; then
 		grep "^$SCE$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$SCE" >> /tmp/.sceupdatelist
 	fi
 done
-		
+##		
 	
 
 [ -d /tmp/work ] && sudo rm -r /tmp/work
 
+## Use list file in SCE dir and get deps of those packages.
 if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
 	for I in `cat "$TCEDIR"/sce/"$SCE".sce.lst`; do 
 		sudo debGetDeps "$I"
@@ -102,13 +111,16 @@ if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
 else
 	sudo debGetDeps "$SCE"
 fi
+##
 
+## If new package dependencies exist in updated dep gathering, update the 
 for I in `ls /tmp/work`; do
 	if ! grep "^$I$" "$DATADIR"/*.debs > /dev/null 2>&1; then
 		sudo debGetUpdateList "$I"
 	fi 
 
 done 
+##
 
 echo " " 
 
@@ -162,16 +174,16 @@ if [ -s /tmp/.importupdates ]; then
 		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
 		echo "    "$I"       "$A" " >> /tmp/updateavailable
  	done  
- 	grep "^$1:" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1:" >> /tmp/.sceupdatelist
+ 	grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >> /tmp/.sceupdatelist
 fi
 
 
 if [ -s /tmp/ssupdates ]; then
-	grep "^$1:" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1:" >> /tmp/.sceupdatelist
+	grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >> /tmp/.sceupdatelist
 fi
 
 if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ]; then
-	echo "None" >> /tmp/updateavailable
+	echo "    None" >> /tmp/updateavailable
 fi
 
 echo " " >> /tmp/updateavailable

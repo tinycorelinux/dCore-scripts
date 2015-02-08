@@ -114,7 +114,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 				exit 0
 			fi
 		else
-			echo " "
+			clear
 			echo "No updates available for chosen SCEs."
 			exit 0
 		fi
@@ -146,7 +146,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		##
 
 	else 
-		echo " "
+		clear
 		echo "No updates available for chosen SCEs at this time."
 		exit 1
 	fi
@@ -175,7 +175,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 				exit 0
 			fi
 		else
-			echo " "
+			clear
 			echo "No updates available for chosen SCEs."
 			exit 0
 		fi
@@ -205,7 +205,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		##
 
 	else 
-		echo " "
+		clear
 		echo "No updates available for chosen SCEs at this time."
 		exit 1
 	fi
@@ -222,7 +222,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 		sed -i "/^$ANS$/d" /tmp/.scelistchoose
 	done
 	##
-	echo " "
+	clear
 	if [ ! -n /tmp/.sceupdatechoose ]; then
 		echo "No SCEs were chosen for update.  Exiting.."
 		exit 0
@@ -259,7 +259,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 					exit 0
 				fi
 			else
-				echo " "
+				clear
 				echo "No updates available for chosen SCEs."
 				exit 0
 			fi
@@ -268,14 +268,14 @@ You can choose more than one, and enter "q" for quit when you have completed you
 		## Update SCEs
 		if [ -s /tmp/.sceupdatelist ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
-				for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				getDeps "$I"
-			done
-			for D in `echo "$DEPLIST"`; do
-				grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
-				echo "$D" >> /tmp/importupdated
-			done
-			echo "Refer to /tmp/updateavailable for package update details."
+				#for I in `cat /tmp/.sceupdatelist | tr -d :`; do
+					#getDeps "$I"
+				#done
+				for D in `echo "$DEPLIST"`; do
+					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
+					echo "$D" >> /tmp/importupdated
+				done
+				echo "Refer to /tmp/updateavailable for package update details."
 			else
 				clear
 				cat /tmp/.sceupdatelist | tr -d :
@@ -286,18 +286,18 @@ You can choose more than one, and enter "q" for quit when you have completed you
 					less /tmp/updateavailable
 				fi
 				## Update all SCEs
-				for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				getDeps "$I"
-			done
-			for D in `echo "$DEPLIST"`; do
-				grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
-				echo "$D" >> /tmp/importupdated
-			done
+				#for I in `cat /tmp/.sceupdatelist | tr -d :`; do
+				#	getDeps "$I"
+				#done
+				for D in `echo "$DEPLIST"`; do
+					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
+					echo "$D" >> /tmp/importupdated
+				done
 			fi
 			##
 	
 		else 
-			echo " "
+			clear
 			echo "No updates available for chosen SCEs at this time."
 			exit 1
 		fi
