@@ -91,7 +91,7 @@ fi
 if [ "$UPDATEALL" == "TRUE" ]; then
 	updateenv
 	echo " "
-	echo "Searching for availbe updates for chosen SCEs."
+	echo "Searching for available updates for chosen SCEs."
 	## Get list of SCEs to be updated, should be all.
 	for I in `ls *.sce | sed 's:.sce::' | sort`; do 
 		echo "$I"
