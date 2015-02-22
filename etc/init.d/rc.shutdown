@@ -37,24 +37,26 @@ if ls "$TCEDIR"/sce/update/* > /dev/null 2>&1; then
 	mv "$TCEDIR"/sce/update/* "$TCEDIR"/sce/ > /dev/null 2>&1
 fi
 
-if [ -s /tmp/audit_marked.lst ]; then
+# Delete SCEs marked for deletion
+
+if [ -s /tmp/.sceremove ]; then
    echo "${BLUE}Removing requested extensions:"
    ONBOOTNAME="$(getbootparam lst 2>/dev/null)"
    [ -n "$ONBOOTNAME" ] || ONBOOTNAME="sceboot.lst"
-   for F in `cat /tmp/audit_marked.lst`; do
+   for F in `cat /tmp/.sceremove`; do
       echo "${YELLOW}$F"
-      rm -f "$F"*
-      FROMDIR=`dirname "$F"` && TCEDIR=${FROMDIR%/*}
+      rm -f "$TCEDIR"/sce/"$F".sce > /dev/null 2>&1
+      rm -f "$TCEDIR"/sce/"$F".sce.md5.txt > /dev/null 2>&1
+      rm -f "$TCEDIR"/sce/update/"$F".sce > /dev/null 2>&1
+      rm -f "$TCEDIR"/sce/update/"$F".sce.md5.txt > /dev/null 2>&1
       EXTN=`basename "$F"`; APP=${EXTN%.sce}
       LIST="$TCEDIR"/copy2ram.lst; ONBOOT="${TCEDIR}/${ONBOOTNAME}"; XWBAR="$TCEDIR"/xwbar.lst
       if grep -w "$EXTN" "$LIST" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$LIST"; fi
       if grep -w "$EXTN" "$ONBOOT" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$ONBOOT"; fi
       if grep -w "$EXTN" "$XWBAR" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$XWBAR"; fi
-      [ -s "$FROMDIR"/tce.db ] && rm -f "$FROMDIR"/tce.db
-      [ -s "$FROMDIR"/tce.lst ] && rm -f "$FROMDIR"/tce.lst
       rm -f "$TCEDIR"/ondemand/$APP* 2>/dev/null 
    done
-   rm -f /tmp/audit_marked.lst
+   rm -f /tmp/.sceremove
    sync; sleep 1; sync; sleep 1
    echo "${NORMAL}"
 fi
