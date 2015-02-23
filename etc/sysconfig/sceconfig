@@ -21,12 +21,12 @@ UPDATE=FALSE
 
 # Keep .lst and .dep files of SCEs removed by removesce.  Useful for 
 # future re-importing.
-KEEPLIST=TRUE
+KEEPLIST=FALSE
 
 # Below is for the non-interactive use of importsce.  If package name exists,
 # then no further action is needed by the user for a complete import.
-NONINTERACTIVE=TRUE
+NONINTERACTIVE=FALSE
 
 # For not re-syncing new Packages files of the main or other repos.
 # For better performance.
-PRESERVEDEBINXMODE=TRUE
+PRESERVEDEBINXMODE=FALSE
