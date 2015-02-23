@@ -1,0 +1,74 @@
+#!/bin/sh
+
+
+TCEDIR="/etc/sysconfig/tcedir"
+SCEDIR=""$TCEDIR"/sce"
+SCE=${SCE%%.sce}
+cd "$SCEDIR"
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo "Usage:"
+	echo "'"removesce"' with no options will prompt for characters of desired package name."
+	echo "'"removesce audacious"' will mark audacious and any SCEs that depend on it for removal."
+	echo "'"removesce -k"' will not remove the .lst and .dep files.  Can be used with SCE name and useful for future imports."
+exit 1
+fi
+
+while getopts bo OPTION
+do
+	case ${OPTION} in
+		k) KEEPLIST=TRUE ;;
+		*) exit 1 ;;
+	esac
+done
+shift `expr $OPTIND - 1`
+SCE="$1"
+
+if grep -i "^KEEPLIST=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+	touch /tmp/.keeplist
+elif [ "$KEEPLIST" == "TRUE" ]; then
+	touch /tmp/.keeplist
+fi
+
+if [ -z "$SCE" ]; then
+	## Select sces to remove on shutdown.
+	cd "$SCEDIR"
+	while true; do
+	[ -f /tmp/.scermlist ] || ls *.sce | sed 's:.sce::' | sort > /tmp/.scermlist
+	cat /tmp/.scermlist | select "Choose the sce you want to remove on shutdown." "-"
+	read ANS < /tmp/select.ans
+	if [ "$ANS" == "q" ]; then
+		break
+	fi
+	grep "^$ANS$" /tmp/.removesce > /dev/null 2>&1 || echo "$ANS" >> /tmp/.removesce
+	sed -i "/^$ANS$/d" /tmp/.scermlist
+	done
+else
+	echo "$SCE" > /tmp/.removesce
+fi 
+
+rmdep() {
+	for D in `grep "^$1$" *.dep`; do 
+		EXT0=`echo "$D" | cut -f1 -d:`
+		EXT=`basename "$EXT0" .sce.dep`
+		grep "^$EXT$" /tmp/.removesce > /dev/null 2>&1 || echo "$EXT" >> /tmp/.removesce
+		rmdep "$EXT"
+	done
+	
+}
+
+for I in `cat /tmp/.removesce`; do 
+	ondemand -r "$I"
+	rmdep "$I"	
+done
+echo " "
+for I in `cat /tmp/.removesce`; do
+	echo "$I"
+done
+ 
+echo " "
+echo "The above SCEs will be removed upon shutdown or reboot."
+
+
+
+

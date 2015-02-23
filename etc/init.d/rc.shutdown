@@ -27,8 +27,7 @@ echo -n "${NORMAL}"
 
 # Unmount all sce extensions that were mounted into /tmp/tcloop via loopback 
 for loop in $(mount | awk '/\/tmp\/tcloop/{print substr($1,10,3)}'|sort -nr); do umount -d /dev/loop"$loop" 2>/dev/null; done
-# Unmount all scm extensions that were mounted into /apps via loopback 
-for loop in $(mount | awk '/\/apps/{print substr($1,10,3)}'|sort -nr); do umount -d /dev/loop"$loop" 2>/dev/null; done
+
 
 # Move updated SCE extensions to the SCE directory
 
@@ -39,24 +38,29 @@ fi
 
 # Delete SCEs marked for deletion
 
-if [ -s /tmp/.sceremove ]; then
+if [ -s /tmp/.removesce ]; then
    echo "${BLUE}Removing requested extensions:"
    ONBOOTNAME="$(getbootparam lst 2>/dev/null)"
    [ -n "$ONBOOTNAME" ] || ONBOOTNAME="sceboot.lst"
-   for F in `cat /tmp/.sceremove`; do
-      echo "${YELLOW}$F"
-      rm -f "$TCEDIR"/sce/"$F".sce > /dev/null 2>&1
-      rm -f "$TCEDIR"/sce/"$F".sce.md5.txt > /dev/null 2>&1
-      rm -f "$TCEDIR"/sce/update/"$F".sce > /dev/null 2>&1
-      rm -f "$TCEDIR"/sce/update/"$F".sce.md5.txt > /dev/null 2>&1
-      EXTN=`basename "$F"`; APP=${EXTN%.sce}
-      LIST="$TCEDIR"/copy2ram.lst; ONBOOT="${TCEDIR}/${ONBOOTNAME}"; XWBAR="$TCEDIR"/xwbar.lst
-      if grep -w "$EXTN" "$LIST" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$LIST"; fi
-      if grep -w "$EXTN" "$ONBOOT" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$ONBOOT"; fi
-      if grep -w "$EXTN" "$XWBAR" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$XWBAR"; fi
-      rm -f "$TCEDIR"/ondemand/$APP* 2>/dev/null 
+   for F in `cat /tmp/.removesce`; do
+        echo "${YELLOW}$F"
+	if [ -f /tmp/.keeplist ]; then
+      		rm -f "$TCEDIR"/sce/"$F".sce > /dev/null 2>&1
+      		rm -f "$TCEDIR"/sce/"$F".sce.md5.txt > /dev/null 2>&1
+      		rm -f "$TCEDIR"/sce/update/"$F".sce > /dev/null 2>&1
+      		rm -f "$TCEDIR"/sce/update/"$F".sce.md5.txt > /dev/null 2>&1
+	else
+		rm -f "$TCEDIR"/sce/"$F".sce* > /dev/null 2>&1
+		rm -f "$TCEDIR"/sce/update/"$F".sce* > /dev/null 2>&1
+	fi
+        EXTN=`basename "$F"`; APP=${EXTN%.sce}
+        LIST="$TCEDIR"/copy2ram.lst; ONBOOT="${TCEDIR}/${ONBOOTNAME}"; XWBAR="$TCEDIR"/xwbar.lst
+        if grep -w "$EXTN" "$LIST" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$LIST"; fi
+        if grep -w "$EXTN" "$ONBOOT" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$ONBOOT"; fi
+        if grep -w "$EXTN" "$XWBAR" >/dev/null 2>&1; then sed -i '/'"$EXTN"'/d' "$XWBAR"; fi
+        rm -f "$TCEDIR"/ondemand/$APP* 2>/dev/null 
    done
-   rm -f /tmp/.sceremove
+   rm -f /tmp/.removesce
    sync; sleep 1; sync; sleep 1
    echo "${NORMAL}"
 fi
