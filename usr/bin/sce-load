@@ -23,7 +23,7 @@ abort(){
 	echo "Version `version`";
 	echo "Usage: ${PKG_NAME}"
 	echo " Example:"
-	echo "  loadsce nano"
+	echo "  sce-load nano"
 	exit 2
 }
 

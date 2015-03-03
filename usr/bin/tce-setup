@@ -87,7 +87,7 @@ process_sce() {
 	fi
 	while read S
 	do
-		su "$USER" -c "loadsce -b "$S""
+		su "$USER" -c "sce-load -b "$S""
 	done < "$SCELIST"
 }
 process_CD() {

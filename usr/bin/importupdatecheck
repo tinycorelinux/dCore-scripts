@@ -11,7 +11,7 @@ BUILD=`getBuild`
 read SSMIRROR < /opt/tcemirror                                                                             
 SSMIRROR="${SSMIRROR%/}/dCore/import"   
 
-pgrep updatesce > /dev/null 2>&1 || exit 1
+pgrep sce-update > /dev/null 2>&1 || exit 1
 
 
 [ -f /tmp/sce.md5new ] && sudo rm /tmp/sce.md5new

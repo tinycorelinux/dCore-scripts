@@ -9,11 +9,11 @@ BUILD=`getBuild`
 unset DEPLIST
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "Usage:"
-	echo "'"updatesce"' with no options will bring up a menu of SCEs to choose to update."
-	echo "'"updatesce -a"' will update all existing SCEs, both loaded and unloaded."
-	echo "'"updatesce -n"' for non-interactive mode."
-	echo "'"updatesce -c"' for check only 'dry run' mode, no option to update."
-	echo "'"updatesce iceweasel"' will update iceweasel."
+	echo "'"sce-update"' with no options will bring up a menu of SCEs to choose to update."
+	echo "'"sce-update -a"' will update all existing SCEs, both loaded and unloaded."
+	echo "'"sce-update -n"' for non-interactive mode."
+	echo "'"sce-update -c"' for check only 'dry run' mode, no option to update."
+	echo "'"sce-update iceweasel"' will update iceweasel."
 	exit 0
 fi
 
@@ -124,7 +124,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$NONINTERACTIVE" == "TRUE" ]; then
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$I"
+				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$I"
 				echo "$I" >> /tmp/importupdated
 			done
 			echo "Refer to /tmp/updateavailable for details of package updates."
@@ -139,7 +139,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			fi
 			## Update all SCEs
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$I"
+				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$I"
 				echo "$I" >> /tmp/importupdated
 			done
 		fi
@@ -183,7 +183,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$NONINTERACTIVE" == "TRUE" ]; then
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$I"
+				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$I"
 				echo "$I" >> /tmp/importupdated
 			done
 			echo "Refer to /tmp/updateavailable for details of package updates."
@@ -198,7 +198,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 			fi
 			## Update all SCEs
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$I"
+				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$I"
 				echo "$I" >> /tmp/importupdated
 			done
 		fi
@@ -272,7 +272,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 					#getDeps "$I"
 				#done
 				for D in `echo "$DEPLIST"`; do
-					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
+					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$D"
 					echo "$D" >> /tmp/importupdated
 				done
 				echo "Refer to /tmp/updateavailable for package update details."
@@ -290,7 +290,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 				#	getDeps "$I"
 				#done
 				for D in `echo "$DEPLIST"`; do
-					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || importsce -nsp "$D"
+					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$D"
 					echo "$D" >> /tmp/importupdated
 				done
 			fi

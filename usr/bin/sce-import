@@ -17,16 +17,16 @@ HERE=`pwd`
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "Usage:"
-	echo "'"importsce"' with no options will prompt for characters of desired package name."
-	echo "'"importsce -l"' to use a file list of packages - '"importsce -l FILENAME"'."
-	echo "'"importsce -b"' to add package to sceboot.lst."
-	echo "'"importsce -r"' to use RAM for unpacking source debs."
-	echo "'"importsce -s"' to list sizes of packages to be fetched and installed."
-	echo "'"importsce -d"' to make use of existing SCE packages as dependencies.  A select menu will appear."
-	echo "'"importsce -o"' to add resulting SCE package to ondemand."
-	echo "'"importsce -n"' for non interactive mode."
-	echo "'"importsce -u"' for update mode, syncing a new debinx files."
-	echo "'"importsce -p"' for preserve debinx mode, use existing rather than fetch new for better performance." 
+	echo "'"sce-import"' with no options will prompt for characters of desired package name."
+	echo "'"sce-import -l"' to use a file list of packages - '"sce-import -l FILENAME"'."
+	echo "'"sce-import -b"' to add package to sceboot.lst."
+	echo "'"sce-import -r"' to use RAM for unpacking source debs."
+	echo "'"sce-import -s"' to list sizes of packages to be fetched and installed."
+	echo "'"sce-import -d"' to make use of existing SCE packages as dependencies.  A select menu will appear."
+	echo "'"sce-import -o"' to add resulting SCE package to ondemand."
+	echo "'"sce-import -n"' for non interactive mode."
+	echo "'"sce-import -u"' for update mode, syncing a new debinx files."
+	echo "'"sce-import -p"' for preserve debinx mode, use existing rather than fetch new for better performance." 
 exit 1
 fi
 
