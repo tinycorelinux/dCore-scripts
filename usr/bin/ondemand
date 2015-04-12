@@ -96,7 +96,7 @@ fi
 if [ "$EXECITEM" ]; then
 	TYPE="${1##*.}"
 	unset FROMWHERE
-	COMMAND="loadsce"
+	COMMAND="sce-load"
 	INSTALLED=/usr/local/tce.installed
 	if [ ! -e /tmp/tcloop/"$APPNAME" ] && ! grep ^"$APPNAME": /tmp/.debinstalled > /dev/null 2>&1; then
 		shift 1 && sudo su "$TCUSER" -c "${COMMAND} "$APPNAME""
