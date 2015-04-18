@@ -73,9 +73,9 @@ else
 	echo "$DEBINX" > /tmp/debinx
 fi
 
-#if ls /tmp/debinx.* > /dev/null 2>&1; then 
-#	sudo rm /tmp/debinx.*
-#fi
+if ls "$TCEDIR"/debinx.* > /dev/null 2>&1; then 
+	sudo rm "$TCEDIR"/debinx.*
+fi
 
 if ls -A /opt/debextra > /dev/null 2>&1; then
 	for I in `ls /opt/debextra/`; do

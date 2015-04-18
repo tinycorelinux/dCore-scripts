@@ -108,7 +108,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 				echo "Do you want to review the list of packages that have updates available?"
 				echo -n "Enter y to view and q to exit reading the package list. (y/N): "
 				read ans
-				if [ "$ans" == "y" ]; then
+				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 					less /tmp/updateavailable
 				fi			
 				exit 0
@@ -133,8 +133,9 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			cat /tmp/.sceupdatelist | tr -d :
 			echo " "
 			echo " "
-			read -p "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
-			if [ "$ans" == "y" ]; then
+			echo -n "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
+			read ans
+			if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 				less /tmp/updateavailable
 			fi
 			## Update all SCEs
@@ -169,7 +170,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 				echo "Do you want to review the list of packages that have updates available?"
 				echo -n "Enter y to view and q to exit reading the package list. (y/N): "
 				read ans
-				if [ "$ans" == "y" ]; then
+				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 					less /tmp/updateavailable
 				fi			
 				exit 0
@@ -192,8 +193,9 @@ elif [ -f "$UPDATETARGET".sce ]; then
 			cat /tmp/.sceupdatelist | tr -d :
 			echo " "
 			echo " "
-			read -p "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
-			if [ "$ans" == "y" ]; then
+			echo -n "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
+			read ans
+			if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 				less /tmp/updateavailable
 			fi
 			## Update all SCEs
@@ -229,9 +231,9 @@ You can choose more than one, and enter "q" for quit when you have completed you
 	fi
 	cat /tmp/.sceupdatechoose | tr -d :
 	echo " "
-	echo "You are about to check for updates to the above SCEs. y to continue, n to exit. (y/N): "
-	read ans
-	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+	echo -n "You are about to check for updates to the above SCEs. y to continue, n to exit. (y/N): "
+	read ANS
+	if [ "$ANS" == "y" ] || [ "$ANS" == "Y" ]; then
 		updateenv
 		## Update selected SCEs
 		for I in `cat /tmp/.sceupdatechoose | tr -d :`; do
@@ -242,7 +244,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 			for D in `echo "$DEPLIST"`; do
 				importupdatecheck "$D" > /dev/null 2>&1
 			done
-			unset DEPLIST
+			#unset DEPLIST
 		done
 		if [ "$CHECKONLY" == "TRUE" ]; then
 			if [ -s /tmp/.sceupdatelist ]; then
@@ -253,7 +255,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 					echo "Do you want to review the list of packages that have updates available?"
 					echo -n "Enter y to view and q to exit reading the package list. (y/N): "
 					read ans
-					if [ "$ans" == "y" ]; then
+					if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 						less /tmp/updateavailable
 					fi			
 					exit 0
@@ -268,9 +270,9 @@ You can choose more than one, and enter "q" for quit when you have completed you
 		## Update SCEs
 		if [ -s /tmp/.sceupdatelist ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
-				#for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-					#getDeps "$I"
-				#done
+				for I in `cat /tmp/.sceupdatelist | tr -d :`; do
+					getDeps "$I"
+				done
 				for D in `echo "$DEPLIST"`; do
 					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$D"
 					echo "$D" >> /tmp/importupdated
@@ -281,8 +283,9 @@ You can choose more than one, and enter "q" for quit when you have completed you
 				cat /tmp/.sceupdatelist | tr -d :
 				echo " "
 				echo " "
-				read -p "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
-				if [ "$ans" == "y" ]; then
+				echo -n "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
+				read ans
+				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 					less /tmp/updateavailable
 				fi
 				## Update all SCEs
