@@ -187,7 +187,7 @@ elif sudo grep -q "^$TARGET:" /tmp/PKGADDDEP && ! sudo grep "^Package: $TARGET" 
 	echo "$TARGET is a meta package of related "$DISTRO" ones."
 	META="$TARGET"
 elif sudo grep "^Package: $TARGET$" "$TCEDIR"/debinx.* > /dev/null 2>&1; then
-	EXTRAINX=`grep -l "^Package: $TARGET$" "$TCEDIR"/debinx.* | head -n 1 | cut -f1 -d:`
+	EXTRAINX=`grep -l "^Package: $TARGET$" "$TCEDIR"/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
 	MIRRORFILE=`echo "$EXTRAINX" | sed "s:"$TCEDIR"/debinx.::"`
 	EXTRAMIRROR=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $1}'`
 	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
@@ -363,7 +363,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 elif [ "$FULLPATH" != "" ]; then
 	 	THISDEB="${FULLPATH##*/}"
 		if grep "^Package: $DEBINFO$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
-			DEBINX=`grep "^Package: $DEBINFO$" "$TCEDIR"/debinx* | head -n 1 | cut -f1 -d:`
+			DEBINX=`grep "^Package: $DEBINFO$" "$TCEDIR"/debinx* /dev/null | head -n 1 | cut -f1 -d:`
 			MIRRORFILE=`echo "$DEBINX" | sed "s:"$TCEDIR"/debinx.::"`
 			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
 			MD5NEW=$(getMd5sum1 "$DEBINFO")
