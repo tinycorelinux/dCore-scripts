@@ -1,10 +1,15 @@
 #!/bin/sh
-
+# (c) Jason Williams 2013
 
 TCEDIR="/etc/sysconfig/tcedir"
 SCEDIR=""$TCEDIR"/sce"
 SCE=${SCE%%.sce}
 cd "$SCEDIR"
+
+[ -f /tmp/.removesce ] && sudo rm /tmp/.removesce
+[ -f /tmp/.keeplist ] && sudo rm /tmp/.keeplist
+[ -f /tmp/.scermlist ] && sudo rm /tmp/.scermlist
+
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "Usage:"
@@ -69,6 +74,6 @@ done
 echo " "
 echo "The above SCEs will be removed upon shutdown or reboot."
 
-
-
-
+[ -f /tmp/.removesce ] && sudo rm /tmp/.removesce
+[ -f /tmp/.keeplist ] && sudo rm /tmp/.keeplist
+[ -f /tmp/.scermlist ] && sudo rm /tmp/.scermlist

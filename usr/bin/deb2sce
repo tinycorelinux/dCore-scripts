@@ -237,7 +237,7 @@ else
 	/usr/bin/rotdash $!
 fi
 
-if [ -s /tmp/.blocked ]; then
+if [ -s /tmp/.blocked ] && [ ! -f /tmp/.importinteractive ]; then
 	cat /tmp/.blocked
 	echo -n "The above packages are blocked dependencies of $TARGET and will not be included in \
 the final SCE. This can cause problems.  Proceed anyway? (y/N): "
