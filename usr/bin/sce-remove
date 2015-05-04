@@ -6,7 +6,7 @@ SCEDIR=""$TCEDIR"/sce"
 SCE=${SCE%%.sce}
 cd "$SCEDIR"
 
-[ -f /tmp/.removesce ] && sudo rm /tmp/.removesce
+
 [ -f /tmp/.keeplist ] && sudo rm /tmp/.keeplist
 [ -f /tmp/.scermlist ] && sudo rm /tmp/.scermlist
 
@@ -39,17 +39,26 @@ if [ -z "$SCE" ]; then
 	## Select sces to remove on shutdown.
 	cd "$SCEDIR"
 	while true; do
-	[ -f /tmp/.scermlist ] || ls *.sce | sed 's:.sce::' | sort > /tmp/.scermlist
-	cat /tmp/.scermlist | select "Choose the sce you want to remove on shutdown." "-"
-	read ANS < /tmp/select.ans
-	if [ "$ANS" == "q" ]; then
-		break
-	fi
-	grep "^$ANS$" /tmp/.removesce > /dev/null 2>&1 || echo "$ANS" >> /tmp/.removesce
-	sed -i "/^$ANS$/d" /tmp/.scermlist
+		for  I in `ls *.sce`; do 
+			F=`echo "$I" | sed 's:.sce::'`
+			grep "^$F$" /tmp/.removesce > /dev/null 2>&1 || echo "$F" >> /tmp/.scermlist
+		done
+		cat /tmp/.scermlist | select "Choose the sce you want to remove on shutdown." "-"
+		read ANS < /tmp/select.ans
+		if [ "$ANS" == "q" ]; then
+			break
+		fi
+		grep "^$ANS$" /tmp/.removesce > /dev/null 2>&1 || echo "$ANS" >> /tmp/.removesce
+		sed -i "/^$ANS$/d" /tmp/.scermlist
 	done
 else
-	echo "$SCE" > /tmp/.removesce
+	cd "$SCEDIR"
+	if [ -f "$SCE".sce ]; then
+		echo "$SCE" > /tmp/.removesce
+	else
+		echo ""$SCE".sce does not exist.  Exiting.."
+		exit 1
+	fi
 fi 
 
 rmdep() {
@@ -74,6 +83,4 @@ done
 echo " "
 echo "The above SCEs will be removed upon shutdown or reboot."
 
-[ -f /tmp/.removesce ] && sudo rm /tmp/.removesce
-[ -f /tmp/.keeplist ] && sudo rm /tmp/.keeplist
-[ -f /tmp/.scermlist ] && sudo rm /tmp/.scermlist
+
