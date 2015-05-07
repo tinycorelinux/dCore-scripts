@@ -41,7 +41,7 @@ if [ -z "$SCE" ]; then
 	while true; do
 		for  I in `ls *.sce`; do 
 			F=`echo "$I" | sed 's:.sce::'`
-			grep "^$F$" /tmp/.removesce > /dev/null 2>&1 || echo "$F" >> /tmp/.scermlist
+			grep "^$F$" /tmp/.removesce /tmp/.scermlist > /dev/null 2>&1 || echo "$F" >> /tmp/.scermlist
 		done
 		cat /tmp/.scermlist | select "Choose the sce you want to remove on shutdown." "-"
 		read ANS < /tmp/select.ans
@@ -62,13 +62,14 @@ else
 fi 
 
 rmdep() {
+if ls *.dep > /dev/null 2>&1; then
 	for D in `grep "^$1$" *.dep`; do 
 		EXT0=`echo "$D" | cut -f1 -d:`
 		EXT=`basename "$EXT0" .sce.dep`
 		grep "^$EXT$" /tmp/.removesce > /dev/null 2>&1 || echo "$EXT" >> /tmp/.removesce
 		rmdep "$EXT"
 	done
-	
+fi	
 }
 
 for I in `cat /tmp/.removesce`; do 
