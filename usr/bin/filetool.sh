@@ -92,6 +92,14 @@ shift `expr $OPTIND - 1`
 
 [ "$PROMPT" ] && VERBOSE=TRUE
 
+if [ ! -f /opt/.filetool.lst ]; then
+	sudo touch /opt/.filetool.lst
+fi
+
+if [ ! -s /opt/.filetool.lst ] || [ "`wc /opt/.filetool.lst | awk '{ print $2 }'`" == "0" ]; then
+	echo "opt/.filetool.lst" | sudo tee /opt/.filetool.lst
+fi
+
 if [ $DRYRUN ]; then
   echo "Performing dry run backup (backup will not actually take place).   Please wait."; echo
   totalcompressedsize=`sudo tar -C / -T /opt/.filetool.lst -X /opt/.xfiletool.lst -cvzf - 2>/tmp/backup_dryrun_list | wc -c`
