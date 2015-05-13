@@ -18,6 +18,7 @@ HERE=`pwd`
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "Usage:"
 	echo "'"sce-import"' with no options will prompt for characters of desired package name."
+	echo "'"sce-import -c"' will look for all packages whose names contain the desired package name."
 	echo "'"sce-import -l"' to use a file list of packages - '"sce-import -l FILENAME"'."
 	echo "'"sce-import -b"' to add package to sceboot.lst."
 	echo "'"sce-import -r"' to use RAM for unpacking source debs."
@@ -71,9 +72,10 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 
 unset FLAGS PACKAGELIST
-while getopts drsbolknup OPTION
+while getopts drsbolknupc OPTION
 do
 	case ${OPTION} in
+		c) CHECKALL=TRUE ;;
 		u) UPDATEDEBINXMODE=TRUE ;;
 		p) PRESERVEDEBINXMODE=TRUE ;;
 		n) NONINTERACTIVE=TRUE ;;
@@ -163,6 +165,14 @@ if grep -i "^SIZE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 elif [ "$SIZE" == "TRUE" ]; then
 	touch /tmp/.importsize
 	echo "Using the -s option."
+fi
+
+# Determine if the checkall option is being used.
+if grep -i "^CHECKALL=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+	export CHECKALL=TRUE
+	echo "Using the -c option."
+elif [ "$CHECKALL" == "TRUE" ]; then
+	echo "Using the -c option."
 fi
 
 # Determine if RAM is going to be used for unpacking.
@@ -278,7 +288,42 @@ elif [ "$PACKAGELIST" ] && [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   fi  
 # Below checks for package in the extra repos first, then the 
 # Debian main repos, then in the prebuilt section, in that order.
-elif sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
+elif [ "$CHECKALL" == "TRUE" ]; then
+ if sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: .*$TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
+  if [ -f /tmp/.importinteractive ]; then
+	if sudo grep -i "^Package: .*$TARGET$" "$TCEDIR"/debinx* > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^Package: $TARGET$" "$TCEDIR"/debinx* | head -1 | awk '{print $2}'`
+	elif sudo grep -i "^Package: .*$TARGET$" "$DEBINX" > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
+	elif sudo grep -i "^$TARGET:" /tmp/PKGADDDEP > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^$TARGET:" /tmp/PKGADDDEP | cut -f1 -d:`
+	elif sudo grep -i "^$TARGET:" /tmp/PKGPREBUILTDEP  > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^$TARGET:" /tmp/PKGPREBUILTDEP | cut -f1 -d:`
+	fi
+	if [ -z "$DEB" ]; then
+		{ sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+  		read DEB < /tmp/select.ans                                                                           
+  		[ "$DEB" == "q" ] && exit 1
+	fi     
+  else
+	{ ls "$TCEDIR"/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+  	read DEB < /tmp/select.ans                                                                           
+  	[ "$DEB" == "q" ] && exit 1     
+  fi 
+
+  echo " "   
+  if [ -f /tmp/.importinteractive ]; then
+	echo "Importing $DEB."
+	mksce "$DEB"
+  else                                                               
+  	echo -n "Do you want to import $DEB? (y/N): "                        
+  	read ans                                                             
+  	[ "$ans" == "y" ] || exit 1                                           
+  	mksce "$DEB"
+  fi
+fi  
+elif [ "$CHECKALL" != "TRUE" ]; then   
+ if sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
   if [ -f /tmp/.importinteractive ]; then
 	if sudo grep -i "^Package: $TARGET$" "$TCEDIR"/debinx* > /dev/null 2>&1; then
 		DEB=`sudo grep -i "^Package: $TARGET$" "$TCEDIR"/debinx* | head -1 | awk '{print $2}'`
@@ -308,7 +353,8 @@ elif sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx* > /dev/null 2>&1 ||  sud
   	read ans                                                             
   	[ "$ans" == "y" ] || exit 1                                           
   	mksce "$DEB"
-  fi                                                           
+  fi    
+fi                                        
 else
  echo ""$TARGET" is not available as a package.  Exiting..."
  exit 1

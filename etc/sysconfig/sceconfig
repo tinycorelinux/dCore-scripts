@@ -30,3 +30,7 @@ NONINTERACTIVE=FALSE
 # For not re-syncing new Packages files of the main or other repos.
 # For better performance.
 PRESERVEDEBINXMODE=FALSE
+
+# For complete listing of Debian packages that have part of the target name
+CHECKALL=FALSE
+
