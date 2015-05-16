@@ -13,6 +13,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"sce-update -a"' will update all existing SCEs, both loaded and unloaded."
 	echo "'"sce-update -n"' for non-interactive mode."
 	echo "'"sce-update -c"' for check only 'dry run' mode, no option to update."
+	echo "'"sce-update -r"' for sce-import to unpack files in RAM during update."
 	echo "'"sce-update iceweasel"' will update iceweasel."
 	exit 0
 fi
