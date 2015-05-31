@@ -6,17 +6,47 @@
 TCEDIR=/etc/sysconfig/tcedir
 
 checknotroot
-sudo debGetEnv
+sudo chown "$TCUSER":staff /tmp
+sudo chmod 1777 /tmp
+BUILD=`getBuild`
+if [ "$BUILD" == "x86" ]; then
+	DEBBUILD="i386"
+elif [ "$BUILD" == "armv7" ]; then
+	DEBBUILD="armhf"
+fi
 
-getMd5sum() {
+read IMPORTMIRROR < /opt/tcemirror
+PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
+IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
+
+while getopts drsbolknupc OPTION
+do
+	case ${OPTION} in
+		p) PRESERVEDEBINXMODE=TRUE ;;
+		*) exit 1 ;;
+	esac
+done
+
+shift `expr $OPTIND - 1`
+
+
+
+exit_tcnet() {
+	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
+	exit 1
+}
+
+
+getName() {
 > /tmp/"$1".pkglist
 sudo grep -B 1 -A 8 "^Package: $1$" "$DEBINX" |  grep -B8 "^$" > /tmp/"$1".pkglist
-sudo grep "^MD5sum:" /tmp/"$1".pkglist | cut -f2 -d" " 
+DEBINX=/tmp/"$1".pkglist
+getName1 $1
 rm /tmp/"$1".pkglist
 }
 
-getMd5sum1() {
-	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
+getName1() {
+	awk -v package="Package: $1" -v build="$DEBBUILD" '
 	BEGIN {
 		RS=""
 		FS="\n"
@@ -25,7 +55,8 @@ getMd5sum1() {
 		if ($1 == package) {
 			for (i=2; i <= NF; i++) {
 				split($i,f,": ")
-
+			
+		
 				if ( f[1] == "Architecture" ) {
 					if ( f[2] == "all" )
 						{}
@@ -34,19 +65,25 @@ getMd5sum1() {
 					else
 						break
 					}
-				
-				if ( f[1] == "MD5sum" )
-					print f[2] 
-			}
 		
+				if ( f[1] == "Filename" )
+					print f[2] 
+						     
+			
+		}
+
+
 		}
 		
 	} ' < "$DEBINX"
+
+
 }
+
+
 echo " "
-echo " "
-echo "This tool will remove all non current packages in /etc/sysconfig/tcedir/import/debs?"
-echo -n "Do you want to continue? (y/N):"
+echo -n "This tool will remove all non current packages in /etc/sysconfig/tcedir/import/debs?\
+  Do you want to continue? (y/N):"
 read ans
 if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 	:
@@ -55,6 +92,22 @@ else
 	exit 1
 fi
 
+> /tmp/.debpurged
+
+if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
+	cd /tmp
+	sudo debGetEnv
+	wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
+
+	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
+	[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
+fi
 
 cd /etc/sysconfig/tcedir/import/debs
 
@@ -62,25 +115,28 @@ for I in `ls *.deb`; do
 DEBINFO=`echo "$I" | cut -f1 -d_`
 
     if sudo grep "^Package: $DEBINFO$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
-	DEBINX=`sudo grep "^Package: $DEBINFO$" "$TCEDIR"/debinx* /dev/null | head -n 1 | cut -f1 -d:`		
-	MD5NEW=$(getMd5sum1 "$DEBINFO")
-	MD5OLD=$(/bb/md5sum "$I" | cut -f1 -d" ")
-	if [ -n "$MD5NEW" ] && [ -n "$MD5OLD" ] && [ "$MD5NEW" != "$MD5OLD" ]; then
-		echo "Removing "$I".."
-		sudo rm "$I"
-	
-	else	
+	DEBINX=`sudo grep "^Package: $DEBINFO$" "$TCEDIR"/debinx.* /dev/null | head -n 1 | cut -f1 -d:`		
+	NAMENEW=$(getName1 "$DEBINFO")
+	NAMENEW="${NAMENEW##*/}"
+	NAMEOLD="$I"
+	if [ "$NAMENEW" != "$NAMEOLD" ]; then
+		echo "Removing "$NAMEOLD".."
+		sudo rm "$NAMEOLD"
+		echo "$I" >> /tmp/.debpurged
+	else
 		echo ""$DEBINFO" package files are up to date."
 	fi			
     else
 	read DEBINX < /tmp/debinx
 	DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
-	MD5NEW=$(getMd5sum "$DEBINFO")
-	MD5OLD=$(/bb/md5sum "$I" | cut -f1 -d" ")
-	if [ -n "$MD5NEW" ] && [ -n "$MD5OLD" ] && [ "$MD5NEW" != "$MD5OLD" ]; then
-		echo "Removing "$I".."
-		sudo rm "$I"
-	else	
+	NAMENEW=$(getName "$DEBINFO")
+	NAMENEW="${NAMENEW##*/}"
+	NAMEOLD="$I"
+	if [ "$NAMENEW" != "$NAMEOLD" ]; then
+		echo "Removing "$NAMEOLD".."
+		sudo rm "$NAMEOLD"
+		echo "$I" >> /tmp/.debpurged
+	else
 		echo ""$DEBINFO" package files are up to date."
 	fi	
     fi
@@ -88,19 +144,32 @@ DEBINFO=`echo "$I" | cut -f1 -d_`
 done
 
 for I in `ls *.tar.gz`; do
-	if grep "$I:" /tmp/PREBUILTMD5SUMLIST; then
+	DEBINFO=`echo "$I" | sed 's:-data.tar.gz::' | sed 's:.tar.gz::'`
+	if grep "$DEBINFO:" /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
 		MD5OLD=$(/bb/md5sum "$I" | cut -f1 -d" ")
-		MD5NEW=$(grep "$I:" /tmp/PREBUILTMD5SUMLIST | cut -f2 -d:)
-		if [ -n "$MD5NEW" ] && [ -n "$MD5OLD" ] && [ "$MD5NEW" != "$MD5OLD" ]; then
+		MD5NEW=$(grep "$DEBINFO:" /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" ")
+		if [ "$MD5NEW" != "$MD5OLD" ]; then
 			echo "Removing "$I".."
 			sudo rm "$I"
+			echo "$I" >> /tmp/.debpurged
+		elif [ ! -n "$MD5NEW" ] || [ ! -n "$MD5OLD" ]; then
+			echo "Md5sum data for "$I" cannot be found, leaving in place."
+			sleep 1
+		else 
+			echo ""$DEBINFO" package files are up to date."
 		fi
-	elif grep "$I:" /tmp/PKGDATAFILEMD5SUMLIST; then
+	elif grep "$DEBINFO:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 		MD5OLD=$(/bb/md5sum "$I" | cut -f1 -d" ")
-		MD5NEW=$(grep "$I:" /tmp/PKGDATAFILEMD5SUMLIST | cut -f2 -d:)
-		if [ -n "$MD5NEW" ] && [ -n "$MD5OLD" ] && [ "$MD5NEW" != "$MD5OLD" ]; then
+		MD5NEW=$(grep "$DEBINFO:" /tmp/PKGDATAFILEMD5SUMLIST | cut -f2 -d" ")
+		if [ "$MD5NEW" != "$MD5OLD" ]; then
 			echo "Removing "$I".."
 			sudo rm "$I"
+			echo "$I" >> /tmp/.debpurged
+		elif [ ! -n "$MD5NEW" ] || [ ! -n "$MD5OLD" ]; then
+			echo "Md5sum data for "$I" cannot be found, leaving in place."
+			sleep 1
+		else 
+			echo ""$DEBINFO" package files are up to date."
 		fi
 	fi
 done
