@@ -81,16 +81,16 @@ getName1() {
 }
 
 
-echo " "
-echo -n "This tool will remove all non current packages in /etc/sysconfig/tcedir/import/debs?\
-  Do you want to continue? (y/N):"
-read ans
-if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-	:
-else
-	echo "Exiting.."
-	exit 1
-fi
+#echo " "
+#echo -n "This tool will remove all non current packages in /etc/sysconfig/tcedir/import/debs?\
+#  Do you want to continue? (y/N):"
+#read ans
+#if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+#	:
+#else
+#	echo "Exiting.."
+#	exit 1
+#fi
 
 > /tmp/.debpurged
 
@@ -124,7 +124,7 @@ DEBINFO=`echo "$I" | cut -f1 -d_`
 		sudo rm "$NAMEOLD"
 		echo "$I" >> /tmp/.debpurged
 	else
-		echo ""$DEBINFO" package files are up to date."
+		: #echo ""$DEBINFO" package files are up to date."
 	fi			
     else
 	read DEBINX < /tmp/debinx
@@ -137,7 +137,7 @@ DEBINFO=`echo "$I" | cut -f1 -d_`
 		sudo rm "$NAMEOLD"
 		echo "$I" >> /tmp/.debpurged
 	else
-		echo ""$DEBINFO" package files are up to date."
+		: #echo ""$DEBINFO" package files are up to date."
 	fi	
     fi
 
@@ -156,7 +156,7 @@ for I in `ls *.tar.gz`; do
 			echo "Md5sum data for "$I" cannot be found, leaving in place."
 			sleep 1
 		else 
-			echo ""$DEBINFO" package files are up to date."
+			: #echo ""$DEBINFO" package files are up to date."
 		fi
 	elif grep "$DEBINFO:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 		MD5OLD=$(/bb/md5sum "$I" | cut -f1 -d" ")
@@ -169,7 +169,7 @@ for I in `ls *.tar.gz`; do
 			echo "Md5sum data for "$I" cannot be found, leaving in place."
 			sleep 1
 		else 
-			echo ""$DEBINFO" package files are up to date."
+			: #echo ""$DEBINFO" package files are up to date."
 		fi
 	fi
 done
