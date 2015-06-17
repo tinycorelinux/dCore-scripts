@@ -321,7 +321,7 @@ chmod g+w "$TCEDIR" "$TCEINSTALLED" "$TCLOOP"
 chmod u+s /bin/busybox /usr/bin/sudo
 
 get_app() {
-	LOADER=loadsce ; PKG=sce
+	LOADER=sce-load ; PKG=sce
 	PROTO=$1
 	HOST=${2%%/*}
 	REST=${2#*/}
@@ -360,7 +360,7 @@ get_app() {
 
 # Preload drivers needed for tce/opt/home on lvm/RAID etc
 if [ -n "$PRETCE" ]; then
-	PKG=sce ; LOADER=loadsce ; LIST=sceboot.lst
+	PKG=sce ; LOADER=sce-load ; LIST=sceboot.lst
 	RAM=/tmp/tce
 	CPTOFS=""
 	if [ "$PRETCE" == "RAM" ] ; then
@@ -672,7 +672,7 @@ fi
 
 /opt/bootsync.sh
 
-rm /etc/udev/rules.d/60-persistent-storage.rules
+[ -f /etc/udev/rules.d/60-persistent-storage.rules ] && rm /etc/udev/rules.d/60-persistent-storage.rules
 /sbin/udevadm trigger  2>&1 >/dev/null &&
 
 /bb/addgroup "$USER" cdrom
