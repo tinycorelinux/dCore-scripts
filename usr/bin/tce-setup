@@ -99,8 +99,8 @@ process_CD() {
 			CDELIST="$CD"/cde/"$TARGETLIST"
 			if [ -s "$CDELIST" ]; then
 				while read FILE; do
-					FILE="$LOADFROM/$FILE"
-					process
+					FILE="$LOADFROM/$FILE.sce"
+					su "$USER" -c "sce-load -b "$FILE""
 				done < "$CDELIST"
 				echo "$LOADFROM" > /etc/sysconfig/cde
 			fi
