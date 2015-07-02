@@ -312,15 +312,7 @@ if [ ! -f /tmp/.importinteractive ]; then
 	fi
 	echo
 	echo
-	echo -n "Proceed to create $TARGET.sce? (y/N): "
-	read ans
-	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-		:
-	else
-		echo "Exiting.."
-		cleanup
-		exit 1
-	fi
+	echo  "Proceeding to create $TARGET.sce.."
 fi
 
 mkdir -p usr/local/sce/"$TARGET"

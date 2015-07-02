@@ -312,15 +312,17 @@ elif [ "$CHECKALL" == "TRUE" ]; then
   fi 
 
   echo " "   
-  if [ -f /tmp/.importinteractive ]; then
-	echo "Importing $DEB."
-	mksce "$DEB"
-  else                                                               
-  	echo -n "Do you want to import $DEB? (y/N): "                        
-  	read ans                                                             
-  	[ "$ans" == "y" ] || exit 1                                           
-  	mksce "$DEB"
-  fi
+#  if [ -f /tmp/.importinteractive ]; then
+#	echo "Importing $DEB."
+#	mksce "$DEB"
+#  else                                                               
+#  	echo -n "Do you want to import $DEB? (y/N): "                        
+#  	read ans                                                             
+#  	[ "$ans" == "y" ] || exit 1                                           
+#  	mksce "$DEB"
+# fi
+  echo "Importing $DEB."
+  mksce "$DEB"
 fi  
 elif [ "$CHECKALL" != "TRUE" ]; then   
  if sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
@@ -345,15 +347,17 @@ elif [ "$CHECKALL" != "TRUE" ]; then
   	[ "$DEB" == "q" ] && exit 1     
   fi 
   echo " "   
-  if [ -f /tmp/.importinteractive ]; then
-	echo "Importing $DEB."
-	mksce "$DEB"
-  else                                                               
-  	echo -n "Do you want to import $DEB? (y/N): "                        
-  	read ans                                                             
-  	[ "$ans" == "y" ] || exit 1                                           
-  	mksce "$DEB"
-  fi    
+#  if [ -f /tmp/.importinteractive ]; then
+#	echo "Importing $DEB."
+#	mksce "$DEB"
+#  else                                                               
+#  	echo -n "Do you want to import $DEB? (y/N): "                        
+#  	read ans                                                             
+#  	[ "$ans" == "y" ] || exit 1                                           
+#  	mksce "$DEB"
+# fi
+  echo "Importing $DEB."
+  mksce "$DEB"
 fi                                        
 else
  echo ""$TARGET" is not available as a package.  Exiting..."
