@@ -82,8 +82,8 @@ process_gz() {
 	cd -
 }
 process_sce() {
-	if [ -n "$(ls "$TCEDIR"/sce/update)" ]; then
-		mv "$TCEDIR"/sce/update/* "$TCEDIR"/sce/
+	if [ -d "$TCEDIR"/sce/update ]; then
+		mv "$TCEDIR"/sce/update/* "$TCEDIR"/sce/ > /dev/null 2>&1
 	fi
 	while read S
 	do
