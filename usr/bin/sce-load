@@ -10,7 +10,7 @@ KERNELVER=$(uname -r)
 unset BOOTING ONDEMAND SUPPRESS
 FORCE="n"  # Overwrite system files default to no. Use -f to force overwrite.
 SAVED_DIR=`pwd`
-
+HERE=`pwd`
 #ONBOOTNAME="$(getbootparam lst 2>/dev/null)"
 
 [ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
@@ -207,6 +207,11 @@ install(){
 
 	if [ -z "$EMPTYEXT" ]; then
 		startupscript_check
+		## Copy properly preserved symlinks to the filesystem, not create links to the links.
+		cd /tmp/tcloop/"$APPNAME"
+		sudo find /tmp/tcloop/"$APPNAME" -type l | sed "s:/tmp/tcloop/$APPNAME/::" > /tmp/"$APPNAME".lnklst
+		sudo /bb/tar -T /tmp/"$APPNAME".lnklst -cpf - | sudo tar xf - -C /
+		## Symlink all other files to the filesystem not overwriting above links.
 		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/opt / 2>/dev/null
 		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/usr / 2>/dev/null
 		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/bin / 2>/dev/null
@@ -220,6 +225,8 @@ install(){
 		if [ ! "$BOOTING" ]; then
 			[ -s /etc/sysconfig/desktop ] && desktop.sh "$APPNAME" > /dev/null 2>&1
 		fi
+		[ -f /tmp/"$APPNAME".lnklst ] && sudo rm /tmp/"$APPNAME".lnklst
+		cd "$HERE"
 	else
 		umount -d /tmp/tcloop/"$APPNAME"
 		update_system "$THISAPP" "$APPNAME"

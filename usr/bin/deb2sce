@@ -158,12 +158,19 @@ TARGET="$1"
 # debGetEnv "$2" || exit 1
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+read DEBINX_SECURITY < /tmp/debinx_security
+DEBINX_SECURITY="/etc/sysconfig/tcedir/$DEBINX_SECURITY"
 echo " "
 echo " "
 echo "Using Package Index: $DEBINX"
 echo " "
+echo "Using Package Index: $DEBINX_SECURITY"
+echo " "
 read MIRROR < /opt/debmirror
+read MIRROR_SECURITY < /opt/securitymirror
 echo "Using "$DISTRO" Mirror: $MIRROR"
+echo " "
+echo "Using "$DISTRO" Security Mirror: $MIRROR"
 echo
 unset META
 
@@ -186,6 +193,9 @@ if [ -s /tmp/.targetfile ]; then
 elif sudo grep -q "^$TARGET:" /tmp/PKGADDDEP && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a meta package of related "$DISTRO" ones."
 	META="$TARGET"
+elif sudo grep "^$TARGET:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
+	echo "$TARGET is a dCore premade package."
+	META="$TARGET"
 elif sudo grep "^Package: $TARGET$" "$TCEDIR"/debinx.* > /dev/null 2>&1; then
 	EXTRAINX=`grep -l "^Package: $TARGET$" "$TCEDIR"/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
 	MIRRORFILE=`echo "$EXTRAINX" | sed "s:"$TCEDIR"/debinx.::"`
@@ -193,10 +203,9 @@ elif sudo grep "^Package: $TARGET$" "$TCEDIR"/debinx.* > /dev/null 2>&1; then
 	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
 	EXTRAPOOL=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $3}'`
 	echo "$TARGET is a "$DISTRO" `echo "$EXTRAREPO"` `echo "$EXTRAPOOL"` package from `echo "$EXTRAMIRROR"`."
-elif sudo grep "^$TARGET:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
-	echo "$TARGET is a dCore premade package."
-	META="$TARGET"
-elif sudo grep -q "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
+elif sudo grep -q "^Package: $TARGET$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
+	echo "$TARGET is a "$DISTRO" "$REPO" security update package."
+elif sudo grep -q "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a standard "$DISTRO" "$REPO" package."
 else
 	echo "$TARGET is not a standard "$DISTRO", dCore precompiled, or meta package, exiting.."
@@ -379,7 +388,32 @@ for DEBINFO in `ls -t /tmp/work`; do
 			read DEBINX < /tmp/debinx
 			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
 			read MIRROR < /opt/debmirror
-		else
+		elif sudo grep "^Package: $DEBINFO$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
+			DEBINX="$DEBINX_SECURITY"
+			read MIRROR < /opt/securitymirror
+			MD5NEW=$(getMd5sum "$DEBINFO")
+			if [ -f "$DEBS"/"$THISDEB" ]; then
+				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
+				if [ "$MD5NEW" != "$MD5OLD" ]; then
+					rm "$DEBS"/"$THISDEB"
+					echo "Fetching updated "$THISDEB".."
+					fetchDeb "$FULLPATH"
+				fi
+			else
+				fetchDeb "$FULLPATH"
+			fi
+			sudo debExtract "$DEBS"/"$THISDEB" "$TARGET"
+			if [ "$?" != "0" ]; then
+				echo "Failure to extract "$THISDEB", exiting.."
+				cleanup
+				exit 1
+			fi
+		
+			echo ""$DEBINFO":  "$MD5NEW"" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
+			read DEBINX < /tmp/debinx
+			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
+			read MIRROR < /opt/debmirror
+		else 
 			MD5NEW=$(getMd5sum "$DEBINFO")
 			if [ -f "$DEBS"/"$THISDEB" ]; then
 				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
