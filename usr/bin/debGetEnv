@@ -72,18 +72,20 @@ x86 )
 		zsyncDebianIndex
 		zsyncDebianSecurityIndex
 		MIRROR1="http://ftp.us.debian.org/debian"
-		MIRROR_SECURITY="http://security.debian.org"
+		MIRROR_SECURITY1="http://security.debian.org"
 	elif [ "$DISTRO" == "ubuntu" ]; then
 		DEBINX=ubuntu_"$REPO"_main_i386_Packages
 		DEBINX_SECURITY=ubuntu_"$REPO"_security_i386_Packages
 		zsyncDebianIndex
 		zsyncDebianSecurityIndex
 		MIRROR1=http://us.archive.ubuntu.com/ubuntu
-		MIRROR_SECURITY="http://security.ubuntu.com/ubuntu"
+		MIRROR_SECURITY1="http://security.ubuntu.com/ubuntu"
 	fi
 	;;
 esac
+
 read MIRROR 2>/dev/null < /opt/debmirror 2>/dev/null || MIRROR="$MIRROR1"
+read MIRROR_SECURITY 2>/dev/null < /opt/securitymirror 2>/dev/null || MIRROR_SECURITY="$MIRROR_SECURITY1"
 
 if [ -z "$DEBINX" ]
 then
@@ -195,10 +197,18 @@ fi
 
 # Test mirror
 if wget -s "$MIRROR" > /dev/null 2>&1; then
-	echo "Using the repo "$MIRROR" "$DISTRO" "$REPO" main"
-	echo "Using the repo "$MIRROR_SECURITY" "$REPO" main"
-	echo "$MIRROR" > /opt/debmirror
-	echo "$MIRROR_SECURITY" > /opt/securitymirror
+	if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
+		echo "Using the repo "$MIRROR" "$DISTRO" "$REPO" main"
+		echo "$MIRROR" > /opt/debmirror
+	else
+		echo "$MIRROR" does not have a "$REPO" repo..
+	fi
+	if wget -s "$MIRROR_SECURITY"/dists/"$REPO" > /dev/null 2>&1; then
+		echo "Using the repo "$MIRROR_SECURITY" "$REPO" main"
+		echo "$MIRROR_SECURITY" > /opt/securitymirror
+	else
+		echo "$MIRROR_SECURITY" does not have a "$REPO"	repo..
+	fi
 else
 	echo "The "$DISTRO" "$REPO" main repo of mirror "$MIRROR" is not available, exiting.."  
 exit 1

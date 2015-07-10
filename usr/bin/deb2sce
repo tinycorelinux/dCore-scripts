@@ -204,7 +204,7 @@ elif sudo grep "^Package: $TARGET$" "$TCEDIR"/debinx.* > /dev/null 2>&1; then
 	EXTRAPOOL=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $3}'`
 	echo "$TARGET is a "$DISTRO" `echo "$EXTRAREPO"` `echo "$EXTRAPOOL"` package from `echo "$EXTRAMIRROR"`."
 elif sudo grep -q "^Package: $TARGET$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
-	echo "$TARGET is a "$DISTRO" "$REPO" security update package."
+	echo "$TARGET is a "$DISTRO" "$REPO" security update package from `cat /opt/securitymirror`."
 elif sudo grep -q "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a standard "$DISTRO" "$REPO" package."
 else
