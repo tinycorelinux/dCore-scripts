@@ -197,6 +197,7 @@ fi
 
 # Test mirror
 if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
+	echo "$MIRROR" > /opt/debmirror
 	if wget -s "$MIRROR_SECURITY"/dists/"$REPO" > /dev/null 2>&1; then
 		echo "Using the repo "$MIRROR_SECURITY" "$REPO" main"
 		echo "$MIRROR_SECURITY" > /opt/securitymirror
