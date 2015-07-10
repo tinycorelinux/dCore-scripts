@@ -1,7 +1,7 @@
 # Use KEEPDOC=TRUE to keep /usr/share/doc and /usr/share/man
 # directories in sce's. Useful for the man command form the 
 # man-db package.
-KiEEPDOC=FALSE
+KEEPDOC=FALSE
 
 # Use RAM=TRUE to use RAM to unpack the contents of packages used
 # when making an SCE.  Particularly useful for flash devices.
@@ -15,10 +15,6 @@ DEPS=FALSE
 # space and download when importing.
 SIZE=FALSE
 
-# Use UPDATE=TRUE to get updated Packages files from main and extra repos
-# on each invocation of importsce.  Default and overrides the PRESERVEDEBINXMODE option.
-UPDATE=FALSE
-
 # Keep .lst and .dep files of SCEs removed by removesce.  Useful for 
 # future re-importing.
 KEEPLIST=FALSE
@@ -26,10 +22,6 @@ KEEPLIST=FALSE
 # Below is for the non-interactive use of importsce.  If package name exists,
 # then no further action is needed by the user for a complete import.
 NONINTERACTIVE=FALSE
-
-# For not re-syncing new Packages files of the main or other repos.
-# For better performance.
-PRESERVEDEBINXMODE=FALSE
 
 # For complete listing of Debian packages that have part of the target name
 CHECKALL=FALSE
