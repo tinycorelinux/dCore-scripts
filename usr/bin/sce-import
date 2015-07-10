@@ -256,8 +256,14 @@ fi
 
 if [ "$UPDATEDEBINXMODE" == "TRUE" ]; then
 	sudo debGetEnv "$2"
+	if [ "$?" != "0" ]; then
+		echo "Error in updating DEBINX files.  Exiting..."
+	fi
 else
 	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
+	if [ "$?" != "0" ]; then
+		echo "Error in updating DEBINX files.  Exiting..."
+	fi
 fi
 
 read DEBINX < /tmp/debinx

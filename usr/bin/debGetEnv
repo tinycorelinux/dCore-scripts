@@ -196,20 +196,15 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 fi
 
 # Test mirror
-if wget -s "$MIRROR" > /dev/null 2>&1; then
-	if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
-		echo "Using the repo "$MIRROR" "$DISTRO" "$REPO" main"
-		echo "$MIRROR" > /opt/debmirror
-	else
-		echo "$MIRROR" does not have a "$REPO" repo..
-	fi
+if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
 	if wget -s "$MIRROR_SECURITY"/dists/"$REPO" > /dev/null 2>&1; then
 		echo "Using the repo "$MIRROR_SECURITY" "$REPO" main"
 		echo "$MIRROR_SECURITY" > /opt/securitymirror
 	else
 		echo "$MIRROR_SECURITY" does not have a "$REPO"	repo..
+		sleep 5
 	fi
 else
 	echo "The "$DISTRO" "$REPO" main repo of mirror "$MIRROR" is not available, exiting.."  
-exit 1
+	exit 1
 fi 

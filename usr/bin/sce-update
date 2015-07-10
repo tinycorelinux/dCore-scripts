@@ -58,6 +58,9 @@ PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 sudo debGetEnv "$2"
+if [ "$?" != "0" ]; then
+	echo "Error in updating needed DEBINX files.  Exiting..."
+fi
 read DEBINX < /tmp/debinx
 cd /tmp
 
