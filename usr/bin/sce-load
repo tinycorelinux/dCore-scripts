@@ -204,12 +204,14 @@ install(){
 	[ "$?" == 0 ] || abort_to_saved_dir
 	[ -z "`ls /tmp/tcloop/${APPNAME}`" ] && EMPTYEXT=1
 	[ "`sudo find /tmp/tcloop/${APPNAME} -mindepth 1 -maxdepth 2 | wc -l`" -le 1 ] && EMPTYEXT=1
-
+	> /tmp/"$APPNAME".lnklst
 	if [ -z "$EMPTYEXT" ]; then
 		startupscript_check
 		## Copy properly preserved symlinks to the filesystem, not create links to the links.
 		cd /tmp/tcloop/"$APPNAME"
-		sudo find /tmp/tcloop/"$APPNAME" -type l | sed "s:/tmp/tcloop/$APPNAME/::" > /tmp/"$APPNAME".lnklst
+		for F in `sudo find /tmp/tcloop/"$APPNAME" -type l | sed "s:/tmp/tcloop/$APPNAME/::"; do
+			[ -e "/$F" ] || echo "$F" >> /tmp/"$APPNAME".lnklst
+		done
 		if [ -s /tmp/"$APPNAME".lnklst ]; then
 			sudo /bb/tar -T /tmp/"$APPNAME".lnklst -cpf - | sudo tar xf - -C /
 		fi
