@@ -209,7 +209,7 @@ install(){
 		startupscript_check
 		## Copy properly preserved symlinks to the filesystem, not create links to the links.
 		cd /tmp/tcloop/"$APPNAME"
-		for F in `sudo find /tmp/tcloop/"$APPNAME" -type l | sed "s:/tmp/tcloop/$APPNAME/::"; do
+		for F in `sudo find /tmp/tcloop/"$APPNAME" -type l | sed "s:/tmp/tcloop/$APPNAME/::"`; do
 			[ -e "/$F" ] || echo "$F" >> /tmp/"$APPNAME".lnklst
 		done
 		if [ -s /tmp/"$APPNAME".lnklst ]; then
@@ -224,7 +224,27 @@ install(){
 		yes "$FORCE" | sudo cp -ais /tmp/tcloop/"$APPNAME"/dev / 2>/dev/null
 		yes "$FORCE" | sudo cp -ai /tmp/tcloop/"$APPNAME"/etc / 2>/dev/null
 		yes "$FORCE" | sudo cp -ai /tmp/tcloop/"$APPNAME"/var / 2>/dev/null
+		## Determine if kernel modules exist in SCE
 		[ ! -z "`sudo find /tmp/tcloop/"$APPNAME" -type f -name *.ko.gz`" ] && MODULES=TRUE
+		## Determine if gdk-pixbuf-loaders have new types and update if needed
+		LOADERS_DIR=/tmp/tcloop/"$APPNAME"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
+		LOADERS_DIR_OLD=/tmp/tcloop/"$APPNAME"/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders
+		if sudo find "$LOADERS_DIR" "$LOADERS_DIR_OLD" -name *.so > /dev/null 2>&1; then
+			sudo /usr/local/postinst/libgdk-pixbuf2.0-0 trigger > /dev/null 2>&1
+		fi
+		## Determine if gtk-2.0 immodules are in SCE and update if needed.
+		IMMODULES_DIR=/usr/lib/i386-linux-gnu/gtk-2.0/2.10.0/immodules
+		IMMODULES_DIR_OLD=/usr/lib/gtk-2.0/2.10.0/immodules
+		if sudo find "$IMMODULES_DIR" "$IMMODULES_DIR_OLD" -name *.so > /dev/null 2>&1; then
+			sudo /usr/local/postinst/libgtk2.0-0 trigger > /dev/null 2>&1
+		fi
+		## Determine if gtk-3.0 immodules are in SCE and update if needed.
+		IMMODULES_DIR=/usr/lib/i386-linux-gnu/gtk-3.0/3.0.0/immodules
+		IMMODULES_DIR_OLD=/usr/lib/gtk-3.0/3.0.0/immodules
+		if sudo find "$IMMODULES_DIR" "$IMMODULES_DIR_OLD" -name *.so > /dev/null 2>&1; then
+			sudo /usr/local/postinst/libgtk-3-0 trigger > /dev/null 2>&1
+		fi
+
 		update_system "$THISAPP" "$APPNAME"
 		if [ ! "$BOOTING" ]; then
 			[ -s /etc/sysconfig/desktop ] && desktop.sh "$APPNAME" > /dev/null 2>&1
