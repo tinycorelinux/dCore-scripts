@@ -30,8 +30,9 @@ fi
 
 TERMTYPE=`/bb/tty`
 [ ${TERMTYPE:5:3} == "tty" ] && (
-[ ! -f /usr/bin/Xorg ] ||
 [ -f /etc/sysconfig/text ] ||
 [ -e /tmp/.X11-unix/X0 ] || 
+[ -f /usr/bin/Xorg ] ||
+[ -f /usr/local/bin/Xvesa ] &&
 startx
 )
