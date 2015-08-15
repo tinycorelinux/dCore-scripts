@@ -136,7 +136,7 @@ fi
 if [ "$PACKAGELIST" == "TRUE" ]; then
   TARGETFILE=`readlink -f "$1"`
   sudo cp $TARGETFILE /tmp/.targetfile
-  TARGET=`basename $1`
+  TARGET=`basename $1 .sce.lst`
 elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
   TARGETFILE="$TCEDIR"/sce/"$1".sce.lst
   sudo cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
