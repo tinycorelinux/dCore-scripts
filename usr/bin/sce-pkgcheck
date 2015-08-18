@@ -16,12 +16,14 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"sce-pkgcheck leafpad"' with no options will update the DEBINX files and check if leafpad is a package and display the repo."
 	echo "'"sce-pkgcheck -p leafpad"' will not update DEBINX and will check if leafpad is a package and display the repo."
 	echo "'"sce-pkgcheck -q leafpad"' will not update DEBINX and will check if leafpad is a package and display the repo."
+	echo "'"sce-pkgcheck -l leafpad"' will check the specified file list."
 exit 1
 fi
 
-while getopts pq OPTION
+while getopts pql OPTION
 do
 	case ${OPTION} in
+		l) LIST=TRUE ;;
 		p) PRESERVEDEBINXMODE=TRUE ;;
 		q) QUIET=TRUE ;;
 	esac
@@ -74,36 +76,56 @@ DEBINX="/etc/sysconfig/tcedir/$DEBINX"
 read DEBINX_SECURITY < /tmp/debinx_security
 DEBINX_SECURITY="/etc/sysconfig/tcedir/$DEBINX_SECURITY"
 
+pkgcheck() {
+
 if [ "$QUIET" == "TRUE" ]; then
 
-	if grep -i "^$PKG:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
-		: #	echo ""$PKG" is an available package from the prebuilt section."
-	elif grep -i "^Package: $PKG$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
-		: #	echo ""$PKG" is an available package from an extra repo."
-	elif sudo grep -i "^Package: $PKG$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
-		: #	echo ""$PKG" is an available package from security updates."
-	elif sudo grep -i "^Package: $PKG$" "$DEBINX" > /dev/null 2>&1 ; then
-		: #	echo ""$PKG" is an available package from the main repo."
+	if grep -i "^$1:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
+		: #	echo ""$1"      is an available package from the prebuilt section."
+	elif grep -i "^Package: $1$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
+		: #	echo ""$1"      is an available package from an extra repo."
+	elif sudo grep -i "^Package: $1$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
+		: #	echo ""$1"      is an available package from security updates."
+	elif sudo grep -i "^Package: $1$" "$DEBINX" > /dev/null 2>&1 ; then
+		: #	echo ""$1"      is an available package from the main repo."
 	elif grep -i "^$PKG:" /tmp/PKGADDDEP > /dev/null 2>&1; then
-		: #	echo ""$PKG" is only found in our server's dependency list, it may be a meta package."
+		: #	echo ""$1"      is only found in our server's dependency list, it may be a meta package."
 	else
-		: #	echo ""$PKG" is not an available package."
-		exit 1
+		echo ""$1"      is not an available package."
+		if [ "$LIST" != "TRUE" ]; then
+			exit 1
+		fi
 	fi
 else 
-	if grep -i "^$PKG:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
-		echo ""$PKG" is an available package from the prebuilt section."
-	elif grep -i "^Package: $PKG$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
-		echo ""$PKG" is an available package from an extra repo."
-	elif sudo grep -i "^Package: $PKG$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
-		echo ""$PKG" is an available package from security updates."
-	elif sudo grep -i "^Package: $PKG$" "$DEBINX" > /dev/null 2>&1 ; then
-		echo ""$PKG" is an available package from the main repo."
-	elif grep -i "^$PKG:" /tmp/PKGADDDEP > /dev/null 2>&1; then
-		echo ""$PKG" is only found in our server's dependency list, it may be a meta package."
+	if grep -i "^$1:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
+		echo ""$1"      is an available package from the prebuilt section."
+	elif grep -i "^Package: $1$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
+		echo ""$1"      is an available package from an extra repo."
+	elif sudo grep -i "^Package: $1$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
+		echo ""$1"      is an available package from security updates."
+	elif sudo grep -i "^Package: $1$" "$DEBINX" > /dev/null 2>&1 ; then
+		echo ""$1"      is an available package from the main repo."
+	elif grep -i "^$1:" /tmp/PKGADDDEP > /dev/null 2>&1; then
+		echo ""$1"      is only found in our server's dependency list, it may be a meta package."
 	else
-		echo ""$PKG" is not an available package."
-		exit 1
+		echo ""$1"      is not an available package."
+		if [ "$LIST" != "TRUE" ]; then
+			exit 1
+		fi
 	fi
 
+fi
+}
+
+if [ "$LIST" == "TRUE" ]; then
+	LST="$1" 			
+	if [ ! -f "$LST" ]; then
+		echo "The list file "$LST" does not exist.  Exiting.."
+		exit 1
+	fi
+	for I in `cat "$LST"`; do 
+		pkgcheck "$I"
+	done
+else
+	pkgcheck "$PKG"
 fi
