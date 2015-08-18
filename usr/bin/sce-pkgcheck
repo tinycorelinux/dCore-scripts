@@ -1,0 +1,109 @@
+#!/bb/ash
+# (c) Jason Williams 2015
+
+. /etc/init.d/tc-functions
+HERE=`pwd`
+BUILD=`getBuild`
+checknotroot
+
+exit_tcnet() {
+	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
+	exit 1
+}
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo "Usage:"
+	echo "'"sce-pkgcheck leafpad"' with no options will update the DEBINX files and check if leafpad is a package and display the repo."
+	echo "'"sce-pkgcheck -p leafpad"' will not update DEBINX and will check if leafpad is a package and display the repo."
+	echo "'"sce-pkgcheck -q leafpad"' will not update DEBINX and will check if leafpad is a package and display the repo."
+exit 1
+fi
+
+while getopts pq OPTION
+do
+	case ${OPTION} in
+		p) PRESERVEDEBINXMODE=TRUE ;;
+		q) QUIET=TRUE ;;
+	esac
+done
+shift `expr $OPTIND - 1`
+PKG="$1"
+
+if [ ! -n "$PKG" ]; then 
+	echo "Please specify package name.  Example 'sce-pkgcheck leafpad'."
+	exit 1
+fi
+ 
+read IMPORTMIRROR < /opt/tcemirror
+PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
+IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
+
+if [ "$PRESERVEDEBINXMODE" == "TRUE" ]; then
+	cd /tmp
+	if [ ! -f /tmp/deb2sce.tar.gz ]; then
+		wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
+		tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
+		tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
+	fi
+	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
+	if [ "$?" != "0" ]; then
+		echo "Error in updating DEBINX files.  Exiting..."
+	fi
+	cd "$HERE"
+else
+	if [ -f /tmp/deb2sce.tar.gz ]; then
+		rm /tmp/deb2sce.tar.gz
+	fi
+	cd /tmp
+	wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
+	tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
+	
+	sudo debGetEnv "$2"
+	if [ "$?" != "0" ]; then
+		echo "Error in updating DEBINX files.  Exiting..."
+	fi
+	cd "$HERE"
+fi
+
+
+
+read DEBINX < /tmp/debinx
+DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+
+read DEBINX_SECURITY < /tmp/debinx_security
+DEBINX_SECURITY="/etc/sysconfig/tcedir/$DEBINX_SECURITY"
+
+if [ "$QUIET" == "TRUE" ]; then
+
+	if grep -i "^$PKG:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
+		: #	echo ""$PKG" is an available package from the prebuilt section."
+	elif grep -i "^Package: $PKG$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
+		: #	echo ""$PKG" is an available package from an extra repo."
+	elif sudo grep -i "^Package: $PKG$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
+		: #	echo ""$PKG" is an available package from security updates."
+	elif sudo grep -i "^Package: $PKG$" "$DEBINX" > /dev/null 2>&1 ; then
+		: #	echo ""$PKG" is an available package from the main repo."
+	elif grep -i "^$PKG:" /tmp/PKGADDDEP > /dev/null 2>&1; then
+		: #	echo ""$PKG" is only found in our server's dependency list, it may be a meta package."
+	else
+		: #	echo ""$PKG" is not an available package."
+		exit 1
+	fi
+else 
+	if grep -i "^$PKG:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
+		echo ""$PKG" is an available package from the prebuilt section."
+	elif grep -i "^Package: $PKG$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
+		echo ""$PKG" is an available package from an extra repo."
+	elif sudo grep -i "^Package: $PKG$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
+		echo ""$PKG" is an available package from security updates."
+	elif sudo grep -i "^Package: $PKG$" "$DEBINX" > /dev/null 2>&1 ; then
+		echo ""$PKG" is an available package from the main repo."
+	elif grep -i "^$PKG:" /tmp/PKGADDDEP > /dev/null 2>&1; then
+		echo ""$PKG" is only found in our server's dependency list, it may be a meta package."
+	else
+		echo ""$PKG" is not an available package."
+		exit 1
+	fi
+
+fi
