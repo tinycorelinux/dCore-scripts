@@ -57,7 +57,10 @@ getMd5sum1() {
 }
 read IMPORTMIRROR < /opt/tcemirror                                                                             
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
-
+read DEBINX < /tmp/debinx
+DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+read DEBINX_SECURITY < /tmp/debinx_security
+DEBINX_SECURITY="/etc/sysconfig/tcedir/$DEBINX_SECURITY"
 
 if sudo grep "^Package: $1$" "$TCEDIR"/debinx.* > /dev/null 2>&1; then
  DEBINX=`grep "^Package: $1$" "$TCEDIR"/debinx.* | head -n 1 | cut -f1 -d:`
@@ -68,16 +71,19 @@ if sudo grep "^Package: $1$" "$TCEDIR"/debinx.* > /dev/null 2>&1; then
 elif grep "^$1:" /tmp/PKGPREBUILTDEP >/dev/null ; then
  echo "$1: `grep "^$1": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "`" >> /tmp/sce.md5new
  echo "$1;   dCore custom prebuilt" >> /tmp/.importpkgtype
-else
- read DEBINX < /tmp/debinx
- DEBINX="/etc/sysconfig/tcedir/$DEBINX"
- if sudo grep "^Package: $1$" "$DEBINX" > /dev/null 2>&1; then
+elif sudo grep "^Package: $1$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
+  DEBINX="$DEBINX_SECURITY"
   DISTRO=`cat /usr/share/doc/tc/distro.txt`
   REPO=`cat /usr/share/doc/tc/repo.txt` 
   grep ""$1";" /tmp/.importpkgtype || echo ""$1";   "$DISTRO" "$REPO" main" >> /tmp/.importpkgtype
-   getMd5sum "$1"
- else
+  getMd5sum1 "$1"
+elif sudo grep "^Package: $1$" "$DEBINX" > /dev/null 2>&1; then
+  DISTRO=`cat /usr/share/doc/tc/distro.txt`
+  REPO=`cat /usr/share/doc/tc/repo.txt` 
+  grep ""$1";" /tmp/.importpkgtype || echo ""$1";   "$DISTRO" "$REPO" main" >> /tmp/.importpkgtype
+  getMd5sum "$1"
+else
    echo ""$1" is not in the package database, skipping."
- fi
 fi
+
 
