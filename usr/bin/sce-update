@@ -14,23 +14,32 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"sce-update -n"' for non-interactive mode."
 	echo "'"sce-update -c"' for check only 'dry run' mode, no option to update."
 	echo "'"sce-update -r"' for sce-import to unpack files in RAM during update."
+	echo "'"sce-update -s"' for sce-import to check for size and available space during update."
 	echo "'"sce-update iceweasel"' will update iceweasel."
 	exit 0
 fi
 
-while getopts canr OPTION
+while getopts canrs OPTION
 do
 	case ${OPTION} in
 		r) RAM=TRUE ;;
 		n) NONINTERACTIVE=TRUE ;;
 		c) CHECKONLY=TRUE ;;
 		a) UPDATEALL=TRUE ;;
+		s) SIZE=TRUE ;;
 	esac
 done
 
 shift `expr $OPTIND - 1`
 UPDATETARGET="$1"
-#[ "$OPTS" ] && "$OPTS"="-$OPTS"
+OPTIONS=""
+if [ "$RAM" == "TRUE" ]; then
+	OPTIONS=""$OPTIONS"r"
+fi
+
+if [ "$SIZE" == "TRUE" ]; then
+	OPTIONS=""$OPTIONS"s"
+fi
 
 if [ -z "$1" ]; then
 	SELECT=TRUE
@@ -129,11 +138,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$NONINTERACTIVE" == "TRUE" ]; then
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				if [ "$RAM" == "TRUE" ]; then
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || RAM=TRUE sce-import -nsp "$I"
-				else
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$I"
-				fi
+				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 				echo "$I" >> /tmp/importupdated
 			done
 			echo "Refer to /tmp/updateavailable for details of package updates."
@@ -149,11 +154,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			fi
 			## Update all SCEs
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				if [ "$RAM" == "TRUE" ]; then
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || RAM=TRUE sce-import -nsp "$I"
-				else
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$I"
-				fi
+				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 				echo "$I" >> /tmp/importupdated
 			done
 		fi
@@ -197,11 +198,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$NONINTERACTIVE" == "TRUE" ]; then
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				if [ "$RAM" == "TRUE" ]; then
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || RAM=TRUE sce-import -nsp "$I"
-				else
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$I"
-				fi
+				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 				echo "$I" >> /tmp/importupdated
 			done
 			echo "Refer to /tmp/updateavailable for details of package updates."
@@ -217,11 +214,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 			fi
 			## Update all SCEs
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
-				if [ "$RAM" == "TRUE" ]; then
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || RAM=TRUE sce-import -nsp "$I"
-				else
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$I"
-				fi
+				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 				echo "$I" >> /tmp/importupdated
 			done
 		fi
@@ -246,7 +239,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 	done
 	##
 	clear
-	if [ ! -n /tmp/.sceupdatechoose ]; then
+	if [ ! -s /tmp/.sceupdatechoose ]; then
 		echo "No SCEs were chosen for update.  Exiting.."
 		exit 0
 	fi
@@ -295,11 +288,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 					getDeps "$I"
 				done
 				for D in `echo "$DEPLIST"`; do
-					if [ "$RAM" == "TRUE" ]; then
-						grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || RAM=TRUE sce-import -nsp "$D"
-					else
-						grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$D"
-					fi
+					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$D"
 					echo "$D" >> /tmp/importupdated
 				done
 				echo "Refer to /tmp/updateavailable for package update details."
@@ -318,11 +307,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 				#	getDeps "$I"
 				#done
 				for D in `echo "$DEPLIST"`; do
-					if [ "$RAM" == "TRUE" ]; then
-						grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || RAM=TRUE sce-import -nsp "$D"
-					else
-						grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || sce-import -nsp "$D"
-					fi
+					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$D"
 					echo "$D" >> /tmp/importupdated
 				done
 			fi
