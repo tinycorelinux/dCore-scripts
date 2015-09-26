@@ -127,7 +127,7 @@ echo "${GREEN}Done.${NORMAL}"
 				/bb/mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
 	  				
 			done
-			umount "$DEV1"
+			umount "$DEV1" > /dev/null 2>&1
 			rmdir /tmp/testusbdevice
 			echo
 		;;
@@ -146,7 +146,7 @@ echo "${GREEN}Done.${NORMAL}"
 				/bb/mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
 	  				
 			done
-			umount "$DEV1"
+			umount "$DEV1" > /dev/null 2>&1
 			rmdir /tmp/testusbdevice
 			echo
 		;;
