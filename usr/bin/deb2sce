@@ -33,6 +33,8 @@ fi
 
 TCEDIR=/etc/sysconfig/tcedir
 
+[ -d /etc/sysconfig/tcedir/import/debinx ] || mkdir -p /etc/sysconfig/tcedir/import/debinx
+
 setupStartupScript() {
 	[ -d "$IMPORT"/"$TARGET"/usr/local/tce.installed ] || mkdir -p "$IMPORT"/"$TARGET"/usr/local/tce.installed
 	chmod 775 "$IMPORT"/"$TARGET"/usr/local/tce.installed
@@ -157,9 +159,9 @@ TARGET="$1"
 
 # debGetEnv "$2" || exit 1
 read DEBINX < /tmp/debinx
-DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 read DEBINX_SECURITY < /tmp/debinx_security
-DEBINX_SECURITY="/etc/sysconfig/tcedir/$DEBINX_SECURITY"
+DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 echo " "
 echo " "
 echo "Using Package Index: $DEBINX"
@@ -175,8 +177,8 @@ echo
 unset META
 
 # Remove unused debinx files in TCEDIR that will cause confusion if their /opt/debextra entries do not exist.
-if ls "$TCEDIR"/debinx.* > /dev/null 2>&1; then
-	for I in `ls "$TCEDIR"/debinx.*`; do 
+if ls "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
+	for I in `ls "$TCEDIR"/import/debinx/debinx.*`; do 
 	H=`basename "$I" | sed 's:debinx.::'`
 	if [ ! -f /opt/debextra/"$H" ]; then
 		rm "$I"
@@ -196,9 +198,9 @@ elif sudo grep -q "^$TARGET:" /tmp/PKGADDDEP && ! sudo grep "^Package: $TARGET" 
 elif sudo grep "^$TARGET:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
 	echo "$TARGET is a dCore premade package."
 	META="$TARGET"
-elif sudo grep "^Package: $TARGET$" "$TCEDIR"/debinx.* > /dev/null 2>&1; then
-	EXTRAINX=`grep -l "^Package: $TARGET$" "$TCEDIR"/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
-	MIRRORFILE=`echo "$EXTRAINX" | sed "s:"$TCEDIR"/debinx.::"`
+elif sudo grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
+	EXTRAINX=`grep -l "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
+	MIRRORFILE=`echo "$EXTRAINX" | sed "s:"$TCEDIR"/import/debinx/debinx.::"`
 	EXTRAMIRROR=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $1}'`
 	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
 	EXTRAPOOL=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $3}'`
@@ -335,7 +337,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 read IMPORTMIRROR < /opt/tcemirror                                                                             
 	 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 	 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
-	 if grep "^${DEBINFO}:" /tmp/PKGPREBUILTDEP >/dev/null && ! grep "^Package: $DEBINFO$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
+	 if grep "^${DEBINFO}:" /tmp/PKGPREBUILTDEP >/dev/null && ! grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
 	 #if [ -z "$FULLPATH" ] && grep "^${DEBINFO}:" /tmp/PKGPREBUILTDEP >/dev/null; then
 		if grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
 			cd "$DEBS"
@@ -363,9 +365,9 @@ for DEBINFO in `ls -t /tmp/work`; do
 		fi	
 	 elif [ "$FULLPATH" != "" ]; then
 	 	THISDEB="${FULLPATH##*/}"
-		if grep "^Package: $DEBINFO$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
-			DEBINX=`grep "^Package: $DEBINFO$" "$TCEDIR"/debinx* /dev/null | head -n 1 | cut -f1 -d:`
-			MIRRORFILE=`echo "$DEBINX" | sed "s:"$TCEDIR"/debinx.::"`
+		if grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
+			DEBINX=`grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx* /dev/null | head -n 1 | cut -f1 -d:`
+			MIRRORFILE=`echo "$DEBINX" | sed "s:"$TCEDIR"/import/debinx/debinx.::"`
 			MIRROR=`cat /opt/debextra/"$MIRRORFILE" | cut -f1 -d" "`
 			MD5NEW=$(getMd5sum1 "$DEBINFO")
 			if [ -f "$DEBS"/"$THISDEB" ]; then
@@ -386,7 +388,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			fi		
 			echo ""$DEBINFO":  "$MD5NEW"" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
 			read DEBINX < /tmp/debinx
-			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
+			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		elif sudo grep "^Package: $DEBINFO$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
 			DEBINX="$DEBINX_SECURITY"
@@ -411,7 +413,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 		
 			echo ""$DEBINFO":  "$MD5NEW"" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
 			read DEBINX < /tmp/debinx
-			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
+			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		else 
 			MD5NEW=$(getMd5sum "$DEBINFO")
@@ -434,7 +436,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 		
 			echo ""$DEBINFO":  "$MD5NEW"" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
 			read DEBINX < /tmp/debinx
-			DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
+			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		fi	
 	 fi

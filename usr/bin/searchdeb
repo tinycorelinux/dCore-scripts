@@ -39,7 +39,7 @@ fi
 #[ -s /tmp/debinx ] || sudo debGetEnv "$2"
 sudo debGetEnv
 read DEBINX < /tmp/debinx
-DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 
 if ls /tmp/debinx.* > /dev/null 2>&1; then
 	for I in `ls /tmp/debinx.*`; do

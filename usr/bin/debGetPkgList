@@ -13,7 +13,7 @@ elif [ "$BUILD" == "armv7" ]; then
 fi
 
 read DEBINX_SECURITY < /tmp/debinx_security
-DEBINX_SECURITY="/etc/sysconfig/tcedir/$DEBINX_SECURITY"
+DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 
 getDeps1() {
 > /tmp/"$1".pkglist
@@ -76,8 +76,8 @@ then
 fi
 if ls -A /opt/debextra > /dev/null 2>&1; then
 
-  if grep "^Package: "$1"$" "$TCEDIR"/debinx.* > /dev/null; then
-    DEBINX=`grep -l "^Package: $1$" "$TCEDIR"/debinx.* | head -n 1`
+  if grep "^Package: "$1"$" "$TCEDIR"/import/debinx/debinx.* > /dev/null; then
+    DEBINX=`grep -l "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* | head -n 1`
     DEPS="$(getDeps2 $1)"
     #[ ! -z "$DEPS" ] && echo " "
     echo "$DEPS"
@@ -89,7 +89,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
     echo "$DEPS"
   else
     read DEBINX < /tmp/debinx
-    DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+    DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
     DEPS="$(getDeps1 $1)"
     [ -z "$DEPS" ] && exit 1
     echo "$DEPS"
@@ -102,7 +102,7 @@ elif sudo grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null; then
     echo "$DEPS"
 else
     read DEBINX < /tmp/debinx
-    DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+    DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
     DEPS="$(getDeps1 $1)"
     [ -z "$DEPS" ] && exit 1
     echo "$DEPS"

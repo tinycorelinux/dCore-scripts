@@ -12,7 +12,7 @@ TCEDIR=/etc/sysconfig/tcedir
 DEBDIR="/etc/sysconfig/tcedir/import/debs"
 UNPACKDIR=/etc/sysconfig/tcedir/import/
 read DEBINX < /tmp/debinx
-DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 DEBINX1="/tmp/debinx1"
 TARGET="$1"
 BUILD=`getBuild`
@@ -115,8 +115,8 @@ if grep ^"$I": /tmp/.importsizelist >/dev/null; then
 	echo $DSIZE >> /tmp/.importarchsize
    	echo $ISIZE >> /tmp/.importisize
 else  
-   	if grep "^Package: $I$" "$TCEDIR"/debinx.* > /dev/null 2>&1; then 
-       		DEBINX1=`sudo grep -l "^Package: $I$" "$TCEDIR"/debinx.* | head -n 1 | cut -f1 -d:`
+   	if grep "^Package: $I$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then 
+       		DEBINX1=`sudo grep -l "^Package: $I$" "$TCEDIR"/import/debinx/debinx.* | head -n 1 | cut -f1 -d:`
        		read FULLPATH < /tmp/work/"$I"
        		THISDEB="${FULLPATH##*/}"
    		DSIZEBYTE=`getdsize_extra "$I"`

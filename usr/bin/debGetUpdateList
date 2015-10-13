@@ -58,13 +58,13 @@ getMd5sum1() {
 read IMPORTMIRROR < /opt/tcemirror                                                                             
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 read DEBINX < /tmp/debinx
-DEBINX="/etc/sysconfig/tcedir/$DEBINX"
+DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 read DEBINX_SECURITY < /tmp/debinx_security
-DEBINX_SECURITY="/etc/sysconfig/tcedir/$DEBINX_SECURITY"
+DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 
-if sudo grep "^Package: $1$" "$TCEDIR"/debinx.* > /dev/null 2>&1; then
- DEBINX=`grep "^Package: $1$" "$TCEDIR"/debinx.* | head -n 1 | cut -f1 -d:`
- MIRRORFILE=`grep "^Package: $1$" "$TCEDIR"/debinx* | head -n 1 | cut -f1 -d: | sed "s:"$TCEDIR"/debinx.::"`
+if sudo grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
+ DEBINX=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* | head -n 1 | cut -f1 -d:`
+ MIRRORFILE=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx* | head -n 1 | cut -f1 -d: | sed "s:"$TCEDIR"/import/debinx/debinx.::"`
  REPO=`cat /opt/debextra/"$MIRRORFILE"`
  echo ""$1";   "$REPO"" >> /tmp/.importpkgtype
  getMd5sum1 "$1"

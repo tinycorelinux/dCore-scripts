@@ -18,6 +18,8 @@ fi
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
+read DEBINX_SECURITY < /tmp/debinx_security
+DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 
 while getopts drsbolknupc OPTION
 do
@@ -114,8 +116,8 @@ cd /etc/sysconfig/tcedir/import/debs
 for I in `ls *.deb`; do
 DEBINFO=`echo "$I" | cut -f1 -d_`
 
-    if sudo grep "^Package: $DEBINFO$" "$TCEDIR"/debinx.* > /dev/null 2>&1 ; then
-	DEBINX=`sudo grep "^Package: $DEBINFO$" "$TCEDIR"/debinx.* /dev/null | head -n 1 | cut -f1 -d:`		
+    if sudo grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
+	DEBINX=`sudo grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`		
 	NAMENEW=$(getName1 "$DEBINFO")
 	NAMENEW="${NAMENEW##*/}"
 	NAMEOLD="$I"
@@ -126,9 +128,8 @@ DEBINFO=`echo "$I" | cut -f1 -d_`
 	else
 		: #echo ""$DEBINFO" package files are up to date."
 	fi			
-    else
-	read DEBINX < /tmp/debinx
-	DEBINX="/etc/sysconfig/tcedir/$DEBINX"	
+    elif sudo grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" > /dev/null 2>&1 ; then
+	DEBINX="$DEBINX_SECURITY"	
 	NAMENEW=$(getName "$DEBINFO")
 	NAMENEW="${NAMENEW##*/}"
 	NAMEOLD="$I"
@@ -139,7 +140,20 @@ DEBINFO=`echo "$I" | cut -f1 -d_`
 	else
 		: #echo ""$DEBINFO" package files are up to date."
 	fi	
-    fi
+    else
+    	read DEBINX < /tmp/debinx
+	DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
+	NAMENEW=$(getName "$DEBINFO")
+	NAMENEW="${NAMENEW##*/}"
+	NAMEOLD="$I"
+	if [ "$NAMENEW" != "$NAMEOLD" ]; then
+		echo "Removing "$NAMEOLD".."
+		sudo rm "$NAMEOLD"
+		echo "$I" >> /tmp/.debpurged
+	else
+		: #echo ""$DEBINFO" package files are up to date."
+	fi
+fi
 
 done
 

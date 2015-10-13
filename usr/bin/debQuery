@@ -28,7 +28,7 @@ query() {
 			}
 		}
 		
-	} ' < "$TCEDIR"/"$DEBINX"
+	} ' < "$TCEDIR"/import/debinx/"$DEBINX"
 }
 
 # Main
