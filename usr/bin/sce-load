@@ -105,6 +105,10 @@ do
 done
 shift `expr $OPTIND - 1`
 
+if grep -q " debug " /proc/cmdline > /dev/null 2>&1; then
+	DEBUG=TRUE
+fi
+
 startupscript_check() {
 	APPSSS_D="/tmp/tcloop/${APPNAME}/usr/local/tce.installed"
 	if [ -d "$APPSSS_D" ]

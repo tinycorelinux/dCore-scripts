@@ -118,6 +118,7 @@ for i in `cat /proc/cmdline`; do
 	case $i in
 		cde) CDE=1 ;;
 		base) ONLYBASE=1 ;;
+		debug) DEBUG=TRUE
 	esac
 done
 
@@ -166,7 +167,13 @@ if [ -s /tmp/setup.lst ]; then
 	for F in `cat /tmp/setup.lst`; do
 	APP=`basename "$F"`
 		if ! grep "^$APP:" /tmp/.installed >/dev/null; then
-			"$F" > /dev/null 2>&1
+			if [ "$DEBUG" == "TRUE" ]; then
+				echo "$APP"
+				echo "$APP:" | tee -a /var/log/sce.log > /dev/null 2>&1
+				"$F" 2>&1 | tee -a /var/log/sce.log > /dev/null 2>&1	
+			else
+				"$F" > /dev/null 2>&1
+			fi
 			echo "$APP:" >> /tmp/.installed
 		fi
 	 done
