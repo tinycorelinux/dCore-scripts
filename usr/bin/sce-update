@@ -30,6 +30,11 @@ do
 	esac
 done
 
+# Determine if non-interactive mode is being used.
+if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+	NONINTERACTIVE=TRUE
+fi
+
 shift `expr $OPTIND - 1`
 UPDATETARGET="$1"
 OPTIONS=""
