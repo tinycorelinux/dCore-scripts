@@ -1,3 +1,5 @@
+# Change FALSE to TRUE for any option desired. 
+
 # Use KEEPDOC=TRUE to keep /usr/share/doc and /usr/share/man
 # directories in sce's. Useful for the man command form the 
 # man-db package.
@@ -25,4 +27,7 @@ NONINTERACTIVE=FALSE
 
 # For complete listing of Debian packages that have part of the target name
 CHECKALL=FALSE
+
+# To show a list of packages that will be imported
+VIEWPKGS=FALSE
 

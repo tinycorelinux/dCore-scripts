@@ -28,6 +28,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"sce-import -n"' for non interactive mode."
 	echo "'"sce-import -u"' for update mode, syncing a new debinx files."
 	echo "'"sce-import -p"' for preserve debinx mode, use existing rather than fetch new for better performance." 
+	echo "'"sce-import -v"' to see a list of packages that the imported SCE will contain."
 exit 1
 fi
 
@@ -46,6 +47,7 @@ exit_tcnet() {
 	exit 1
 }
 
+[ -f /tmp/.viewpkgs ] && sudo rm /tmp/.viewpkgs
 [ -f /tmp/.importinteractive ] && sudo rm /tmp/.importinteractive
 [ -f /tmp/.keepdoc ] && sudo rm /tmp/.keepdoc
 [ -f /tmp/.importram ] && sudo rm /tmp/.importram
@@ -72,7 +74,7 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 
 unset FLAGS PACKAGELIST
-while getopts drsbolknupc OPTION
+while getopts drsbolknupcv OPTION
 do
 	case ${OPTION} in
 		c) CHECKALL=TRUE ;;
@@ -86,6 +88,7 @@ do
 		b) FLAGS="$FLAGS"b ; ONBOOT=TRUE ;;
 		o) FLAGS="$FLAGS"o ; ONDEMAND=TRUE ;;
 		l) PACKAGELIST=TRUE ;;
+		v) VIEWPKGS=TRUE ;;
 		*) exit 1 ;;
 	esac
 done
@@ -165,6 +168,15 @@ if grep -i "^SIZE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 elif [ "$SIZE" == "TRUE" ]; then
 	touch /tmp/.importsize
 	echo "Using the -s option."
+fi
+
+# Determine if the viewpackges option is being used.
+if grep -i "^VIEWPKGS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+	touch /tmp/.viewpkgs
+	echo "Using the -v option."
+elif [ "$VIEWPKGS" == "TRUE" ]; then
+	touch /tmp/.viewpkgs
+	echo "Using the -v option."
 fi
 
 # Determine if the checkall option is being used.
@@ -343,7 +355,7 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 		DEB=`sudo grep -i "^$TARGET:" /tmp/PKGPREBUILTDEP | cut -f1 -d:`
 	fi
 	if [ -z "$DEB" ]; then
-		{ sudo grep -i "^Package: $TARGET" "$TCEDIR"/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+		{ sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   		read DEB < /tmp/select.ans                                                                           
   		[ "$DEB" == "q" ] && exit 1
 	fi     

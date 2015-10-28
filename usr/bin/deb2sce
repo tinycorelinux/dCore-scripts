@@ -313,7 +313,7 @@ fi
 for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo "$I" >> /tmp/.pkglist; done
 
 
-if [ ! -f /tmp/.importinteractive ]; then
+if [ -f /tmp/.viewpkgs ]; then
 	echo "Do you want to review the list of packages that $TARGET.sce"
 	echo "will consist of? Enter y to view and q to exit reading"
 	echo -n "the package list. (y/N): "
