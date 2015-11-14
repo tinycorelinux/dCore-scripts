@@ -128,7 +128,7 @@ DEBINFO=`echo "$I" | cut -f1 -d_`
 	else
 		: #echo ""$DEBINFO" package files are up to date."
 	fi			
-    elif sudo grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" > /dev/null 2>&1 ; then
+    elif sudo grep "^Package: $DEBINFO$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
 	DEBINX="$DEBINX_SECURITY"	
 	NAMENEW=$(getName "$DEBINFO")
 	NAMENEW="${NAMENEW##*/}"
@@ -141,7 +141,7 @@ DEBINFO=`echo "$I" | cut -f1 -d_`
 		: #echo ""$DEBINFO" package files are up to date."
 	fi	
     else
-    	read DEBINX < /tmp/debinx
+ 	read DEBINX < /tmp/debinx
 	DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 	NAMENEW=$(getName "$DEBINFO")
 	NAMENEW="${NAMENEW##*/}"
