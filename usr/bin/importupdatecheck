@@ -114,12 +114,12 @@ fi
 ##
 
 ## If new package dependencies exist in updated dep gathering, update the 
-for I in `ls /tmp/work`; do
-	if ! grep "^$I:" "$DATADIR"/*.debs > /dev/null 2>&1; then
-		sudo debGetUpdateList "$I"
-	fi 
-
-done 
+#for I in `ls /tmp/work`; do
+#	if ! grep "^$I:" "$DATADIR"/*.debs > /dev/null 2>&1; then
+#		sudo debGetUpdateList "$I"
+#	fi 
+#
+#done 
 ##
 
 echo " " 

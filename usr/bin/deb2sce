@@ -393,7 +393,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 		elif sudo grep "^Package: $DEBINFO$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
 			DEBINX="$DEBINX_SECURITY"
 			read MIRROR < /opt/securitymirror
-			MD5NEW=$(getMd5sum1 "$DEBINFO")
+			MD5NEW=$(getMd5sum "$DEBINFO")
 			if [ -f "$DEBS"/"$THISDEB" ]; then
 				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
