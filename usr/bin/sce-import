@@ -29,6 +29,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"sce-import -u"' for update mode, syncing a new debinx files."
 	echo "'"sce-import -p"' for preserve debinx mode, use existing rather than fetch new for better performance." 
 	echo "'"sce-import -v"' to see a list of packages that the imported SCE will contain."
+	echo "'"sce-import -z"' will ignore /etc/sysconfig/sceconfig and only use current command line options."
 exit 1
 fi
 
@@ -74,7 +75,7 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 
 unset FLAGS PACKAGELIST
-while getopts drsbolknupcv OPTION
+while getopts drsbolknupcvz OPTION
 do
 	case ${OPTION} in
 		c) CHECKALL=TRUE ;;
@@ -89,18 +90,19 @@ do
 		o) FLAGS="$FLAGS"o ; ONDEMAND=TRUE ;;
 		l) PACKAGELIST=TRUE ;;
 		v) VIEWPKGS=TRUE ;;
+		z) NOCONFIG=TRUE ;;
 		*) exit 1 ;;
 	esac
 done
 
 
 
-if grep -i "^ONBOOT=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^ONBOOT=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	ONBOOT=TRUE
 	FLAGS="$FLAGS"b
 fi
 
-if grep -i "^ONDEMAND=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^ONDEMAND=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	ONDEMAND=TRUE
 	FLAGS="$FLAGS"o
 fi
@@ -150,7 +152,7 @@ fi
 
 # Determine if the -d option or the existence of a dep file
 # is present and use dep file if found.
-if grep -i "^DEPS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^DEPS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	touch /tmp/.importdep
 	echo "Using the -d option."
 elif [ "$DEPS" == "TRUE" ]; then
@@ -162,7 +164,7 @@ elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
 fi
 
 # Determine if the size option is being used.
-if grep -i "^SIZE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^SIZE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	touch /tmp/.importsize
 	echo "Using the -s option."
 elif [ "$SIZE" == "TRUE" ]; then
@@ -171,7 +173,7 @@ elif [ "$SIZE" == "TRUE" ]; then
 fi
 
 # Determine if the viewpackges option is being used.
-if grep -i "^VIEWPKGS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^VIEWPKGS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	touch /tmp/.viewpkgs
 	echo "Using the -v option."
 elif [ "$VIEWPKGS" == "TRUE" ]; then
@@ -180,7 +182,7 @@ elif [ "$VIEWPKGS" == "TRUE" ]; then
 fi
 
 # Determine if the checkall option is being used.
-if grep -i "^CHECKALL=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^CHECKALL=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	export CHECKALL=TRUE
 	echo "Using the -c option."
 elif [ "$CHECKALL" == "TRUE" ]; then
@@ -188,7 +190,7 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 fi
 
 # Determine if RAM is going to be used for unpacking.
-if grep -i "^RAM=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^RAM=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	touch /tmp/.importram
 	echo "Using the -r option."
 elif [ "$RAM" == "TRUE" ]; then
@@ -197,7 +199,7 @@ elif [ "$RAM" == "TRUE" ]; then
 fi
 
 # Determine if docs are to be kept (/usr/share/doc, /usr/share/man, etc).
-if grep -i "^KEEPDOC=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^KEEPDOC=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	touch /tmp/.keepdoc
 	echo "Using the -k option."
 elif [ "$KEEPDOC" == "TRUE" ]; then
@@ -206,7 +208,7 @@ elif [ "$KEEPDOC" == "TRUE" ]; then
 fi
 
 # Determine if non-interactive mode is being used.
-if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	touch /tmp/.importinteractive
 	echo "Using the -n option."
 elif [ "$NONINTERACTIVE" == "TRUE" ]; then
@@ -214,7 +216,7 @@ elif [ "$NONINTERACTIVE" == "TRUE" ]; then
 	echo "Using the -n option."
 fi
 
-if grep -i "^PRESERVEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^PRESERVEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	PRESERVEDEBINXMODE=TRUE
 	echo "Using the -p option."
 elif [ "$PRESERVEDEBINXMODE" == "TRUE" ]; then
@@ -225,7 +227,7 @@ else
 	PRESERVEDEBINXMODE=FALSE
 fi
 
-if grep -i "^UPDATEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^UPDATEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	UPDATEDEBINXMODE=TRUE
 	PRESERVEDEBINXMODE=FALSE
 	echo "Using the -u option."

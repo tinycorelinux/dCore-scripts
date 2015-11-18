@@ -41,7 +41,7 @@ setupStartupScript() {
 	chown root.staff "$IMPORT"/"$TARGET"/usr/local/tce.installed
 }
 
-
+## Retrieve the Debian package from the appropriate Debian repo.
 fetchDeb() {
 
 		sudo /bb/wget -O "$DEBS"/"$THISDEB"  ${MIRROR}/${1}
@@ -53,7 +53,9 @@ fetchDeb() {
 		fi
 			
 }
+##
 
+## Bring up a menu if the matching file name of the Debian package is not found in the Debian repo.
 selectDeb() {
 	FULLPATH=${1}
 	SELECT_PATH="${FULLPATH%/*}"
@@ -65,7 +67,9 @@ selectDeb() {
 		fetchDeb ${SELECT_PATH}/${DEB}
 	fi
 }
+##
 
+## Functions to get the md5sum of the Debian .deb from the appropriate Packages list.
 getMd5sum() {
 > /tmp/"$1".pkglist
 grep -B 1 -A 8 "^Package: $1$" "$DEBINX" |  grep -B8 "^$" > /tmp/"$1".pkglist
@@ -101,7 +105,7 @@ getMd5sum1() {
 		
 	} ' < "$DEBINX"
 }
-
+##
 
 cleanup() {
 	rm -rf /tmp/work
@@ -113,6 +117,7 @@ cleanup() {
 	if ls /tmp/*.debs > /dev/null 2>&1; then 
 		sudo rm /tmp/*.debs
 	fi
+	[ -f /tmp/.sceconflict ] && sudo rm /tmp/.sceconflict
 	[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
 	[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
 	[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
@@ -157,6 +162,7 @@ then
 fi
 TARGET="$1"
 
+## Update the DEBINX files
 # debGetEnv "$2" || exit 1
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
@@ -176,7 +182,7 @@ echo "Using "$DISTRO" Security Mirror: $MIRROR"
 echo
 unset META
 
-# Remove unused debinx files in TCEDIR that will cause confusion if their /opt/debextra entries do not exist.
+## Remove unused debinx files in TCEDIR that will cause confusion if their /opt/debextra entries do not exist.
 if ls "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
 	for I in `ls "$TCEDIR"/import/debinx/debinx.*`; do 
 	H=`basename "$I" | sed 's:debinx.::'`
@@ -185,8 +191,9 @@ if ls "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
 	fi 
 	done
 fi
+##
 
-
+## Determine which repo the package will come from.
 if [ -s /tmp/.targetfile ]; then
 	echo "$TARGET is from your own custom package list:"
 	echo "`readlink /tmp/.targetfile`"
@@ -214,13 +221,16 @@ else
 	cleanup 
 	exit 1
 fi
+##
 
-
+## Create the directory where the packages will be downloaded to.
 > /var/log/sce.log
 [ -d "$TCEDIR"/sce ] || mkdir "$TCEDIR"/sce
 [ -d "$TCEDIR"/import/debs ] || mkdir -p "$TCEDIR"/import/debs
 DEBS="$TCEDIR"/import/debs
+##
 
+## Determine if RAM will be used to unpack packages.
 if [ -f /tmp/.importram ]; then
 	IMPORT=/tmp/import
 	mkdir -p "$IMPORT"
@@ -229,6 +239,7 @@ else
 	IMPORT="$TCEDIR"/import
 	cd "$IMPORT"
 fi
+##
 
 #[ -f exclude.lst ] || gzip -dc /tmp/deb2sce.xlst.gz > exclude.lst
 
@@ -236,6 +247,7 @@ fi
 cd "$TARGET"
 > /tmp/import.log	
 
+## Get the dependencies of the desired packages or list of packages.
 if [ -s /tmp/.targetfile ]; then
 	echo "Gathering dependency info.."
 	for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
@@ -247,7 +259,9 @@ else
 	debGetDeps "$TARGET" > /dev/null 2>&1 &
 	/usr/bin/rotdash $!
 fi
+##
 
+## Determine if any blocked packages are in the dependency list.
 if [ -s /tmp/.blocked ] && [ ! -f /tmp/.importinteractive ]; then
 	cat /tmp/.blocked
 	echo -n "The above packages are blocked dependencies of $TARGET and will not be included in \
@@ -261,20 +275,31 @@ the final SCE. This can cause problems.  Proceed anyway? (y/N): "
 		exit 1
 	fi
 fi
+##
 
+## Get the SCE deps if any and check for duplicates between deps.
 if [ -f /tmp/.importdep ]; then
 	debGetSceDep "$TARGET"
 fi
 
-if [ -f /tmp/.pkgexists ]; then
-	echo "$TARGET already exists in below dependency sce's, aborting."
-	cat /tmp/.pkgexists
+if [ -f /tmp/.sceconflict ]; then
+	echo "$TARGET already exists in the dep files of the below SCEs.  Aborting to prevent circular dependency."
+	echo " "
+	cat /tmp/.sceconflict
 	cleanup
 	exit 1
 fi
 
+if [ -f /tmp/.pkgexists ]; then
+	echo "$TARGET already exists in below dependency sce's, aborting."
+	echo " "
+	cat /tmp/.pkgexists
+	cleanup
+	exit 1
+fi
+##
 
-
+## Bring up list of SCEs that will profide package dependencies for the TARGET one.
 if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 	echo
 	echo
@@ -289,13 +314,17 @@ if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 	echo
 	echo
 fi
+##
 
+## Check free space function when specified.
 if [ -f /tmp/.importsize ]; then
 	echo "Determining HD and RAM space needed.."
 	debGetSize "$TARGET" &
 	/usr/bin/rotdash $!
 fi
+##
 
+## Echo when not enough free space in RAM or chosen working partition.
 if [ -s /tmp/.importfree ]; then
 	cat /tmp/.importfree
 	echo "The above errors have occured. Do you wish to continue"
@@ -309,9 +338,11 @@ if [ -s /tmp/.importfree ]; then
 		exit 1
 	fi
 fi
+##
 
+## Include in TARGET SCE  only package deps of TARGET that are not provided by chosen dependency SCEs
 for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo "$I" >> /tmp/.pkglist; done
-
+##
 
 if [ -f /tmp/.viewpkgs ]; then
 	echo "Do you want to review the list of packages that $TARGET.sce"
@@ -337,6 +368,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 read IMPORTMIRROR < /opt/tcemirror                                                                             
 	 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 	 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
+	 ## Check to see if package is PREBUILT first.
 	 if grep "^${DEBINFO}:" /tmp/PKGPREBUILTDEP >/dev/null && ! grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
 	 #if [ -z "$FULLPATH" ] && grep "^${DEBINFO}:" /tmp/PKGPREBUILTDEP >/dev/null; then
 		if grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
@@ -365,6 +397,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 		fi	
 	 elif [ "$FULLPATH" != "" ]; then
 	 	THISDEB="${FULLPATH##*/}"
+		## Check second to see if package is from extra repo.
 		if grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
 			DEBINX=`grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx* /dev/null | head -n 1 | cut -f1 -d:`
 			MIRRORFILE=`echo "$DEBINX" | sed "s:"$TCEDIR"/import/debinx/debinx.::"`
@@ -390,6 +423,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			read DEBINX < /tmp/debinx
 			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
+		## Third check to see if package is available as security update.
 		elif sudo grep "^Package: $DEBINFO$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
 			DEBINX="$DEBINX_SECURITY"
 			read MIRROR < /opt/securitymirror
@@ -416,6 +450,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		else 
+			## Fourth package is standard Debian repo one.
 			MD5NEW=$(getMd5sum "$DEBINFO")
 			if [ -f "$DEBS"/"$THISDEB" ]; then
 				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
@@ -445,14 +480,16 @@ done
 
 
 cd ..
+## Move *.debs package listing to the SCE.
 mv /tmp/*.debs "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/ > /dev/null 2>&1
 if [ -f /tmp/"$TARGET".debdeps ]; then
 	cp /tmp/"$TARGET".debdeps "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/
 fi
-
+##
 [ -d "$TARGET"/usr/share/menu ] && rm -r "$TARGET"/usr/share/menu
 [ -d "$TARGET"/usr/share/lintian ] && rm -r "$TARGET"/usr/share/lintian
 
+## Remove empty dirs.
 busybox find "$TARGET" -mindepth 1 -depth -type d -exec rmdir '{}' + 2>/dev/null
 
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1

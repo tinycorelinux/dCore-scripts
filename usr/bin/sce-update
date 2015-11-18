@@ -15,11 +15,12 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"sce-update -c"' for check only 'dry run' mode, no option to update."
 	echo "'"sce-update -r"' for sce-import to unpack files in RAM during update."
 	echo "'"sce-update -s"' for sce-import to check for size and available space during update."
+	echo "'"sce-update -z"' will ignore /etc/sysconfig/sceconfig and only use current command line options."
 	echo "'"sce-update iceweasel"' will update iceweasel."
 	exit 0
 fi
 
-while getopts canrs OPTION
+while getopts canrsz OPTION
 do
 	case ${OPTION} in
 		r) RAM=TRUE ;;
@@ -27,11 +28,12 @@ do
 		c) CHECKONLY=TRUE ;;
 		a) UPDATEALL=TRUE ;;
 		s) SIZE=TRUE ;;
+		z) NOCONFIG=TRUE ;;
 	esac
 done
 
 # Determine if non-interactive mode is being used.
-if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
+if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	NONINTERACTIVE=TRUE
 fi
 
