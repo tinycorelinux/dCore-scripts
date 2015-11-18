@@ -279,7 +279,22 @@ fi
 
 ## Get the SCE deps if any and check for duplicates between deps.
 if [ -f /tmp/.importdep ]; then
-	debGetSceDep "$TARGET"
+	if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
+		if [ ! -f /tmp/.importinteractive ]; then
+			echo -n "Do you want to use the existing "$TARGET".sce.dep file for dependencies? (y/N):"
+			if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+				debGetSceDep "$TARGET"
+			else
+				sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
+				debGetSceDep "$TARGET"
+			fi
+		else
+			debGetSceDep "$TARGET"
+		fi
+	
+	else
+		debGetSceDep "$TARGET"	
+	fi
 fi
 
 if [ -f /tmp/.sceconflict ]; then

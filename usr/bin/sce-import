@@ -160,7 +160,7 @@ elif [ "$DEPS" == "TRUE" ]; then
 	echo "Using the -d option."
 elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
 	touch /tmp/.importdep
-	echo "Existing dep file found and will be used."
+	echo "Existing dep file found."
 fi
 
 # Determine if the size option is being used.
