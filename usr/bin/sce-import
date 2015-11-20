@@ -145,7 +145,6 @@ if [ "$PACKAGELIST" == "TRUE" ]; then
 elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
   TARGETFILE="$TCEDIR"/sce/"$1".sce.lst
   sudo cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
-  PACKAGELIST=TRUE
 fi
 
 
@@ -283,28 +282,38 @@ fi
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 # Below is where -l list file option is being used.
-if [ "$PACKAGELIST" ] && [ -f "$TARGETFILE" ]; then
-  echo " "
-  if [ -f /tmp/.importinteractive ]; then
-  	echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
-  	mksce "$TARGET" 
-  else
-	echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"? (y/N): " 
-  	read ans                   
-  	[ "$ans" == "y" ] || exit 0                          
-  	mksce "$TARGET" 
-  fi  
+if [ "$PACKAGELIST" ]; then
+	if [ -f "$TARGETFILE" ]; then
+  		echo " "
+  		if [ -f /tmp/.importinteractive ]; then
+  			echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
+  			mksce "$TARGET" 
+  		else
+			echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"? (y/N): " 
+		  	read ans                   
+		  	[ "$ans" == "y" ] || exit 0                          
+		  	mksce "$TARGET" 
+		fi
+	else 
+		echo "Please specify a target file when using the -l option.  Exiting.."
+		exit 1
+	fi  
 # Below is where an existing .lst file is found in sce dir.
-elif [ "$PACKAGELIST" ] && [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
+elif [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   echo " "
   if [ -f /tmp/.importinteractive ]; then
   	echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
   	mksce "$TARGET" 
   else
-	echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?"
+	echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?  Press (n/N) try and import a standard "$TARGET" package, any key will use the existing package list."
   	read ans                   
-  	[ "$ans" == "y" ] || exit 0                          
-  	mksce "$TARGET" 
+  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
+  		sudo rm /tmp/.targetfile
+		mksce "$TARGET" 
+		sudo rm "$TARGETFILE"
+	else
+		mksce "$TARGET" 
+	fi
   fi  
 # Below checks for package in the extra repos first, then the 
 # Debian main repos, then in the prebuilt section, in that order.
