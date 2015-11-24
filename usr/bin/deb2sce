@@ -140,6 +140,7 @@ cleanup() {
 	[ -f /tmp/PKGEXTRAREPODEP ] && sudo rm /tmp/PKGEXTRAREPODEP
 	[ -f /tmp/PKGPREBUILTDEP ] && sudo rm /tmp/PKGPREBUILTDEP
 	[ -f /tmp/PREBUILTMD5SUMLIST ] && sudo rm /tmp/PREBUILTMD5SUMLIST
+	[ -f /tmp/KEEPDOC ] && sudo rm /tmp/KEEPDOC
 }
 
 # Main

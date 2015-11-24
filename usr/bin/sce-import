@@ -128,6 +128,7 @@ tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
 cd "$HERE"
 
 if grep -wq "^$TARGET$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
