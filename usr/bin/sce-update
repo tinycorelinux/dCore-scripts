@@ -92,7 +92,7 @@ tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
 cd "$SCEDIR"
 }
 
-
+## Get recursive list of dependency SCEs.
 getDeps() {
 DEPLIST=" $1 $DEPLIST "
 
@@ -107,7 +107,7 @@ if [ -f "$SCEDIR"/"$1".sce.dep ]; then
 	done
 fi
 }
-
+##
 
 if [ "$UPDATEALL" == "TRUE" ]; then
 	updateenv
@@ -172,6 +172,68 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		echo "No updates available for chosen SCEs at this time."
 		exit 1
 	fi
+elif [ -f update/"$UPDATETARGET".sce ]; then
+	cd update/
+	updateenv
+	echo " "
+	echo "Searching for available updates for "$UPDATETARGET".sce."
+	unset DEPLIST
+	getDeps "$UPDATETARGET"
+	for I in `echo "$DEPLIST"`; do
+		importupdatecheck "$I" > /dev/null 2>&1
+	done
+	unset DEPLIST
+	if [ "$CHECKONLY" == "TRUE" ]; then
+		if [ -s /tmp/.sceupdatelist ]; then
+			if [ "$NONINTERACTIVE" == "TRUE" ]; then
+				echo "Refer to /tmp/updateavailable for details of package updates."
+				exit 0
+			else
+				echo "Do you want to review the list of packages that have updates available?"
+				echo -n "Enter y to view and q to exit reading the package list. (y/N): "
+				read ans
+				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+					less /tmp/updateavailable
+				fi			
+				exit 0
+			fi
+		else
+			clear
+			echo "No updates available for chosen SCEs."
+			exit 0
+		fi
+	fi
+	if [ -s /tmp/.sceupdatelist ]; then
+		if [ "$NONINTERACTIVE" == "TRUE" ]; then
+			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
+				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
+				echo "$I" >> /tmp/importupdated
+			done
+			echo "Refer to /tmp/updateavailable for details of package updates."
+		else
+			clear
+			cat /tmp/.sceupdatelist | tr -d :
+			echo " "
+			echo " "
+			echo -n "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
+			read ans
+			if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+				less /tmp/updateavailable
+			fi
+			## Update all SCEs
+			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
+				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
+				echo "$I" >> /tmp/importupdated
+			done
+		fi
+		##
+
+	else 
+		clear
+		echo "No updates available for chosen SCEs at this time."
+		exit 1
+	fi
+	cd ..
 elif [ -f "$UPDATETARGET".sce ]; then
 	updateenv
 	echo " "

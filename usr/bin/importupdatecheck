@@ -72,34 +72,7 @@ fi
 ##
 
 unset DEPLIST
-
-## Get dependency tree of SCE.dep file
-getDeps() {
-DEPLIST=" "$1" "$DEPLIST" "
-
-if [ -f "$SCEDIR"/"$1".sce.dep ]; then
-	for E in `cat "$SCEDIR"/"$1".sce.dep`; do 
-		H=" $E "
-		if echo "$DEPLIST" | grep "$H" > /dev/null 2>&1; then
-			continue
-		else 
-			getDeps "$E"
-		fi
-	done
-fi
-}
-##
-
-## Find if dep file is missing any needed entries, re-import to fix if so.
-getDeps "$SCE"
-for I in `ls "$DATADIR"/*.debs`; do
-	DEP=`basename "$I" | sed 's:.debs::g'`
-	if ! echo "$DEPLIST" | grep " $DEP " > /dev/null 2>&1; then
-		grep "^$SCE$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$SCE" >> /tmp/.sceupdatelist
-	fi
-done
-##		
-	
+		
 
 [ -d /tmp/work ] && sudo rm -r /tmp/work
 
@@ -113,16 +86,13 @@ else
 fi
 ##
 
-## If new package dependencies exist in updated dep gathering, update the 
-#for I in `ls /tmp/work`; do
-#	if ! grep "^$I:" "$DATADIR"/*.debs > /dev/null 2>&1; then
-#		sudo debGetUpdateList "$I"
-#	fi 
-#
-#done 
+## Get md5sum data and list of package dependencies.
+for I in `ls /tmp/work`; do
+	sudo debGetUpdateList "$I"
+done 
 ##
 
-echo " " 
+
 
 echo "SCE:  "$SCE"" >> /tmp/updateavailable
 echo "  Available package updates:" >> /tmp/updateavailable
@@ -130,14 +100,21 @@ while read line; do
 	E=`echo $line | cut -f1 -d:`
         F=`echo $line | awk '{print $2}'`
     	G=`grep "^$E:" "$FILE" | awk '{print $2}'`
-
-
+	## Update if new pacakge dependencies in the repo exist.	
+	grep "^$E:" "$FILE" > /dev/null 2>&1 || grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1 || echo "$E" >> /tmp/.importupdates
+	if ! grep "^$E:" "$FILE" > /dev/null 2>&1; then
+		return
+	fi
+	
+	##
+	## Update if md5sum of existing package and one on the server differ.
      	if [[ "$F" != "$G" ]] && ! grep "^$E$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
      		echo "$E" >> /tmp/.importupdates
      
         fi
+	##
 	NAME="$E"
-	if [ -f "$FILEDATA" ]; then
+	
 		if grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 			MD5SSNEW=`grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}'`
@@ -145,28 +122,52 @@ while read line; do
 				MD5SSOLD="0"
 			fi
 			if [ "$MD5SSNEW" != "$MD5SSOLD" ]; then
-				if ! grep "^$E$" /tmp/ssupdates; then
+				#if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates
-					echo "    "$E"   Updated startup script update available." >>  /tmp/updateavailable 
-				fi
+					echo "    "$E"   Updated "$E".deb2sce startup script update available." >>  /tmp/updateavailable 
+				#fi
 			fi
+		elif grep "^$E-deb2sce:" "$FILEDATA" > /dev/null 2>&1; then
+			MD5SSNEW=`grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
+			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}'`
+			if ! grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
+				MD5SSNEW="0"
+			fi
+			if [ "$MD5SSNEW" != "$MD5SSOLD" ]; then
+				#if ! grep "^$E$" /tmp/ssupdates; then
+					echo "$E" >> /tmp/ssupdates
+					echo "    "$E"   "$E".deb2sce startup script has been removed in the repo." >>  /tmp/updateavailable 
+				#fi
+			fi
+		
 		fi
 
-		if grep "^$E"-data: /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
+		if grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 	        	MD5DATANEW=`grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
 			MD5DATAOLD=`grep "^$E-data:" "$FILEDATA" | awk '{print $2}'`
 			if ! grep "^$E-data:" "$FILEDATA" > /dev/null 2>&1; then
 				MD5DATAOLD="0"
 			fi
 	        	if [ "$MD5DATANEW" != "$MD5DATAOLD" ]; then
-			 	if ! grep "^$E$" /tmp/ssupdates; then
+			 	#if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates
 			   		echo "    "$E"   Updated "$E"-data.tar.gz extra files update available." >>  /tmp/updateavailable 
-	        		fi	
+	        		#fi	
 			fi
-		fi
-	fi 
 		
+		elif grep "^$E-data:" "$FILEDATA" > /dev/null 2>&1; then
+	        	MD5DATANEW=`grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
+			MD5DATAOLD=`grep "^$E-data:" "$FILEDATA" | awk '{print $2}'`
+			if ! grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
+				MD5DATANEW="0"
+			fi
+	        	if [ "$MD5DATANEW" != "$MD5DATAOLD" ]; then
+			 	#if ! grep "^$E$" /tmp/ssupdates; then
+					echo "$E" >> /tmp/ssupdates
+			   		echo "    "$E"   "$E"-data.tar.gz has been removed on the server." >>  /tmp/updateavailable 
+	        		#fi	
+			fi
+		fi	
 done < /tmp/sce.md5new
 
 if [ -s /tmp/.importupdates ]; then
@@ -190,18 +191,17 @@ echo " " >> /tmp/updateavailable
 echo " " >> /tmp/updateavailable
 
 mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo umount /tmp/sceupdatetest
-[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
+#[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
 [ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
-[ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
+#[ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
 [ -f "/tmp/.*deb2sce" ] && sudo rm /tmp/.*deb2scew
 [ -f "/tmp/*.md5sum" ] && sudo rm /tmp/*.md5sum
 [ -f "/tmp/*.pkglist" ] && sudo rm /tmp/*.pkglist
-[ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
-[ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
+#[ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
 [ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
-[ -d /tmp/work ] && sudo rm -r /tmp/work
+#[ -d /tmp/work ] && sudo rm -r /tmp/work
 
 sudo chmod 1777 /tmp
 cd "$SCEDIR"
