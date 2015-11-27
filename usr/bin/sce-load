@@ -133,7 +133,6 @@ update_system() {
 			sudo depmod -a 2>/dev/null
 			sudo /sbin/udevadm trigger
 		fi
-		sudo /sbin/ldconfig 2>/dev/null
 	fi
 	if [ -s /tmp/ss$$.lst ]; then
 		if [ "$BOOTING" ] ; then
@@ -188,7 +187,17 @@ update_system() {
 		fi
 		
 		rm /tmp/ss$$.lst
-	fi		
+	fi
+	sudo /sbin/ldconfig 2>/dev/null
+	if [ -f /tmp/tcloop/"$APPNAME"/usr/local/postinst/libglib2.0-0 ]; then
+		sudo /usr/local/postinst/libglib2.0-0
+	fi
+	if [ -f /tmp/tcloop/"$APPNAME"/usr/local/postinst/libgtk2.0-0 ]; then
+		sudo /usr/local/postinst/libgtk2.0-0
+	fi
+	if [ -f /tmp/tcloop/"$APPNAME"/usr/local/postinst/libgtk-3-0 ]; then
+		sudo /usr/local/postinst/libgtk-3-0
+	fi
 }
 
 install(){
