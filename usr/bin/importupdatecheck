@@ -191,17 +191,17 @@ echo " " >> /tmp/updateavailable
 echo " " >> /tmp/updateavailable
 
 mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo umount /tmp/sceupdatetest
-#[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
+[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
 [ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
-#[ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
+[ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
 [ -f "/tmp/.*deb2sce" ] && sudo rm /tmp/.*deb2scew
 [ -f "/tmp/*.md5sum" ] && sudo rm /tmp/*.md5sum
 [ -f "/tmp/*.pkglist" ] && sudo rm /tmp/*.pkglist
-#[ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
+[ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
 [ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
-#[ -d /tmp/work ] && sudo rm -r /tmp/work
+[ -d /tmp/work ] && sudo rm -r /tmp/work
 
 sudo chmod 1777 /tmp
 cd "$SCEDIR"
