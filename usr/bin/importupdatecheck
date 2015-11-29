@@ -22,6 +22,7 @@ ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/.*deb2sce
 [ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
 [ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
 [ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
+[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
 
 exit_tcnet() {
 	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
@@ -106,7 +107,21 @@ while read line; do
 		echo "$E" >> /tmp/.importmissing
 		continue
 	fi
-	
+	##
+	## Update if pacakges are no longer required that are in the main SCE or it's deps.
+	for I in `cat "$FILE" | cut -f1 -d:`; do
+		if ! ls /tmp/work/"$I" > /dev/null 2>&1; then
+			echo "$I" >> /tmp/.importnotneeded
+		fi
+		continue
+	done
+
+	for I in `cat "$DATADIR"/*.debs`; do
+		if ! ls /tmp/work/"$I" > /dev/null 2>&1; then
+			echo "$I" >> /tmp/.importnotneeded
+		fi
+		continue
+	done
 	##
 	## Update if md5sum of existing package and one on the server differ.
      	if [[ "$F" != "$G" ]] && ! grep "^$E$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
@@ -115,7 +130,7 @@ while read line; do
         fi
 	##
 	NAME="$E"
-	
+		## Get updated or deleted startup script or data files info.
 		if grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 			MD5SSNEW=`grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}'`
@@ -169,7 +184,16 @@ while read line; do
 	        		#fi	
 			fi
 		fi	
+		##
 done < /tmp/sce.md5new
+
+if [ -s /tmp/.importnotneeded ]; then
+	for I in `cat /tmp/.importnotneeded  | sort | uniq`; do 
+		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
+		echo "    "$I"       "$A"  ---  is no longer needed by "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
+	done
+	grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >> /tmp/.sceupdatelist
+fi 
 
 if [ -s /tmp/.importmissing ]; then
 	for I in `cat /tmp/.importmissing | sort | uniq`; do 
@@ -210,8 +234,9 @@ mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo umount /tmp/sceupdatete
 [ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
-#[ -d /tmp/work ] && sudo rm -r /tmp/work
-#[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
+[ -d /tmp/work ] && sudo rm -r /tmp/work
+[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
+[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
 
 sudo chmod 1777 /tmp
 cd "$SCEDIR"
