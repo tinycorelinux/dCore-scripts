@@ -21,6 +21,7 @@ ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/.*deb2sce
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 [ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
 [ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
+[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
 
 exit_tcnet() {
 	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
@@ -101,9 +102,9 @@ while read line; do
         F=`echo $line | awk '{print $2}'`
     	G=`grep "^$E:" "$FILE" | awk '{print $2}'`
 	## Update if new pacakge dependencies in the repo exist.	
-	grep "^$E:" "$FILE" > /dev/null 2>&1 || grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1 || echo "$E" >> /tmp/.importupdates
-	if ! grep "^$E:" "$FILE" > /dev/null 2>&1; then
-		return
+	if ! grep "^$E:" "$FILE" > /dev/null 2>&1 && ! grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1 ; then
+		echo "$E" >> /tmp/.importmissing
+		continue
 	fi
 	
 	##
@@ -170,6 +171,14 @@ while read line; do
 		fi	
 done < /tmp/sce.md5new
 
+if [ -s /tmp/.importmissing ]; then
+	for I in `cat /tmp/.importmissing | sort | uniq`; do 
+		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
+		echo "    "$I"       "$A"  ---  missing in "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
+ 	done  
+ 	grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >> /tmp/.sceupdatelist
+fi
+
 if [ -s /tmp/.importupdates ]; then
 	for I in `cat /tmp/.importupdates | sort | uniq`; do 
 		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
@@ -183,7 +192,7 @@ if [ -s /tmp/ssupdates ]; then
 	grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >> /tmp/.sceupdatelist
 fi
 
-if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ]; then
+if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] [ ! -s /tmp/.importmissing ]; then
 	echo "    None" >> /tmp/updateavailable
 fi
 
@@ -201,7 +210,8 @@ mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo umount /tmp/sceupdatete
 [ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
-[ -d /tmp/work ] && sudo rm -r /tmp/work
+#[ -d /tmp/work ] && sudo rm -r /tmp/work
+#[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
 
 sudo chmod 1777 /tmp
 cd "$SCEDIR"
