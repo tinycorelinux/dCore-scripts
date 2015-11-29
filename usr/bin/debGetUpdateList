@@ -67,8 +67,8 @@ if grep "^$1:" /tmp/PKGPREBUILTDEP >/dev/null ; then
  echo "$1: `grep "^$1": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "`" >> /tmp/sce.md5new
  echo "$1;   dCore custom prebuilt" >> /tmp/.importpkgtype
 elif sudo grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
- DEBINX=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* | head -n 1 | cut -f1 -d:`
- MIRRORFILE=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx* | head -n 1 | cut -f1 -d: | sed "s:"$TCEDIR"/import/debinx/debinx.::"`
+ DEBINX=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
+ MIRRORFILE=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx* /dev/null | head -n 1 | cut -f1 -d: | sed "s:"$TCEDIR"/import/debinx/debinx.::"`
  REPO=`cat /opt/debextra/"$MIRRORFILE"`
  echo ""$1";   "$REPO"" >> /tmp/.importpkgtype
  getMd5sum1 "$1"

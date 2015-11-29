@@ -52,6 +52,7 @@ if [ -z "$1" ]; then
 	SELECT=TRUE
 fi
 
+[ -d /tmp/work ] && sudo rm -r /tmp/work
 [ -f /tmp/.sceupdatechoose ] && sudo rm /tmp/.sceupdatechoose
 [ -f /tmp/.scelistchoose ] && sudo rm /tmp/.scelistchoose
 [ -f /tmp/.sceupdateall ] && sudo rm /tmp/.sceupdateall

@@ -20,7 +20,7 @@ pgrep sce-update > /dev/null 2>&1 || exit 1
 ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/.*deb2sce
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 [ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
-
+[ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
 
 exit_tcnet() {
 	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
