@@ -109,13 +109,14 @@ while read line; do
 	fi
 	##
 	## Update if pacakges are no longer required that are in the main SCE or it's deps.
-	for I in `cat "$FILE" | cut -f1 -d:`; do
+	for I in `cat "$FILE"`; do
 		if ! ls /tmp/work/"$I" > /dev/null 2>&1; then
 			echo "$I" >> /tmp/.importnotneeded
 		fi
 		continue
 	done
-
+	##
+	
 	for I in `cat "$DATADIR"/*.debs`; do
 		if ! ls /tmp/work/"$I" > /dev/null 2>&1; then
 			echo "$I" >> /tmp/.importnotneeded
