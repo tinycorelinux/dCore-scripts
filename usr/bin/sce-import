@@ -153,14 +153,15 @@ fi
 # Determine if the -d option or the existence of a dep file
 # is present and use dep file if found.
 if grep -i "^DEPS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
-	touch /tmp/.importdep
-	echo "Using the -d option."
+	if ! ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
+		touch /tmp/.importdep
+		echo "Using the -d option."	
+	fi	
 elif [ "$DEPS" == "TRUE" ]; then
-	touch /tmp/.importdep
-	echo "Using the -d option."
-elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
-	touch /tmp/.importdep
-	echo "Existing dep file found."
+	if ! ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
+		touch /tmp/.importdep
+		echo "Using the -d option."	
+	fi	
 fi
 
 # Determine if the size option is being used.
@@ -236,7 +237,10 @@ elif [ "$UPDATEDEBINXMODE" == "TRUE" ]; then
 	echo "Using the -u option."
 fi
 
-
+if ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
+	echo "Existing dep file found and will be used."
+	sleep 3
+fi
 
 # Check for MS Windows filesystem of TCEDIR, and only continue of RAM 
 # is being used for unpacking.

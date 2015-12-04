@@ -94,7 +94,14 @@ for I in `ls /tmp/work`; do
 done 
 ##
 
-
+## Update if pacakges are no longer required that are in the main SCE or it's deps.
+for I in `cat "$FILE" | cut -f1 -d:`; do
+	if ! ls /tmp/work/"$I" > /dev/null 2>&1; then
+		echo "$I" >> /tmp/.importnotneeded
+	fi
+	continue
+done
+##
 
 echo "SCE:  "$SCE"" >> /tmp/updateavailable
 echo "  Available package updates:" >> /tmp/updateavailable
@@ -102,28 +109,14 @@ while read line; do
 	E=`echo $line | cut -f1 -d:`
         F=`echo $line | awk '{print $2}'`
     	G=`grep "^$E:" "$FILE" | awk '{print $2}'`
-	## Update if new pacakge dependencies in the repo exist.	
-	if ! grep "^$E:" "$FILE" > /dev/null 2>&1 && ! grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1 ; then
-		echo "$E" >> /tmp/.importmissing
+	if [ -z "$F" ]; then
 		continue
-	fi
+		echo "$E" >> /tmp/updateerror
+	fi 
+	## Update if new pacakges are not in the the current SCE or it's deps.	
+	grep "^$E:" "$FILE" > /dev/null 2>&1 || grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1 || echo "$E" >> /tmp/.importmissing && continue
 	##
-	## Update if pacakges are no longer required that are in the main SCE or it's deps.
-	for I in `cat "$FILE"`; do
-		if ! ls /tmp/work/"$I" > /dev/null 2>&1; then
-			echo "$I" >> /tmp/.importnotneeded
-		fi
-		continue
-	done
-	##
-	
-	for I in `cat "$DATADIR"/*.debs`; do
-		if ! ls /tmp/work/"$I" > /dev/null 2>&1; then
-			echo "$I" >> /tmp/.importnotneeded
-		fi
-		continue
-	done
-	##
+	echo "$E" >> /tmp/12342345
 	## Update if md5sum of existing package and one on the server differ.
      	if [[ "$F" != "$G" ]] && ! grep "^$E$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
      		echo "$E" >> /tmp/.importupdates
@@ -132,6 +125,10 @@ while read line; do
 	##
 	NAME="$E"
 		## Get updated or deleted startup script or data files info.
+		if ! grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-deb2sce:" "$FILEDATA"; then
+			continue
+		fi
+	
 		if grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 			MD5SSNEW=`grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}'`
@@ -158,7 +155,11 @@ while read line; do
 			fi
 		
 		fi
-
+		
+		if ! grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-data:" "$FILEDATA"; then
+			continue
+		fi
+		
 		if grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 	        	MD5DATANEW=`grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
 			MD5DATAOLD=`grep "^$E-data:" "$FILEDATA" | awk '{print $2}'`
@@ -190,7 +191,7 @@ done < /tmp/sce.md5new
 
 if [ -s /tmp/.importnotneeded ]; then
 	for I in `cat /tmp/.importnotneeded  | sort | uniq`; do 
-		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
+		A=`grep "^$I;" /tmp/.importpkgtype | cut -f1 -d";"`
 		echo "    "$I"       "$A"  ---  is no longer needed by "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
 	done
 	grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >> /tmp/.sceupdatelist
@@ -199,7 +200,7 @@ fi
 if [ -s /tmp/.importmissing ]; then
 	for I in `cat /tmp/.importmissing | sort | uniq`; do 
 		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
-		echo "    "$I"       "$A"  ---  missing in "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
+		echo "    "$I"       "$A"  ---  is missing in "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
  	done  
  	grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >> /tmp/.sceupdatelist
 fi
@@ -217,7 +218,7 @@ if [ -s /tmp/ssupdates ]; then
 	grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >> /tmp/.sceupdatelist
 fi
 
-if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] [ ! -s /tmp/.importmissing ]; then
+if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.importmissing ] && [ ! -s /tmp/.importnotneeded ]; then
 	echo "    None" >> /tmp/updateavailable
 fi
 
@@ -225,7 +226,7 @@ echo " " >> /tmp/updateavailable
 echo " " >> /tmp/updateavailable
 
 mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo umount /tmp/sceupdatetest
-[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
+#[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
 [ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
 [ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
 [ -f "/tmp/.*deb2sce" ] && sudo rm /tmp/.*deb2scew
@@ -236,8 +237,8 @@ mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo umount /tmp/sceupdatete
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 [ -d /tmp/work ] && sudo rm -r /tmp/work
-[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
-[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
+#[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
+#[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
 
 sudo chmod 1777 /tmp
 cd "$SCEDIR"
