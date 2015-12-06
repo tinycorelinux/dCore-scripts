@@ -111,18 +111,26 @@ while read line; do
     	G=`grep "^$E:" "$FILE" | awk '{print $2}'`
 	if [ -z "$F" ]; then
 		continue
-		echo "$E" >> /tmp/updateerror
 	fi 
 	## Update if new pacakges are not in the the current SCE or it's deps.	
-	grep "^$E:" "$FILE" > /dev/null 2>&1 || grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1 || echo "$E" >> /tmp/.importmissing && continue
+	if ls "$DATADIR"/*.debs > /dev/null 2>&1; then
+		if ! grep "^$E:" "$FILE" > /dev/null 2>&1 && ! grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1; then
+			echo "$E" >> /tmp/.importmissing 
+			continue
+		fi
+	else
+		if ! grep "^$E:" "$FILE" > /dev/null 2>&1; then
+			echo "$E" >> /tmp/.importmissing 
+			continue
+		fi
+	fi
 	##
-	echo "$E" >> /tmp/12342345
 	## Update if md5sum of existing package and one on the server differ.
      	if [[ "$F" != "$G" ]] && ! grep "^$E$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
      		echo "$E" >> /tmp/.importupdates
-     
         fi
 	##
+	echo "$E" >> /tmp/newfile
 	NAME="$E"
 		## Get updated or deleted startup script or data files info.
 		if ! grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-deb2sce:" "$FILEDATA"; then
@@ -226,7 +234,7 @@ echo " " >> /tmp/updateavailable
 echo " " >> /tmp/updateavailable
 
 mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo umount /tmp/sceupdatetest
-#[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
+[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
 [ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
 [ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
 [ -f "/tmp/.*deb2sce" ] && sudo rm /tmp/.*deb2scew
@@ -237,8 +245,8 @@ mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo umount /tmp/sceupdatete
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 [ -d /tmp/work ] && sudo rm -r /tmp/work
-#[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
-#[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
+[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
+[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
 
 sudo chmod 1777 /tmp
 cd "$SCEDIR"
