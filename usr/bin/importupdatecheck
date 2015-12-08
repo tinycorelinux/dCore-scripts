@@ -99,31 +99,52 @@ for I in `cat "$FILE" | cut -f1 -d:`; do
 	if ! ls /tmp/work/"$I" > /dev/null 2>&1; then
 		echo "$I" >> /tmp/.importnotneeded
 	fi
-	continue
 done
 ##
+
+for I in `ls /tmp/work/`; do
+	if [ ! -s /tmp/work/"$I" ] && ! grep "^$I:" /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
+		continue
+	fi
+	if ls "$DATADIR"/*.debs > /dev/null 2>&1; then
+		if ! grep "^$I:" "$FILE" > /dev/null 2>&1; then
+			if ! grep "^$I$" "$DATADIR"/*.debs > /dev/null 2>&1; then
+				echo "$I" >> /tmp/.importmissing
+			fi
+		fi
+	else
+		if ! grep "^$I:" "$FILE" > /dev/null 2>&1; then
+			echo "$I" >> /tmp/.importmissing
+		fi
+	fi
+done
 
 echo "SCE:  "$SCE"" >> /tmp/updateavailable
 echo "  Available package updates:" >> /tmp/updateavailable
 while read line; do 
 	E=`echo $line | cut -f1 -d:`
-        F=`echo $line | awk '{print $2}'`
+        if grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1; then
+		continue
+	fi
+	F=`echo $line | awk '{print $2}'`
     	G=`grep "^$E:" "$FILE" | awk '{print $2}'`
 	if [ -z "$F" ]; then
 		continue
 	fi 
+	echo "$E: ""$F" >> /tmp/updateavailable
+	echo "$E: ""$G" >> /tmp/updateavailable
 	## Update if new pacakges are not in the the current SCE or it's deps.	
-	if ls "$DATADIR"/*.debs > /dev/null 2>&1; then
-		if ! grep "^$E:" "$FILE" > /dev/null 2>&1 && ! grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1; then
-			echo "$E" >> /tmp/.importmissing 
-			continue
-		fi
-	else
-		if ! grep "^$E:" "$FILE" > /dev/null 2>&1; then
-			echo "$E" >> /tmp/.importmissing 
-			continue
-		fi
-	fi
+	#if ls "$DATADIR"/*.debs > /dev/null 2>&1; then
+	#if ! grep "^$E:" "$FILE" > /dev/null 2>&1 && ! grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1; then
+	#		echo "$E" >> /tmp/.importmissing 
+	#		continue
+	#	fi
+	#else
+	#	if ! grep "^$E:" "$FILE" > /dev/null 2>&1; then
+	#		echo "$E" >> /tmp/.importmissing 
+	#		continue
+	#	fi
+	#fi
 	##
 	## Update if md5sum of existing package and one on the server differ.
      	if [[ "$F" != "$G" ]] && ! grep "^$E$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
