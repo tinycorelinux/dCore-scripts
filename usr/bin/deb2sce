@@ -279,24 +279,22 @@ fi
 ##
 
 ## Get the SCE deps if any and check for duplicates between deps.
-if [ -f /tmp/.importdep ]; then
-	if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
-		if [ ! -f /tmp/.importinteractive ]; then
-			echo -n "Do you want to use the existing "$TARGET".sce.dep file for dependencies? (y/N):"
-			read ans
-			if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
-				sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
-				debGetSceDep "$TARGET"
-			else
-				debGetSceDep "$TARGET"
-			fi
+if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
+	if [ ! -f /tmp/.importinteractive ]; then
+		echo -n "Do you want to use the existing "$TARGET".sce.dep file for dependencies? (y/N):"
+		read ans
+		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
+			sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
+			debGetSceDep "$TARGET"
 		else
 			debGetSceDep "$TARGET"
 		fi
-	
 	else
-		debGetSceDep "$TARGET"	
+		debGetSceDep "$TARGET"
 	fi
+
+elif [ -f /tmp/.importdep ]; then
+	debGetSceDep "$TARGET"	
 fi
 
 if [ -f /tmp/.sceconflict ]; then
@@ -361,6 +359,7 @@ fi
 for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo "$I" >> /tmp/.pkglist; done
 ##
 
+## Function to provide a "less" list of packages that will be imported.
 if [ -f /tmp/.viewpkgs ]; then
 	echo "Do you want to review the list of packages that $TARGET.sce"
 	echo "will consist of? Enter y to view and q to exit reading"
@@ -373,6 +372,7 @@ if [ -f /tmp/.viewpkgs ]; then
 	echo
 	echo  "Proceeding to create $TARGET.sce.."
 fi
+##
 
 mkdir -p usr/local/sce/"$TARGET"
 
