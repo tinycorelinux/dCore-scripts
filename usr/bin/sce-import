@@ -36,9 +36,15 @@ fi
 mksce() {
 	if [ "$FLAGS" ]
 	then
-		sudo deb2sce "$FLAGS" "$1"             
+		sudo deb2sce "$FLAGS" "$1" 
+		if [ "$?" == "0" ]; then
+			exit 1
+		fi      
 	else
-		sudo deb2sce "$1"             
+		sudo deb2sce "$1"  
+		if [ "$?" == "0" ]; then
+			exit 1
+		fi           
 	fi
 
 }

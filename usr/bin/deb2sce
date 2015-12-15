@@ -394,17 +394,34 @@ for DEBINFO in `ls -t /tmp/work`; do
 				if [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` != `grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then
 					echo "Fetching updated "${DEBINFO}".tar.gz.."
 					rm "${DEBINFO}".tar.gz*
-					/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz
+					/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
+					if [ "$?" != 0 ]
+					then
+						echo "failed on download of "${DEBINFO}".tar.gz"
+						cleanup
+						exit 1
+					fi
 				fi
 				
 			else
 				/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
+				if [ "$?" != 0 ]
+				then
+					echo "failed on download of "${DEBINFO}".tar.gz"
+					cleanup
+					exit 1
+				fi
 			fi
 	
 			if [ -f "${DEBINFO}".tar.gz ] && [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then	 
 				echo "${DEBINFO}: `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		  
 				echo "Merging "${DEBINFO}":"
-	    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET"        		  
+	    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET" 
+				if [ "$?" != 0 ]
+				then
+					echo "failed merging of "${DEBINFO}".tar.gz"
+					echo "${DEBINFO}".tar.gz  >> /tmp/import.log
+				fi  		  
 			else 
 				echo "md5sum failed for "${DEBINFO}".tar.gz, exiting.."
 				cleanup
@@ -517,6 +534,9 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && mount | grep " /tmp/tcloop/"$TARGET" " 
 		cd "$TCEDIR"/sce/update/
 		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
 		cd "$IMPORT"
+	else
+		echo "Error creating "$TARGET".sce.  Exiting.."
+		exit 1
 	fi
 	
 else
@@ -525,6 +545,9 @@ else
 		cd "$TCEDIR"/sce/
 		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
 		cd "$IMPORT"
+	else
+		echo "Error creating "$TARGET".sce.  Exiting.."
+		exit 1
 	fi
 fi
 

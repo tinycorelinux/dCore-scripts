@@ -131,21 +131,8 @@ while read line; do
 	if [ -z "$F" ]; then
 		continue
 	fi 
-	echo "$E: ""$F" >> /tmp/updateavailable
-	echo "$E: ""$G" >> /tmp/updateavailable
-	## Update if new pacakges are not in the the current SCE or it's deps.	
-	#if ls "$DATADIR"/*.debs > /dev/null 2>&1; then
-	#if ! grep "^$E:" "$FILE" > /dev/null 2>&1 && ! grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1; then
-	#		echo "$E" >> /tmp/.importmissing 
-	#		continue
-	#	fi
-	#else
-	#	if ! grep "^$E:" "$FILE" > /dev/null 2>&1; then
-	#		echo "$E" >> /tmp/.importmissing 
-	#		continue
-	#	fi
-	#fi
-	##
+	#echo "$E: ""$F" >> /tmp/updateavailable
+	#echo "$E: ""$G" >> /tmp/updateavailable
 	## Update if md5sum of existing package and one on the server differ.
      	if [[ "$F" != "$G" ]] && ! grep "^$E$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
      		echo "$E" >> /tmp/.importupdates

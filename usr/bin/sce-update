@@ -147,6 +147,10 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		if [ "$NONINTERACTIVE" == "TRUE" ]; then
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
 				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
+				if [ "$?" == "0" ]; then
+					echo "Error in updating "$I".  Exiting.."
+					exit 1
+				fi 
 				echo "$I" >> /tmp/importupdated
 			done
 			echo "Refer to /tmp/updateavailable for details of package updates."
@@ -163,6 +167,10 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			## Update all SCEs
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
 				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
+				if [ "$?" == "0" ]; then
+					echo "Error in updating "$I".  Exiting.."
+					exit 1
+				fi 
 				echo "$I" >> /tmp/importupdated
 			done
 		fi
@@ -208,6 +216,10 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 		if [ "$NONINTERACTIVE" == "TRUE" ]; then
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
 				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
+				if [ "$?" == "0" ]; then
+					echo "Error in updating "$I".  Exiting.."
+					exit 1
+				fi 
 				echo "$I" >> /tmp/importupdated
 			done
 			echo "Refer to /tmp/updateavailable for details of package updates."
@@ -224,6 +236,10 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 			## Update all SCEs
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
 				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
+				if [ "$?" == "0" ]; then
+					echo "Error in updating "$I".  Exiting.."
+					exit 1
+				fi 
 				echo "$I" >> /tmp/importupdated
 			done
 		fi
@@ -269,6 +285,10 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		if [ "$NONINTERACTIVE" == "TRUE" ]; then
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
 				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
+				if [ "$?" == "0" ]; then
+					echo "Error in updating "$I".  Exiting.."
+					exit 1
+				fi 
 				echo "$I" >> /tmp/importupdated
 			done
 			echo "Refer to /tmp/updateavailable for details of package updates."
@@ -285,6 +305,10 @@ elif [ -f "$UPDATETARGET".sce ]; then
 			## Update all SCEs
 			for I in `cat /tmp/.sceupdatelist | tr -d :`; do
 				grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
+				if [ "$?" == "0" ]; then
+					echo "Error in updating "$I".  Exiting.."
+					exit 1
+				fi 
 				echo "$I" >> /tmp/importupdated
 			done
 		fi
@@ -359,6 +383,10 @@ You can choose more than one, and enter "q" for quit when you have completed you
 				done
 				for D in `echo "$DEPLIST"`; do
 					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$D"
+					if [ "$?" == "0" ]; then
+						echo "Error in updating "$I".  Exiting.."
+						exit 1
+					fi 
 					echo "$D" >> /tmp/importupdated
 				done
 				echo "Refer to /tmp/updateavailable for package update details."
@@ -378,6 +406,10 @@ You can choose more than one, and enter "q" for quit when you have completed you
 				#done
 				for D in `echo "$DEPLIST"`; do
 					grep "^$D$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$D"
+					if [ "$?" == "0" ]; then
+						echo "Error in updating "$I".  Exiting.."
+						exit 1
+					fi 
 					echo "$D" >> /tmp/importupdated
 				done
 			fi
