@@ -31,3 +31,8 @@ CHECKALL=FALSE
 # To show a list of packages that will be imported
 VIEWPKGS=FALSE
 
+# To not update the DEBINX package files.
+PRESERVEDEBINXMODE=FALSE
+
+# UPDATEDEBINXMODE is default and not needed to be specified here.
+

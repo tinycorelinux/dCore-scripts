@@ -26,7 +26,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"sce-import -d"' to make use of existing SCE packages as dependencies.  A select menu will appear."
 	echo "'"sce-import -o"' to add resulting SCE package to ondemand."
 	echo "'"sce-import -n"' for non interactive mode."
-	echo "'"sce-import -u"' for update mode, syncing a new debinx files."
+	echo "'"sce-import -u"' (DEFAULT) for update mode, syncing a new debinx files."
 	echo "'"sce-import -p"' for preserve debinx mode, use existing rather than fetch new for better performance." 
 	echo "'"sce-import -v"' to see a list of packages that the imported SCE will contain."
 	echo "'"sce-import -z"' will ignore /etc/sysconfig/sceconfig and only use current command line options."
