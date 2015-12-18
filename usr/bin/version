@@ -1,30 +1,59 @@
 #!/bb/ash
 . /etc/init.d/tc-functions
+BUILD=`getBuild`
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
+PORT="$(cat /usr/share/doc/tc/release.txt | cut -f1 -d:)"
+VERSION="$(cat /usr/share/doc/tc/release.txt | cut -f2 -d:)"
+RESULTS="$PORT:$VERSION"
 
-RESULTS="$(cat /usr/share/doc/tc/release.txt)"
-while getopts cls OPTION
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo "Usage:"
+	echo "'"version"' with no options will print the running dCore name and version."
+	echo "'"version -r"' will check to see if you are running the latest release candidate."
+	echo "'"version -c"' will check to see if you are running the latest release."
+	echo "'"version -l "' will print the running dCore name and version."
+	echo "'"version -s"' will print the running version."
+exit 1
+fi
+
+
+while getopts rcls OPTION
 do
   case ${OPTION} in
-    c) LATEST=`wget -q -O - $(cat /opt/tcemirror)/latest 2>/dev/null`
+    r) LATEST=`wget -q -O - $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".latest 2>/dev/null`
        if [ "$?" == 0 ]; then
-       		RUNNING="${RESULTS##*-}"
-       		if [ "$LATEST" != "$RUNNING" ]; then
+       		RUNNING="${RESULTS##*:}"
+       		if [ "$LATEST" != "$RESULTS" ]; then
        			echo "Warning:"
-       			echo "You are running version $RUNNING"
+       			echo "You are running "$RESULTS""
        			echo "The latest release is $LATEST"
+		else
+			echo "You are running "$RESULTS" which is the latest release candidate."
+       		fi
+       fi
+       exit
+       ;;
+    c) LATEST=`wget -q -O - $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".latest 2>/dev/null`
+       if [ "$?" == 0 ]; then
+       		RUNNING="${RESULTS##*:}"
+       		if [ "$LATEST" != "$RESULTS" ]; then
+       			echo "Warning:"
+       			echo "You are running "$RESULTS""
+       			echo "The latest release is $LATEST"
+		else
+			echo "You are running "$RESULTS" which is the latest release."
        		fi
        fi
        exit
        ;;
     l) echo "$RESULTS"
-       exit
-       ;;
-    s) echo "${RESULTS##*_}"
-       exit
-       ;;
+        exit
+        ;;
+    s) echo "${RESULTS##*:}"
+        exit
+        ;;
   esac
 done
 echo "$RESULTS"

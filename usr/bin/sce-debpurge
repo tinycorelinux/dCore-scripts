@@ -15,6 +15,13 @@ elif [ "$BUILD" == "armv7" ]; then
 	DEBBUILD="armhf"
 fi
 
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo "Usage:"
+	echo "'"sce-debpurge"' with no options will update the DEBINX package index and purge deprecated debs from the import directory."
+	echo "'"sce-debpurge -p"' will not update the DEBINX package index and will purge deprecated debs based on the current index."
+exit 1
+fi
+
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
