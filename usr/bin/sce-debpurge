@@ -4,7 +4,7 @@
 . /etc/init.d/tc-functions
 
 TCEDIR=/etc/sysconfig/tcedir
-
+echo 0 > /tmp/.debpurgedsize
 checknotroot
 sudo chown "$TCUSER":staff /tmp
 sudo chmod 1777 /tmp
@@ -28,17 +28,48 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 read DEBINX_SECURITY < /tmp/debinx_security
 DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 
-while getopts drsbolknupc OPTION
+while getopts pa OPTION
 do
 	case ${OPTION} in
 		p) PRESERVEDEBINXMODE=TRUE ;;
+		a) PURGEALL=TRUE ;;
 		*) exit 1 ;;
 	esac
 done
 
 shift `expr $OPTIND - 1`
 
+if ls /etc/sysconfig/tcedir/import/debs/*.deb > /dev/null 2>&1 ||  ls /etc/sysconfig/tcedir/import/debs/*.tar.gz > /dev/null 2>&1; then
+	:
+else
+	echo "No packages to be removed.  Exiting.."
+	exit 0
+fi
 
+if [ "$PURGEALL" == "TRUE" ]; then
+	cd /etc/sysconfig/tcedir/import/debs
+	if ls *.deb > /dev/null 2>&1; then
+		for I in `ls *.deb`; do
+			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
+			echo "Removing "$I".."
+			sudo rm "$I"
+			echo "$I" >> /tmp/.debpurged
+		done
+	fi
+	if ls *.tar.gz > /dev/null 2>&1; then
+		for I in `ls *.tar.gz`; do
+			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
+			echo "Removing "$I".."
+			sudo rm "$I"
+			echo "$I" >> /tmp/.debpurged
+		done
+	fi
+	echo "All packages removed from /etc/sysconfig/tcedir/import/debs." 
+	DPURGESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.debpurgedsize` | awk '{printf("%.2f\n", $1)}')
+	echo "Total space freed by removing unneeded files:  "$DPURGESIZEFINAL" MB"
+	exit 0
+fi
+		
 
 exit_tcnet() {
 	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
@@ -119,9 +150,9 @@ if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 fi
 
 cd /etc/sysconfig/tcedir/import/debs
-
-for I in `ls *.deb`; do
-DEBINFO=`echo "$I" | cut -f1 -d_`
+if ls *.deb > /dev/null 2>&1; then
+ for I in `ls *.deb`; do
+ DEBINFO=`echo "$I" | cut -f1 -d_`
 
     if sudo grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
 	DEBINX=`sudo grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`		
@@ -130,6 +161,7 @@ DEBINFO=`echo "$I" | cut -f1 -d_`
 	NAMEOLD="$I"
 	if [ "$NAMENEW" != "$NAMEOLD" ]; then
 		echo "Removing "$NAMEOLD".."
+		ls -l "$NAMEOLD" | cut -f5 -d" " >> /tmp/.debpurgedsize
 		sudo rm "$NAMEOLD"
 		echo "$I" >> /tmp/.debpurged
 	else
@@ -142,6 +174,7 @@ DEBINFO=`echo "$I" | cut -f1 -d_`
 	NAMEOLD="$I"
 	if [ "$NAMENEW" != "$NAMEOLD" ]; then
 		echo "Removing "$NAMEOLD".."
+		ls -l "$NAMEOLD" | cut -f5 -d" " >> /tmp/.debpurgedsize
 		sudo rm "$NAMEOLD"
 		echo "$I" >> /tmp/.debpurged
 	else
@@ -155,22 +188,25 @@ DEBINFO=`echo "$I" | cut -f1 -d_`
 	NAMEOLD="$I"
 	if [ "$NAMENEW" != "$NAMEOLD" ]; then
 		echo "Removing "$NAMEOLD".."
+		ls -l "$NAMEOLD" | cut -f5 -d" " >> /tmp/.debpurgedsize
 		sudo rm "$NAMEOLD"
 		echo "$I" >> /tmp/.debpurged
 	else
 		: #echo ""$DEBINFO" package files are up to date."
 	fi
+    fi
+
+ done
 fi
-
-done
-
-for I in `ls *.tar.gz`; do
+if ls *.tar.gz > /dev/null 2>&1; then
+ for I in `ls *.tar.gz`; do
 	DEBINFO=`echo "$I" | sed 's:-data.tar.gz::' | sed 's:.tar.gz::'`
 	if grep "$DEBINFO:" /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
 		MD5OLD=$(/bb/md5sum "$I" | cut -f1 -d" ")
 		MD5NEW=$(grep "$DEBINFO:" /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" ")
 		if [ "$MD5NEW" != "$MD5OLD" ]; then
 			echo "Removing "$I".."
+			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
 			sudo rm "$I"
 			echo "$I" >> /tmp/.debpurged
 		elif [ ! -n "$MD5NEW" ] || [ ! -n "$MD5OLD" ]; then
@@ -184,6 +220,7 @@ for I in `ls *.tar.gz`; do
 		MD5NEW=$(grep "$DEBINFO:" /tmp/PKGDATAFILEMD5SUMLIST | cut -f2 -d" ")
 		if [ "$MD5NEW" != "$MD5OLD" ]; then
 			echo "Removing "$I".."
+			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
 			sudo rm "$I"
 			echo "$I" >> /tmp/.debpurged
 		elif [ ! -n "$MD5NEW" ] || [ ! -n "$MD5OLD" ]; then
@@ -193,9 +230,12 @@ for I in `ls *.tar.gz`; do
 			: #echo ""$DEBINFO" package files are up to date."
 		fi
 	fi
-done
+ done
+fi
 
 echo "All non current packages removed from /etc/sysconfig/tcedir/import/debs." 
+DPURGESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.debpurgedsize` | awk '{printf("%.2f\n", $1)}')
+echo "Total space freed by removing unneeded files:  "$DPURGESIZEFINAL" MB"
 exit 0
 
 
