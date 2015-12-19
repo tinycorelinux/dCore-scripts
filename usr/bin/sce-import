@@ -158,10 +158,7 @@ fi
 
 # Determine if the -d option or the existence of a dep file
 # is present and use dep file if found.
-if grep -i "^DEPS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
-	touch /tmp/.importdep
-	echo "Using the -d option."
-elif [ "$DEPS" == "TRUE" ]; then
+if [ "$DEPS" == "TRUE" ]; then
 	touch /tmp/.importdep
 	echo "Using the -d option."
 elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then

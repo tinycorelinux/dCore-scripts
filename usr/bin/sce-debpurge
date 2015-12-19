@@ -136,7 +136,11 @@ getName1() {
 
 if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	cd /tmp
-	sudo debGetEnv
+	sudo debGetEnv 
+	if [ "$?" != "0" ]; then
+		echo "Error in updating needed DEBINX files.  Exiting..."
+		exit 1
+	fi
 	wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
 
 	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1

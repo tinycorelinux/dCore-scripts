@@ -38,6 +38,9 @@ fi
 
 #[ -s /tmp/debinx ] || sudo debGetEnv "$2"
 sudo debGetEnv
+if [ "$?" != "0" ]; then
+	echo "Error in updating DEBINX files.  Exiting..."
+fi
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 

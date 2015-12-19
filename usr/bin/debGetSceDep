@@ -18,7 +18,7 @@ fi
 cd /etc/sysconfig/tcedir/sce
 if [ -f /etc/sysconfig/tcedir/sce/"$1".sce.dep ]; then
 	cat /etc/sysconfig/tcedir/sce/"$1".sce.dep > /tmp/.scedeps
-elif [ ! -f /tmp/.importinteractive ]; then
+else
 
 	## Select menu for choosing dependency sce's
 	ls *.sce | sed 's:.sce::' | sort > /tmp/.scelist
@@ -73,6 +73,16 @@ unset PKGEXISTS
 			DIR1=/tmp/"$I".tmp
 		  	[ -d "$DIR1" ] || mkdir -p "$DIR1"
 			sudo mount /etc/sysconfig/tcedir/sce/update/"$I".sce "$DIR1" > /dev/null 2>&1
+			if [ "$?" != "0" ]; then
+				echo "Unable to mount "$I".sce to get needed information.  Exiting..."
+				exit 1
+			fi
+			if [ ! -f "$DIR1"/usr/local/sce/"$I"/"$I".md5sum ]; then
+				echo ""$I" does not have the needed md5sum file, please re-import it."
+				sudo umount "$DIR1" > /dev/null 2>&1
+		  		rmdir "$DIR1"
+				exit 1
+			fi
 			if grep "^$1:" "$DIR1"/usr/local/sce/"$I"/"$I".md5sum > /dev/null 2>&1; then
 				echo "$I" >> /tmp/.pkgexists
 			fi
@@ -84,6 +94,10 @@ unset PKGEXISTS
 		elif [ -d /tmp/tcloop/"$I" ]; then
 			DIR1=/tmp/tcloop/"$I"
 			# yes n | cp -ai "$DIR1"/* "$OUTDIR"/ 2>/dev/null
+			if [ ! -f "$DIR1"/usr/local/sce/"$I"/"$I".md5sum ]; then
+				echo ""$I" does not have the needed md5sum file, please re-import it."
+				exit 1
+			fi
 			if grep "^$1:" "$DIR1"/usr/local/sce/"$I"/"$I".md5sum > /dev/null 2>&1; then
 				echo "$I" >> /tmp/.pkgexists
 			fi
@@ -93,6 +107,16 @@ unset PKGEXISTS
 		  	DIR1=/tmp/"$I".tmp
 		  	[ -d "$DIR1" ] || mkdir -p "$DIR1"
 			sudo mount /etc/sysconfig/tcedir/sce/"$I".sce "$DIR1" > /dev/null 2>&1
+			if [ "$?" != "0" ]; then
+				echo "Unable to mount "$I".sce to get needed information.  Exiting..."
+				exit 1
+			fi
+			if [ ! -f "$DIR1"/usr/local/sce/"$I"/"$I".md5sum ]; then
+				echo ""$I" does not have the needed md5sum file, please re-import it."
+				sudo umount "$DIR1" > /dev/null 2>&1
+		  		rmdir "$DIR1"
+				exit 1
+			fi
 		  	# yes n | cp -ai "$DIR1"/* "$OUTDIR"/ > /dev/null 2>&1
 			if grep "^$1:" "$DIR1"/usr/local/sce/"$I"/"$I".md5sum > /dev/null 2>&1; then
 				echo "$I" >> /tmp/.pkgexists
@@ -104,6 +128,7 @@ unset PKGEXISTS
 		  	rmdir "$DIR1"
 		else 
 			echo "ERROR:  "$I".sce not found!"
+			exit 1
 		fi
 	done
 fi
