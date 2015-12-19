@@ -185,6 +185,7 @@ if [ "$BACKUP" ] ; then
     [ -f /tmp/backup_status ] && sudo rm -f /tmp/backup_status
     sudo tar -C / -T /opt/.filetool.lst -X /opt/.xfiletool.lst  -czf "$MOUNTPOINT/"$FULLPATH"/${MYDATA}.tgz"  2>/tmp/backup_status &
     rotdash $!
+    echo " "
     sync
     [ -s /tmp/backup_status ] && sed -i '/socket ignored/d' /tmp/backup_status 2>/dev/null
     [ -s /tmp/backup_status ] && exit 1
@@ -269,6 +270,7 @@ EOD
     echo -n "Restoring backup files from $MOUNTPOINT/$FULLPATH/${MYDATA}.tgz "
     sudo tar -C / -zxf $MOUNTPOINT/"$FULLPATH"/${MYDATA}.tgz 2>/dev/null &
     rotdash $!
+    echo " "
     echo "Done."
   fi
   clean_up 0
