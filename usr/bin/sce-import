@@ -74,6 +74,7 @@ exit_tcnet() {
 [ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.blocked ] && sudo rm /tmp/.blocked
+[ -f /tmp/.scelisterror ] && sudo rm /tmp/.scelisterror
 
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
@@ -137,6 +138,42 @@ tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
 cd "$HERE"
 
+if grep -i "^PRESERVEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
+	PRESERVEDEBINXMODE=TRUE
+	echo "Using the -p option."
+elif [ "$PRESERVEDEBINXMODE" == "TRUE" ]; then
+	PRESERVEDEBINXMODE=TRUE
+	echo "Using the -p option."
+else
+	UPDATEDEBINXMODE=TRUE
+	PRESERVEDEBINXMODE=FALSE
+fi
+
+if grep -i "^UPDATEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
+	UPDATEDEBINXMODE=TRUE
+	PRESERVEDEBINXMODE=FALSE
+	echo "Using the -u option."
+elif [ "$UPDATEDEBINXMODE" == "TRUE" ]; then
+	PRESERVEDEBINXMODE=FALSE
+	echo "Using the -u option."
+fi
+
+
+if [ "$UPDATEDEBINXMODE" == "TRUE" ]; then
+	sudo debGetEnv "$2"
+	if [ "$?" != "0" ]; then
+		echo "Error in updating DEBINX files.  Exiting..."
+	fi
+else
+	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
+	if [ "$?" != "0" ]; then
+		echo "Error in updating DEBINX files.  Exiting..."
+	fi
+fi
+
+read DEBINX < /tmp/debinx
+DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
+
 if grep -wq "^$TARGET$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
 	echo " "
 	echo "$TARGET is a blocked package.  Exiting.."
@@ -144,10 +181,35 @@ if grep -wq "^$TARGET$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
 	exit 0
 fi
 
+checkexist() {
+  if sudo grep -q "^$1:" /tmp/PKGADDDEP; then
+	:
+  elif sudo grep "^$1:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
+	:
+  elif sudo grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
+	:
+  elif sudo grep -q "^Package: $1$" "$DEBINX" > /dev/null 2>&1; then
+	:
+  else
+	echo "$1" >> /tmp/.scelisterror
+  fi
+}
+
 # Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
 if [ "$PACKAGELIST" == "TRUE" ]; then
 	if [ -f "$1" ]; then
 		TARGETFILE=`readlink -f "$1"`
+		for I in `cat "$TARGETFILE"`; do
+			checkexist "$I"
+		done
+		if [ -s /tmp/.scelisterror ]; then
+			echo " "
+			cat /tmp/.scelisterror
+			echo " "
+			echo "The above files in "$TARGETFILE" do not exist in dCore repos."
+			echo "Exiting.."
+			exit 1
+		fi
 		sudo cp $TARGETFILE /tmp/.targetfile
 		TARGET=`basename $1 .sce.lst`
 	elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
@@ -225,25 +287,6 @@ elif [ "$NONINTERACTIVE" == "TRUE" ]; then
 	echo "Using the -n option."
 fi
 
-if grep -i "^PRESERVEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
-	PRESERVEDEBINXMODE=TRUE
-	echo "Using the -p option."
-elif [ "$PRESERVEDEBINXMODE" == "TRUE" ]; then
-	PRESERVEDEBINXMODE=TRUE
-	echo "Using the -p option."
-else
-	UPDATEDEBINXMODE=TRUE
-	PRESERVEDEBINXMODE=FALSE
-fi
-
-if grep -i "^UPDATEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
-	UPDATEDEBINXMODE=TRUE
-	PRESERVEDEBINXMODE=FALSE
-	echo "Using the -u option."
-elif [ "$UPDATEDEBINXMODE" == "TRUE" ]; then
-	PRESERVEDEBINXMODE=FALSE
-	echo "Using the -u option."
-fi
 
 
 
@@ -277,20 +320,7 @@ fi
 # Below is where the package is found either in prebuilt, main
 # Packages file, or in extra repos.  And then proceeds to deb2sce.
 
-if [ "$UPDATEDEBINXMODE" == "TRUE" ]; then
-	sudo debGetEnv "$2"
-	if [ "$?" != "0" ]; then
-		echo "Error in updating DEBINX files.  Exiting..."
-	fi
-else
-	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
-	if [ "$?" != "0" ]; then
-		echo "Error in updating DEBINX files.  Exiting..."
-	fi
-fi
 
-read DEBINX < /tmp/debinx
-DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 # Below is where -l list file option is being used.
 if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	if [ -f "$TARGETFILE" ]; then
