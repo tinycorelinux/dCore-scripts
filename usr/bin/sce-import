@@ -138,6 +138,15 @@ tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
 cd "$HERE"
 
+# Determine if non-interactive mode is being used.
+if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
+	touch /tmp/.importinteractive
+	echo "Using the -n option."
+elif [ "$NONINTERACTIVE" == "TRUE" ]; then
+	touch /tmp/.importinteractive
+	echo "Using the -n option."
+fi
+
 if grep -i "^PRESERVEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	PRESERVEDEBINXMODE=TRUE
 	echo "Using the -p option."
@@ -196,9 +205,34 @@ checkexist() {
 }
 
 # Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
-if [ "$PACKAGELIST" == "TRUE" ]; then
+if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	if [ -f "$1" ]; then
 		TARGETFILE=`readlink -f "$1"`
+		for I in `cat "$TARGETFILE"`; do
+			checkexist "$I"
+		
+		done
+		if [ -s /tmp/.scelisterror ]; then
+			echo " "
+			cat /tmp/.scelisterror
+			echo " "
+			if [ ! -f /tmp/.importinteractive ]; then
+				echo "The above files in "$TARGETFILE" do not exist in dCore repos."
+				echo -n "Do you want to proceed anyway? (y/N):"
+				read ans
+				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+					:
+				else
+					exit 1
+				fi
+			else
+				:
+			fi
+		fi
+		sudo cp $TARGETFILE /tmp/.targetfile
+		TARGET=`basename $1 .sce.lst`
+	elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
+		TARGETFILE="$TCEDIR"/sce/"$1".sce.lst
 		for I in `cat "$TARGETFILE"`; do
 			checkexist "$I"
 		done
@@ -206,14 +240,19 @@ if [ "$PACKAGELIST" == "TRUE" ]; then
 			echo " "
 			cat /tmp/.scelisterror
 			echo " "
-			echo "The above files in "$TARGETFILE" do not exist in dCore repos."
-			echo "Exiting.."
-			exit 1
+			if [ ! -f /tmp/.importinteractive ]; then
+				echo "The above files in "$TARGETFILE" do not exist in dCore repos."
+				echo -n "Do you want to proceed anyway? (y/N):"
+				read ans
+				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+					:
+				else
+					exit 1
+				fi
+			else
+				:
+			fi
 		fi
-		sudo cp $TARGETFILE /tmp/.targetfile
-		TARGET=`basename $1 .sce.lst`
-	elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
-		TARGETFILE="$TCEDIR"/sce/"$1".sce.lst
 		sudo cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
 	else
 		echo "Neither a file named "$1" nor does "$TCEDIR"/sce/"$1".sce.lst exist."
@@ -278,16 +317,6 @@ elif [ "$KEEPDOC" == "TRUE" ]; then
 	echo "Using the -k option."
 fi
 
-# Determine if non-interactive mode is being used.
-if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
-	touch /tmp/.importinteractive
-	echo "Using the -n option."
-elif [ "$NONINTERACTIVE" == "TRUE" ]; then
-	touch /tmp/.importinteractive
-	echo "Using the -n option."
-fi
-
-
 
 
 # Check for MS Windows filesystem of TCEDIR, and only continue of RAM 
@@ -329,10 +358,19 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   			echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
   			mksce "$TARGET" 
   		else
-			echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"? (y/N): " 
-		  	read ans                   
-		  	[ "$ans" == "y" ] || exit 0                          
-		  	mksce "$TARGET" 
+			if [ -f /tmp/.scelisterror ]; then
+				mksce "$TARGET" 
+			else
+				echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?  Press (n/N) to import a standard "$TARGET" package if it exists, any key will use the existing package list.  WARNING: Pressing (n/N) will delete "$TARGETFILE" now."
+	  			read ans                   
+	  			if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
+	  				sudo rm /tmp/.targetfile
+					mksce "$TARGET" 
+					sudo rm "$TARGETFILE"
+				else
+					mksce "$TARGET" 
+				fi
+			fi
 		fi
 	else 
 		echo "Please specify a target file when using the -l option.  Exiting.."
@@ -340,21 +378,25 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	fi  
 # Below is where an existing .lst file is found in sce dir.
 elif [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
-  echo " "
-  if [ -f /tmp/.importinteractive ]; then
-  	echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
-  	mksce "$TARGET" 
-  else
-	echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?  Press (n/N) to import a standard "$TARGET" package if it exists, any key will use the existing package list.  WARNING: Pressing (n/N) will delete "$TARGETFILE" now."
-  	read ans                   
-  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
-  		sudo rm /tmp/.targetfile
-		mksce "$TARGET" 
-		sudo rm "$TARGETFILE"
-	else
-		mksce "$TARGET" 
-	fi
-  fi  
+	echo " "
+  	if [ -f /tmp/.importinteractive ]; then
+  		echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
+  		mksce "$TARGET" 
+  	else
+		if [ -f /tmp/.scelisterror ]; then
+			mksce "$TARGET" 
+		else
+			echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?  Press (n/N) to import a standard "$TARGET" package if it exists, any key will use the existing package list.  WARNING: Pressing (n/N) will delete "$TARGETFILE" now."
+	  		read ans                   
+	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
+	  			sudo rm /tmp/.targetfile
+				mksce "$TARGET" 
+				sudo rm "$TARGETFILE"
+			else
+				mksce "$TARGET" 
+			fi
+		fi
+	fi  
 # Below checks for package in the extra repos first, then the 
 # Debian main repos, then in the prebuilt section, in that order.
 elif [ "$CHECKALL" == "TRUE" ]; then
