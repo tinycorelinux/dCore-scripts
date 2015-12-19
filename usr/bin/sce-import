@@ -146,12 +146,18 @@ fi
 
 # Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
 if [ "$PACKAGELIST" == "TRUE" ]; then
-  TARGETFILE=`readlink -f "$1"`
-  sudo cp $TARGETFILE /tmp/.targetfile
-  TARGET=`basename $1 .sce.lst`
-elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
-  TARGETFILE="$TCEDIR"/sce/"$1".sce.lst
-  sudo cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
+	if [ -f "$1" ]; then
+		TARGETFILE=`readlink -f "$1"`
+		sudo cp $TARGETFILE /tmp/.targetfile
+		TARGET=`basename $1 .sce.lst`
+	elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
+		TARGETFILE="$TCEDIR"/sce/"$1".sce.lst
+		sudo cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
+	else
+		echo "Neither a file named "$1" nor does "$TCEDIR"/sce/"$1".sce.lst exist."
+		echo "Exiting.."
+		exit 1
+	fi
 fi
 
 
@@ -286,7 +292,7 @@ fi
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 # Below is where -l list file option is being used.
-if [ "$PACKAGELIST" ]; then
+if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	if [ -f "$TARGETFILE" ]; then
   		echo " "
   		if [ -f /tmp/.importinteractive ]; then
@@ -309,7 +315,7 @@ elif [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   	echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
   	mksce "$TARGET" 
   else
-	echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?  Press (n/N) try and import a standard "$TARGET" package, any key will use the existing package list."
+	echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?  Press (n/N) to import a standard "$TARGET" package if it exists, any key will use the existing package list.  WARNING: Pressing (n/N) will delete "$TARGETFILE" now."
   	read ans                   
   	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
   		sudo rm /tmp/.targetfile

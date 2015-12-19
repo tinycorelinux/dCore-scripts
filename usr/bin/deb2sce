@@ -282,7 +282,7 @@ fi
 if [ -f /tmp/.importdep ]; then
 	if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 		if [ ! -f /tmp/.importinteractive ]; then
-			echo -n "Do you want to use the existing "$TARGET".sce.dep file for dependencies? (y/N):"	
+			echo -n "Do you want to use the existing "$TARGET".sce.dep file for dependencies? WARNING:  Answering no will delete "$TARGET".sce.dep now. (y/N):"	
 			read ans
 			if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
 				sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
