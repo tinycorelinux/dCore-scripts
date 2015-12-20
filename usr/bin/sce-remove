@@ -12,10 +12,15 @@ cd "$SCEDIR"
 
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo
+	echo "sce-remove - remove SCE files."
+	echo
 	echo "Usage:"
-	echo "'"sce-remove"' with no options will prompt for characters of desired package name."
-	echo "'"sce-remove audacious"' will mark audacious and any SCEs that depend on it for removal."
-	echo "'"sce-remove -k"' will not remove the .lst and .dep files.  Can be used with SCE name and useful for future imports."
+	echo
+	echo -e "'"sce-remove"'           without options outputs list of all SCEs, select \n                       desired package name for removal."
+	echo -e "'"sce-remove audacious"' mark Audacious and SCEs that depend on it for removal."
+	echo -e "'"sce-remove -k"'        will not remove .lst and .dep files, can be used with \n                       SCE name and useful for future imports."
+	echo
 exit 1
 fi
 

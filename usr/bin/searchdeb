@@ -9,8 +9,13 @@ checknotroot
 BUILD=`getBuild`
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo
+	echo "searchdeb - search repository for DEB files."
+	echo
 	echo "Usage:"
-	echo "'searchdeb PKG' when PKG is characters of desired package name will list possible matches."
+	echo
+	echo -e "'searchdeb PKG' search repository for DEB files where PKG is characters of \n                desired package name, will list possible matches."
+	echo
 exit 1
 fi
 

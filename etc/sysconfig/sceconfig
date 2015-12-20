@@ -9,10 +9,6 @@ KEEPDOC=FALSE
 # when making an SCE.  Particularly useful for flash devices.
 RAM=FALSE
 
-# Use DEPS=TRUE to make use of chosen existing SCEs as dependencies
-# of the imported one.
-DEPS=FALSE
-
 # Use SIZE=TRUE for the displaying of the sizes of needed RAM, HD
 # space and download when importing.
 SIZE=FALSE

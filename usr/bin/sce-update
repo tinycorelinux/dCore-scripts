@@ -8,15 +8,20 @@ SCEDIR="/etc/sysconfig/tcedir/sce"
 BUILD=`getBuild`
 unset DEPLIST
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo
+	echo "sce-update - check for updates and/or update SCEs."
+	echo
 	echo "Usage:"
-	echo "'"sce-update"' with no options will bring up a menu of SCEs to choose to update."
-	echo "'"sce-update -a"' will update all existing SCEs, both loaded and unloaded."
-	echo "'"sce-update -n"' for non-interactive mode."
-	echo "'"sce-update -c"' for check only 'dry run' mode, no option to update."
-	echo "'"sce-update -r"' for sce-import to unpack files in RAM during update."
-	echo "'"sce-update -s"' for sce-import to check for size and available space during update."
-	echo "'"sce-update -z"' will ignore /etc/sysconfig/sceconfig and only use current command line options."
-	echo "'"sce-update iceweasel"' will update iceweasel."
+	echo
+	echo "'"sce-update"'    without options brings up menu of SCEs to choose to update."
+	echo "'"sce-update -a"' updates all existing SCEs, both loaded and unloaded."
+	echo "'"sce-update -n"' non-interactive mode."
+	echo "'"sce-update -c"' check only 'dry run' mode, no option to update."
+	echo "'"sce-update -r"' sce-import unpacks files in RAM during update."
+	echo "'"sce-update -s"' sce-import checks for size and available space during update."
+	echo -e "'"sce-update -z"' ignore /etc/sysconfig/sceconfig, use only current command \n                line options."
+	echo "'"sce-update iceweasel"' update Iceweasel."
+	echo
 	exit 0
 fi
 

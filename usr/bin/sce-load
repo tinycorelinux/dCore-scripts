@@ -303,79 +303,41 @@ fi
 
 
 
-if [ -n "$TARGETAPP" ]
-#FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
-then
+for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	THISSCENAME=${TARGETAPP%%.sce}
-		if [ ${TARGETAPP} == ${THISSCENAME} ]; then THISSCE=${TARGETAPP}.sce; fi
-				
-		if [ -f "$THISSCE" ]; then
-			TARGETDIR=`dirname "$THISSCE"`
-		else
-			TARGETDIR="$TCEDIR"/sce/
+	if [ ${TARGETAPP} == ${THISSCENAME} ]; then THISSCE=${TARGETAPP}.sce; fi
+	
+	if [ -f "$THISSCE" ]; then
+		TARGETDIR=`dirname "$THISSCE"`
+	else
+		TARGETDIR="$TCEDIR"/sce/
+	fi
+	if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ] && ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
+		cd "$TARGETDIR"
+		md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
+		if [ "$?" != 0 ]; then
+			echo "Md5sum error on "$TARGETDIR"/"$THISSCE".  Exiting.."
+			cd "$SAVED_DIR"
 		fi
-		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ] && ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
-			cd "$TARGETDIR"
-			md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
-			if [ "$?" != 0 ]; then
-				echo "Md5sum error on "$TARGETDIR"/"$THISSCE".  Exiting.."
-				cd "$SAVED_DIR"
-			fi
-		fi
-		
-		if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
-			DEPLIST=" $THISSCENAME "
-			for I in `cat "$TARGETDIR"/"$THISSCE".dep`; do 
-				getDeps "$I"
-			done
-		else
-			DEPLIST=" $THISSCENAME "
-		
-		fi
-		for I in `echo "$DEPLIST"`; do	
-			TARGETAPP=`echo "$I" | tr -d ' '`
-			#APPNAME=${TARGETAPP%%.sce}
-			#if [ ${TARETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
-			processAPP
+	fi
+	if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
+		DEPLIST=" $THISSCENAME "
+		for I in `cat "$TARGETDIR"/"$THISSCE".dep`; do 
+			getDeps "$I"
 		done
-else
-	for TARGETAPP in $@; do
-		THISSCENAME=${TARGETAPP%%.sce}
-		if [ ${TARGETAPP} == ${THISSCENAME} ]; then THISSCE=${TARGETAPP}.sce; fi
-		
-		if [ -f "$THISSCE" ]; then
-			TARGETDIR=`dirname "$THISSCE"`
-		else
-			TARGETDIR="$TCEDIR"/sce/
-		fi
+	else
+		DEPLIST=" $THISSCENAME "
+	
+	fi
 
-		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ] && ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
-			cd "$TARGETDIR"
-			md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
-			if [ "$?" != 0 ]; then
-				echo "Md5sum error on "$TARGETDIR"/"$THISSCE".  Exiting.."
-				cd "$SAVED_DIR"
-			fi
-		fi
+	for I in `echo "$DEPLIST"`; do
+		TARGETAPP=`echo "$I" | tr -d ' '`
+		#APPNAME=${TARGETAPP%%.sce}
+		#if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
+		processAPP
+	done # for loop for dependencies
+done # Finish the for-loop for multiple extensions 
 
-		if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
-			DEPLIST=" $THISSCENAME "
-			for I in `cat "$TARGETDIR"/"$THISSCE".dep`; do 
-				getDeps "$I"
-			done
-		else
-			DEPLIST=" $THISSCENAME "
-		
-		fi
-
-	done # Finish the for-loop for multiple extensions 
-		for I in `echo "$DEPLIST"`; do
-			TARGETAPP=`echo "$I" | tr -d ' '`
-			#APPNAME=${TARGETAPP%%.sce}
-			#if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
-			processAPP
-		done # for loop for dependencies
-fi
 
 
 cd "$SAVED_DIR"
