@@ -45,7 +45,7 @@ if [ -z "$SCE" ]; then
 	cd "$SCEDIR"
 	while true; do
 		for  I in `ls *.sce`; do 
-			F=`echo "$I" | sed 's:.sce$::'`
+			F=`echo "$I" | sed 's:.sce::'`
 			grep "^$F$" /tmp/.removesce /tmp/.scermlist > /dev/null 2>&1 || echo "$F" >> /tmp/.scermlist
 		done
 		cat /tmp/.scermlist | select "Choose the sce you want to remove on shutdown." "-"
@@ -76,17 +76,19 @@ if ls *.dep > /dev/null 2>&1; then
 	done
 fi	
 }
-
-for I in `cat /tmp/.removesce`; do 
-	ondemand -r "$I"
-	rmdep "$I"	
-done
-echo " "
-for I in `cat /tmp/.removesce`; do
-	echo "$I"
-done
- 
+if [ -s /tmp/.removesce ]; then
+	for I in `cat /tmp/.removesce`; do 
+		ondemand -r "$I"
+		rmdep "$I"	
+	done
+	echo " "
+	for I in `cat /tmp/.removesce`; do
+		echo "$I"
+	done
 echo " "
 echo "The above SCEs will be removed upon shutdown or reboot."
+fi
+ 
+
 
 
