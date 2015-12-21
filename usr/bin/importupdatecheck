@@ -35,7 +35,6 @@ if [ ! -f "$SCEDIR"/"$SCE".sce ] && [ ! -f "$SCEDIR"/update/"$SCE".sce ]; then
   exit 1
 fi
 
-
 if sudo mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then
  sudo umount /tmp/sceupdatetest
 fi
@@ -119,8 +118,30 @@ for I in `ls /tmp/work/`; do
 	fi
 done
 
+
+
 echo "SCE:  "$SCE"" >> /tmp/updateavailable
 echo "  Available package updates:" >> /tmp/updateavailable
+if [ -f "$DATADIR"/"$SCE".dep ]; then
+	for I in `cat "$DATADIR"/"$SCE".dep`; do
+		if ! grep "^$I$" /etc/sysconfig/tcedir/sce/"$SCE".dep > /dev/null 2>&1; then
+			echo " " >> /tmp/updateavailable
+			echo "    Warning: "$SCE".dep file is missing or corrupt. Re-importing is needed." >> /tmp/updateavailable
+			grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >>  /tmp/.sceupdatelist	
+		fi
+		
+	done
+fi
+
+if [ -f /etc/sysconfig/tcedir/sce/"$SCE".dep ]; then
+	for I in `cat /etc/sysconfig/tcedir/sce/"$SCE".dep`; do 
+		if ! grep "^$I$" "$DATADIR"/"$SCE".dep > /dev/null 2>&1; then
+			echo " " >> /tmp/updateavailable
+			echo "    Warning: "$SCE".dep file is missing or corrupt. Re-importing is needed." >>  /tmp/updateavailable 
+			grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >> /tmp/.sceupdatelist
+		fi
+	done
+fi
 while read line; do 
 	E=`echo $line | cut -f1 -d:`
         if grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1; then
@@ -205,6 +226,7 @@ while read line; do
 		##
 done < /tmp/sce.md5new
 
+
 if [ -s /tmp/.importnotneeded ]; then
 	for I in `cat /tmp/.importnotneeded  | sort | uniq`; do 
 		A=`grep "^$I;" /tmp/.importpkgtype | cut -f1 -d";"`
@@ -234,7 +256,7 @@ if [ -s /tmp/ssupdates ]; then
 	grep "^$1$" /tmp/.sceupdatelist > /dev/null 2>&1 || echo "$1" >> /tmp/.sceupdatelist
 fi
 
-if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.importmissing ] && [ ! -s /tmp/.importnotneeded ]; then
+if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/.sceupdatelist ] &&[ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.importmissing ] && [ ! -s /tmp/.importnotneeded ]; then
 	echo "    None" >> /tmp/updateavailable
 fi
 

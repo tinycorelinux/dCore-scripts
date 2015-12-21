@@ -326,7 +326,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		exit 1
 	fi
 elif [ "$SELECT" == "TRUE" ]; then
-	ls *.sce | sed 's:.sce::' | sort > /tmp/.scelistchoose
+	ls *.sce | sed 's:.sce$::' | sort > /tmp/.scelistchoose
 	while true; do 
 		cat /tmp/.scelistchoose | select "Choose the SCE you want to check for updates . \
 You can choose more than one, and enter "q" for quit when you have completed your selection." "-"

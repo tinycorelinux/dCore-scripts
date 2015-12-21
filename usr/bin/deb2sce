@@ -296,6 +296,8 @@ if [ -f /tmp/.importdep ]; then
 	else
 		debGetSceDep "$TARGET" || exit 1
 	fi
+[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
+cat /tmp/.scedeps > usr/local/sce/"$TARGET"/"$TARGET".dep
 fi
 
 if [ -f /tmp/.sceconflict ]; then
@@ -375,7 +377,7 @@ if [ -f /tmp/.viewpkgs ]; then
 fi
 ##
 
-mkdir -p usr/local/sce/"$TARGET"
+[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 
 HERE=`pwd`
 for DEBINFO in `ls -t /tmp/work`; do
