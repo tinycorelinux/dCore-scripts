@@ -121,7 +121,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	echo " "
 	echo "Searching for available updates for chosen SCEs."
 	## Get list of SCEs to be updated, should be all.
-	for I in `ls *.sce | sed 's:.sce::' | sort`; do 
+	for I in `ls *.sce | sed 's:.sce$::' | sort`; do 
 		echo "$I"
 		importupdatecheck "$I" > /dev/null 2>&1
 	done
