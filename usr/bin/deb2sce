@@ -141,10 +141,13 @@ cleanup() {
 	[ -f /tmp/PKGPREBUILTDEP ] && sudo rm /tmp/PKGPREBUILTDEP
 	[ -f /tmp/PREBUILTMD5SUMLIST ] && sudo rm /tmp/PREBUILTMD5SUMLIST
 	[ -f /tmp/KEEPDOC ] && sudo rm /tmp/KEEPDOC
+	[ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps
 }
 
 # Main
-[ -d /tmp/work ] && sudo rm -r /tmp/work
+if [ ! -f /tmp/.nogetdeps ]; then
+	[ -d /tmp/work ] && sudo rm -r /tmp/work
+fi
 unset ONBOOT ONDEMAND FILE
 while getopts bo OPTION
 do
@@ -249,16 +252,18 @@ cd "$TARGET"
 > /tmp/import.log	
 
 ## Get the dependencies of the desired packages or list of packages.
-if [ -s /tmp/.targetfile ]; then
-	echo "Gathering dependency info.."
-	for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
-		debGetDeps "$I" > /dev/null 2>&1
-	done &
-	/usr/bin/rotdash $!
-else
-	echo "Gathering dependency info.."
-	debGetDeps "$TARGET" > /dev/null 2>&1 &
-	/usr/bin/rotdash $!
+if [ ! -f /tmp/.nogetdeps ]; then
+	if [ -s /tmp/.targetfile ]; then
+		echo "Gathering dependency info.."
+		for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
+			debGetDeps "$I" > /dev/null 2>&1
+		done &
+		/usr/bin/rotdash $!
+	else
+		echo "Gathering dependency info.."
+		debGetDeps "$TARGET" > /dev/null 2>&1 &
+		/usr/bin/rotdash $!
+	fi
 fi
 ##
 
@@ -296,9 +301,13 @@ if [ -f /tmp/.importdep ]; then
 	else
 		debGetSceDep "$TARGET" || exit 1
 	fi
-[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
-cat /tmp/.scedeps > usr/local/sce/"$TARGET"/"$TARGET".dep
+	## Copy .dep file to SCE for integrity check ability.
+	[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
+	cp /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep usr/local/sce/"$TARGET"/"$TARGET".dep
+	debGetSceDep "$TARGET" #|| exit 1
+	##
 fi
+
 
 if [ -f /tmp/.sceconflict ]; then
 	echo "$TARGET already exists in the dep files of the below SCEs.  Aborting to prevent circular dependency."
@@ -378,6 +387,13 @@ fi
 ##
 
 [ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
+
+## Copy list file to SCE for integrity check ability.
+if [ -f /tmp/.targetfile ]; then
+		cp /tmp/.targetfile usr/local/sce/"$TARGET"/"$TARGET".lst
+fi
+##
+
 
 HERE=`pwd`
 for DEBINFO in `ls -t /tmp/work`; do
@@ -488,6 +504,9 @@ for DEBINFO in `ls -t /tmp/work`; do
 			read MIRROR < /opt/debmirror
 		else 
 			## Fourth package is standard Debian repo one.
+			read DEBINX < /tmp/debinx
+			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
+			read MIRROR < /opt/debmirror
 			MD5NEW=$(getMd5sum "$DEBINFO")
 			if [ -f "$DEBS"/"$THISDEB" ]; then
 				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")

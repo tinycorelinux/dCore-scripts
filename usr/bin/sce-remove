@@ -24,7 +24,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 exit 1
 fi
 
-while getopts bo OPTION
+while getopts k OPTION
 do
 	case ${OPTION} in
 		k) KEEPLIST=TRUE ;;

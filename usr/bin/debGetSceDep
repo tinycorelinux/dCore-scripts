@@ -127,8 +127,9 @@ unset PKGEXISTS
 		  	sudo umount "$DIR1"
 		  	rmdir "$DIR1"
 		else 
-			echo "ERROR:  "$I".sce not found!"
-			exit 1
+			:
+			#echo "ERROR:  "$I".sce not found!"
+			#exit 1
 		fi
 	done
 fi

@@ -58,10 +58,12 @@ getMd5sum1() {
 read IMPORTMIRROR < /opt/tcemirror                                                                             
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 read DEBINX < /tmp/debinx
-DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 read DEBINX_SECURITY < /tmp/debinx_security
-DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
-
+DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
+if [ -f /etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY ]; then
+	read DEBINX_SECURITY < /tmp/debinx_security
+	DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
+fi
 
 if grep "^$1:" /tmp/PKGPREBUILTDEP >/dev/null ; then
  echo "$1: `grep "^$1": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "`" >> /tmp/sce.md5new
