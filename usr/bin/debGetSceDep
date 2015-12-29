@@ -1,7 +1,7 @@
 #!/bin/sh
 # (c) Jason Williams 2013
 HERE=`pwd`
-
+. /etc/init.d/tc-functions
 [ -f /tmp/.sceconflict ] && sudo rm /tmp/.sceconflict
 [ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
 [ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
@@ -10,7 +10,7 @@ HERE=`pwd`
 [ -f /tmp/"$1".debdeps ] && sudo rm /tmp/"$1".debdeps
 
 SCE="$1"
-
+useBusybox
 if ls /tmp/*.debs > /dev/null 2>&1; then 
 	sudo rm /tmp/*.debs
 fi

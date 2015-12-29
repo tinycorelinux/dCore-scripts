@@ -243,19 +243,6 @@ checklist() {
 }
 
 
-checkdep() {
-  if sudo grep -q "^$1:" /tmp/PKGADDDEP; then
-	:
-  elif sudo grep "^$1:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
-	:
-  elif sudo grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
-	:
-  elif sudo grep -q "^Package: $1$" "$DEBINX" > /dev/null 2>&1; then
-	:
-  else
-	echo "$1" >> /tmp/.pkgdeperror
-  fi
-}
 
 # Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
 if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
@@ -324,27 +311,6 @@ if [ "$DEPS" == "TRUE" ]; then
 elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
 	touch /tmp/.importdep
 	echo "Existing dep file found."
-	for I in `cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep`; do 
-		checkdep "$I"
-	done
-	if [ -s /tmp/.pkgdeperror ]; then
-		echo " "
-		cat /tmp/.pkgdeperror
-		echo " "
-		if [ ! -f /tmp/.importinteractive ]; then
-			echo "The above files in "$TARGET".sce.dep do not exist in dCore repos."
-			echo -n "Do you want to proceed anyway? (y/N):"
-			read ans
-			if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-				:
-			else
-				exit 1
-			fi
-		else
-			echo "The above files in "$TARGET".sce.dep do not exist in dCore repos."
-		fi
-	fi
-	
 fi
 
 
