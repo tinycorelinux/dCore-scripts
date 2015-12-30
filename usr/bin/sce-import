@@ -84,7 +84,7 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 
 unset FLAGS PACKAGELIST
-while getopts drsbolknupcvzy OPTION
+while getopts drsbolknupcvz OPTION
 do
 	case ${OPTION} in
 		c) CHECKALL=TRUE ;;
@@ -100,7 +100,6 @@ do
 		l) PACKAGELIST=TRUE ;;
 		v) VIEWPKGS=TRUE ;;
 		z) NOCONFIG=TRUE ;;
-		y) NOGETDEPS=TRUE ;;
 		*) exit 1 ;;
 	esac
 done

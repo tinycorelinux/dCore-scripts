@@ -253,18 +253,16 @@ cd "$TARGET"
 > /tmp/import.log	
 
 ## Get the dependencies of the desired packages or list of packages.
-if [ ! -f /tmp/.nogetdeps ]; then
-	if [ -s /tmp/.targetfile ]; then
-		echo "Gathering dependency info.."
-		for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
-			debGetDeps "$I" > /dev/null 2>&1
-		done &
-		/usr/bin/rotdash $!
-	else
-		echo "Gathering dependency info.."
-		debGetDeps "$TARGET" > /dev/null 2>&1 &
-		/usr/bin/rotdash $!
-	fi
+if [ -s /tmp/.targetfile ]; then
+	echo "Gathering dependency info.."
+	for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
+		debGetDeps "$I" > /dev/null 2>&1
+	done &
+	/usr/bin/rotdash $!
+else
+	echo "Gathering dependency info.."
+	debGetDeps "$TARGET" > /dev/null 2>&1 &
+	/usr/bin/rotdash $!
 fi
 ##
 
