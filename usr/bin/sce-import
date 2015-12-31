@@ -1,4 +1,4 @@
-#!/bb/ash
+#!/bb/sh
 # (c) Robert Shingledecker 2012
 # Contributions by Jason Williams
 . /etc/init.d/tc-functions
@@ -30,7 +30,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "'"sce-import -p"' for preserve debinx mode, use existing rather than fetch new for better performance." 
 	echo "'"sce-import -v"' to see a list of packages that the imported SCE will contain."
 	echo "'"sce-import -z"' will ignore /etc/sysconfig/sceconfig and only use current command line options."
-exit 1
+exit 0
 fi
 
 mksce() {
@@ -83,7 +83,7 @@ PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 
-unset FLAGS PACKAGELIST
+unset FLAGS PACKAGELIST NOPGREP
 while getopts drsbolknupcvz OPTION
 do
 	case ${OPTION} in
@@ -103,8 +103,6 @@ do
 		*) exit 1 ;;
 	esac
 done
-
-
 
 if grep -i "^ONBOOT=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	ONBOOT=TRUE
@@ -462,4 +460,5 @@ else
  echo ""$TARGET" is not available as a package.  Exiting..."
  exit 1
 fi
+
 

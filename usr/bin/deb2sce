@@ -556,7 +556,7 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TA
 		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
 		cd "$IMPORT"
 	else
-		echo "Error creating "$TARGET".sce.  Exiting.."
+		echo "Error creating "$TARGET".sce.  Exiting.." 
 		exit 1
 	fi
 	
@@ -567,7 +567,7 @@ else
 		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
 		cd "$IMPORT"
 	else
-		echo "Error creating "$TARGET".sce.  Exiting.."
+		echo "Error creating "$TARGET".sce.  Exiting.." 
 		exit 1
 	fi
 fi

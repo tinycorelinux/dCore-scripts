@@ -180,8 +180,8 @@ while read line; do
 	if [ -z "$F" ]; then
 		continue
 	fi 
-	echo "$E: ""$F" >> /tmp/updateavailable
-	echo "$E: ""$G" >> /tmp/updateavailable
+	#echo "$E: ""$F" >> /tmp/updateavailable
+	#echo "$E: ""$G" >> /tmp/updateavailable
 	## Update if md5sum of existing package and one on the server differ.
      	if [[ "$F" != "$G" ]] && ! grep "^$E$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
      		echo "$E" >> /tmp/.importupdates

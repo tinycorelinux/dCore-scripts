@@ -154,7 +154,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
 				for I in `cat /tmp/.sceupdatelist`; do 
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" == "0" ]; then
+					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
 						exit 1
 					fi 
@@ -162,7 +162,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 				done
 			else
 				clear
-				cat  /tmp/.sceupdatelist
+				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
 				echo "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
 				read ans
@@ -171,7 +171,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do 
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" == "0" ]; then
+					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
 						exit 1
 					fi 
@@ -180,7 +180,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			fi
 		else
 			clear
-			cat  /tmp/.sceupdatelist
+			cat  /tmp/.sceupdatelist | sort | uniq
 			echo "The above SCEs need to be updated.  Press y to view package updates, or Ctrl-C to abort.."
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
@@ -211,7 +211,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
 				for I in `cat /tmp/.sceupdatelist`; do 
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" == "0" ]; then
+					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
 						exit 1
 					fi 
@@ -219,7 +219,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 				done
 			else
 				clear
-				cat  /tmp/.sceupdatelist
+				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
 				echo "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
 				read ans
@@ -228,7 +228,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do 
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" == "0" ]; then
+					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
 						exit 1
 					fi 
@@ -237,7 +237,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 			fi
 		else
 			clear
-			cat  /tmp/.sceupdatelist
+			cat  /tmp/.sceupdatelist | sort | uniq
 			echo "The above SCEs need to be updated.  Press y to view package updates, or Ctrl-C to abort.."
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
@@ -264,7 +264,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
 				for I in `cat /tmp/.sceupdatelist`; do 
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" == "0" ]; then
+					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
 						exit 1
 					fi 
@@ -272,7 +272,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 				done
 			else
 				clear
-				cat  /tmp/.sceupdatelist
+				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
 				echo "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
 				read ans
@@ -281,7 +281,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do 
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" == "0" ]; then
+					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
 						exit 1
 					fi 
@@ -290,7 +290,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 			fi
 		else
 			clear
-			cat  /tmp/.sceupdatelist
+			cat  /tmp/.sceupdatelist | sort | uniq
 			echo "The above SCEs need to be updated.  Press y to view package updates, or Ctrl-C to abort.."
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
@@ -342,7 +342,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 					if [ "$NONINTERACTIVE" == "TRUE" ]; then
 						for I in `cat /tmp/.sceupdatelist`; do 
 							grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-							if [ "$?" == "0" ]; then
+							if [ "$?" != "0" ]; then
 								echo "Error in updating "$I".  Exiting.."
 								exit 1
 							fi 
@@ -350,7 +350,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 						done
 					else
 						clear
-						cat  /tmp/.sceupdatelist
+						cat  /tmp/.sceupdatelist | sort | uniq
 						echo " "
 						echo "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
 						read ans
@@ -359,7 +359,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 						fi
 						for I in `cat /tmp/.sceupdatelist`; do 
 							grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-							if [ "$?" == "0" ]; then
+							if [ "$?" != "0" ]; then
 								echo "Error in updating "$I".  Exiting.."
 								exit 1
 							fi 
@@ -368,7 +368,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 					fi
 				else
 					clear
-					cat  /tmp/.sceupdatelist
+					cat  /tmp/.sceupdatelist | sort | uniq
 					echo "The above SCEs need to be updated.  Press y to view package updates, or Ctrl-C to abort.."
 						read ans
 						if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
@@ -383,7 +383,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 		if [ ! -s /tmp/.sceupdatelist ]; then
 			clear
 			echo "No updates available for chosen SCEs at this time."
-			exit 1
+			exit 0
 		else
 			echo "Do you want to review the list of packages that had updates available?"
 			echo -n "Enter y to view and q to exit reading the package list. (y/N): "
@@ -395,12 +395,14 @@ You can choose more than one, and enter "q" for quit when you have completed you
 		fi
 	else
 		echo "Exit was chosen, no action will be taken."
+		cleanup
+		exit 0
 	fi
 else
 	echo ""$UPDATETARGET" is not an existing SCE file.  Exiting.."
 fi
 
-
+cleanup
 
 if ls /tmp/*.pkglist > /dev/null 2>&1; then 
 	sudo rm /tmp/*.pkglist
@@ -413,4 +415,5 @@ fi
 if ls /tmp/*.deb2sce > /dev/null 2>&1; then 
 	sudo rm /tmp/*.deb2sce
 fi
+
 
