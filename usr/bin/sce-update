@@ -89,6 +89,8 @@ ls /tmp/*.md5sum > /dev/null 2>&1 && sudo rm /tmp/*.md5sum
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 [ -d /tmp/work ] && sudo rm -r /tmp/work
+sudo rm /tmp/*suggested > /dev/null 2>&1
+sudo rm /tmp*recommended > /dev/null 2>&1
 }
 
 cd /etc/sysconfig/tcedir/sce
@@ -170,6 +172,12 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 					less /tmp/updateavailable
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do 
+					if [ -f /tmp/"$I".recommended]; then
+						OPTIONS="$OPTIONS"R
+					fi
+					if [ -f /tmp/"$I".suggested ]; then
+						OPTIONS="$OPTIONS"S
+					fi
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
@@ -210,6 +218,12 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
 				for I in `cat /tmp/.sceupdatelist`; do 
+					if [ -f /tmp/"$I".recommended ]; then
+						OPTIONS="$OPTIONS"R
+					fi
+					if [ -f /tmp/"$I".suggested ]; then
+						OPTIONS="$OPTIONS"S
+					fi
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
@@ -227,6 +241,12 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 					less /tmp/updateavailable
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do 
+					if [ -f /tmp/"$I".recommended ]; then
+						OPTIONS="$OPTIONS"R
+					fi
+					if [ -f /tmp/"$I".suggested ]; then
+						OPTIONS="$OPTIONS"S
+					fi
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
@@ -263,6 +283,12 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
 				for I in `cat /tmp/.sceupdatelist`; do 
+					if [ -f /tmp/"$I".recommended ]; then
+						OPTIONS="$OPTIONS"R
+					fi
+					if [ -f /tmp/"$I".suggested ]; then
+						OPTIONS="$OPTIONS"S
+					fi
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
@@ -280,6 +306,12 @@ elif [ -f "$UPDATETARGET".sce ]; then
 					less /tmp/updateavailable
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do 
+					if [ -f /tmp/"$I".recommended ]; then
+						OPTIONS="$OPTIONS"R
+					fi
+					if [ -f /tmp/"$I".suggested ]; then
+						OPTIONS="$OPTIONS"S
+					fi
 					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 					if [ "$?" != "0" ]; then
 						echo "Error in updating "$I".  Exiting.."
@@ -341,6 +373,12 @@ You can choose more than one, and enter "q" for quit when you have completed you
 				if [ "$CHECKONLY" != "TRUE" ]; then
 					if [ "$NONINTERACTIVE" == "TRUE" ]; then
 						for I in `cat /tmp/.sceupdatelist`; do 
+							if [ -f /tmp/"$I".recommended ]; then
+								OPTIONS="$OPTIONS"R
+							fi
+							if [ -f /tmp/"$I".suggested ]; then
+								OPTIONS="$OPTIONS"S
+							fi
 							grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 							if [ "$?" != "0" ]; then
 								echo "Error in updating "$I".  Exiting.."
@@ -358,6 +396,12 @@ You can choose more than one, and enter "q" for quit when you have completed you
 							less /tmp/updateavailable
 						fi
 						for I in `cat /tmp/.sceupdatelist`; do 
+							if [ -f /tmp/"$I".recommended ]; then
+								OPTIONS="$OPTIONS"R
+							fi
+							if [ -f /tmp/"$I".suggested ]; then
+								OPTIONS="$OPTIONS"S
+							fi
 							grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
 							if [ "$?" != "0" ]; then
 								echo "Error in updating "$I".  Exiting.."

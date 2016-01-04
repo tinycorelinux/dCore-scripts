@@ -73,8 +73,9 @@ selectDeb() {
 ## Functions to get the md5sum of the Debian .deb from the appropriate Packages list.
 getMd5sum() {
 > /tmp/"$1".pkglist
-grep -B 1 -A 8 "^Package: $1$" "$DEBINX" |  grep -B8 "^$" > /tmp/"$1".pkglist
-grep "^MD5sum:" /tmp/"$1".pkglist | cut -f2 -d" " 
+grep -B 1 -A 15 "^Package: $1$" "$DEBINX" |  grep -B15 "^$" > /tmp/"$1".pkglist
+DEBINX=/tmp/"$1".pkglist
+getMd5sum1 $1
 rm /tmp/"$1".pkglist
 }
 
@@ -142,13 +143,12 @@ cleanup() {
 	[ -f /tmp/PKGPREBUILTDEP ] && sudo rm /tmp/PKGPREBUILTDEP
 	[ -f /tmp/PREBUILTMD5SUMLIST ] && sudo rm /tmp/PREBUILTMD5SUMLIST
 	[ -f /tmp/KEEPDOC ] && sudo rm /tmp/KEEPDOC
-	[ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps
+	#[ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps
+	[ -f /tmp/.recommends ] && sudo rm /tmp/.recommends
+	[ -f /tmp/.suggests ] && sudo rm /tmp/.suggests
 }
 
 # Main
-if [ ! -f /tmp/.nogetdeps ]; then
-	[ -d /tmp/work ] && sudo rm -r /tmp/work
-fi
 unset ONBOOT ONDEMAND FILE
 while getopts bo OPTION
 do
@@ -281,6 +281,43 @@ the final SCE. This can cause problems.  Proceed anyway? (y/N): "
 	fi
 fi
 ##
+
+## Determine if 'Recommended' packages are desired.
+if [ -f /tmp/.recommends ]; then
+	echo "Gathering Recommended packages info.."
+	for I in `ls /tmp/work/`; do
+		debGetRecommends "$I" > /dev/null 2>&1
+	done &
+	/usr/bin/rotdash $!
+	if [ -s /tmp/sce.recommends ]; then
+		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
+		touch usr/local/sce/"$TARGET"/recommends
+		echo "Gathering dependency info on Recommended packages.."
+		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
+			debGetDeps "$I" > /dev/null 2>&1
+		done &
+	/usr/bin/rotdash $!
+	fi
+fi
+
+## Determine if 'Suggested' packages are desired.
+if [ -f /tmp/.suggests ]; then
+	echo "Gathering Suggested packages info.."
+	for I in `ls /tmp/work/`; do
+		debGetSuggests "$I" > /dev/null 2>&1
+	done &
+	/usr/bin/rotdash $!
+	if [ -s /tmp/sce.suggests ]; then
+		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
+		touch usr/local/sce/"$TARGET"/suggests
+		echo "Gathering dependency info on Suggested packages.."
+		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
+			debGetDeps "$I" > /dev/null 2>&1
+		done &
+		/usr/bin/rotdash $!
+	fi
+fi
+
 
 ## Get the SCE deps if any and check for duplicates between deps.
 if [ -f /tmp/.importdep ]; then

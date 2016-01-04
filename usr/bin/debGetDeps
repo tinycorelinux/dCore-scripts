@@ -13,13 +13,16 @@ TCEDIR="/etc/sysconfig/tcedir"
 getDeps()
 {
         PKG=${1}
-	[ -e /tmp/work/"$PKG" ] && return
+	[ -e /tmp/work/"$PKG" ] && continue
 	if grep -wq "^$PKG$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
 		echo "$PKG" >> /tmp/.blocked
 		return
 	fi
 	
 	echo "$PKG"
+	if [ -f /tmp/work/"$PKG" ]; then
+		continue
+	fi
 	touch /tmp/work/"$PKG"
 	if grep "^Package: $PKG$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
 		DEPLIST=`debGetPkgList $PKG 2>/dev/null`

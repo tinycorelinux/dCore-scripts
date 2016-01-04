@@ -20,7 +20,7 @@ pgrep sce-update > /dev/null 2>&1 || exit 1
 getMd5sum() {
 > /tmp/"$1".pkglist
 > /tmp/"$1".md5new 
-grep -B 1 -A 8 "^Package: $1$" "$DEBINX" |  grep -B8 "^$" > /tmp/"$1".pkglist
+grep -B 1 -A 10 "^Package: $1$" "$DEBINX" |  grep -B10 "^$" > /tmp/"$1".pkglist
 grep "^MD5sum:" /tmp/"$1".pkglist | cut -f2 -d" " >> /tmp/"$1".md5new
 echo ""$1": `cat /tmp/"$1".md5new`" >> /tmp/sce.md5new
 sudo rm /tmp/"$1".pkglist
@@ -84,7 +84,7 @@ elif sudo grep "^Package: $1$" "$DEBINX" > /dev/null 2>&1; then
   DISTRO=`cat /usr/share/doc/tc/distro.txt`
   REPO=`cat /usr/share/doc/tc/repo.txt` 
   grep ""$1";" /tmp/.importpkgtype || echo ""$1";   "$DISTRO" "$REPO" main" >> /tmp/.importpkgtype
-  getMd5sum "$1"
+  getMd5sum1 "$1"
 else
    echo ""$1" is not in the package database, skipping."
 fi

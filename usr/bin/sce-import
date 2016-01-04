@@ -53,7 +53,7 @@ exit_tcnet() {
 	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
 	exit 1
 }
-
+[ -d /tmp/work ] && sudo rm -f /tmp/work/* > /dev/null 2>&1
 [ -f /tmp/.viewpkgs ] && sudo rm /tmp/.viewpkgs
 [ -f /tmp/.importinteractive ] && sudo rm /tmp/.importinteractive
 [ -f /tmp/.keepdoc ] && sudo rm /tmp/.keepdoc
@@ -77,6 +77,11 @@ exit_tcnet() {
 [ -f /tmp/.pkglisterror ] && sudo rm /tmp/.pkglisterror
 [ -f /tmp/.pkgdeperror ] && sudo rm /tmp/.pkgdeperror
 [ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps
+[ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
+[ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
+[ -f /tmp/.recommends ] && sudo rm /tmp/.recommends
+[ -f /tmp/.suggests ] && sudo rm /tmp/.suggests
+
 
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
@@ -84,7 +89,7 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 
 unset FLAGS PACKAGELIST NOPGREP
-while getopts drsbolknupcvz OPTION
+while getopts drsbolknupcvzRS OPTION
 do
 	case ${OPTION} in
 		c) CHECKALL=TRUE ;;
@@ -100,6 +105,8 @@ do
 		l) PACKAGELIST=TRUE ;;
 		v) VIEWPKGS=TRUE ;;
 		z) NOCONFIG=TRUE ;;
+		R) RECOMMENDS=TRUE ;;
+		S) SUGGESTS=TRUE ;;
 		*) exit 1 ;;
 	esac
 done
@@ -223,6 +230,23 @@ elif [ "$KEEPDOC" == "TRUE" ]; then
 	echo "Using the -k option."
 fi
 
+# Determine if including 'Recommended' packages are desired.
+if grep -i "^RECOMMENDS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
+	touch /tmp/.recommends
+	echo "Using the -R option."
+elif [ "$RECOMMENDS" == "TRUE" ]; then
+	touch /tmp/.recommends
+	echo "Using the -R option."
+fi
+
+# Determine if including 'Suggested' packages are desired.
+if grep -i "^SUGGESTS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
+	touch /tmp/.suggests
+	echo "Using the -S option."
+elif [ "$SUGGESTS" == "TRUE" ]; then
+	touch /tmp/.suggests
+	echo "Using the -S option."
+fi
 
 
 checklist() {

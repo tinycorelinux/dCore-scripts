@@ -1,5 +1,7 @@
 #!/bb/ash
 # (c) Robert Shingledecker 2012
+# getSuggests 2016 Jason Williams
+
 . /etc/init.d/tc-functions
 
 
@@ -15,18 +17,18 @@ fi
 read DEBINX_SECURITY < /tmp/debinx_security
 DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 
-getDeps1() {
+getSuggests1() {
 > /tmp/"$1".pkglist
 grep -B 1 -A 15 "^Package: $1$" "$DEBINX" |  grep -B15 "^$" > /tmp/"$1".pkglist
 DEBINX=/tmp/"$1".pkglist
-getDeps2 $1
+getSuggests2 $1
 #grep "^Depends:" /tmp/"$1".pkglist | cut -f2 -d":" | tr -d ',' | tr -d '|'
 #grep "^Filename:" /tmp/"$1".pkglist | cut -f2 -d":" | tr -d ' ' > /tmp/work/"$1"
 rm /tmp/"$1".pkglist
 }
 
-getDeps2() {
-	awk -v package="Package: $1" -v build="$DEBBUILD" -v location="/tmp/work/$1" '
+getSuggests2() {
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v location="/tmp/sce.suggests" '
 	BEGIN {
 		RS=""
 		FS="\n"
@@ -48,15 +50,14 @@ getDeps2() {
 			
 
 
-				if ( f[1] == "Depends" ) {
+				if ( f[1] == "Suggests" ) {
 					jmax = split(f[2],item,",")
 					for (j=1; j<=jmax; j++) { 
 						kmax = split(item[j],deps," ")
-						print( deps[1] )
+						print( deps[1] ) >> location
+						print( deps[1] ) 
 					}
 				}
-				if ( f[1] == "Filename" )
-					print f[2] > location
 						     
 			
 		}
@@ -76,35 +77,35 @@ then
 fi
 if ls -A /opt/debextra > /dev/null 2>&1; then
 
-  if grep "^Package: "$1"$" "$TCEDIR"/import/debinx/debinx.* > /dev/null; then
-    DEBINX=`grep -l "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* | head -n 1`
-    DEPS="$(getDeps2 $1)"
+  if grep "^Package: "$1"$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
+    DEBINX=`grep -l "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1`
+    SUGGESTS="$(getSuggests2 $1)"
     #[ ! -z "$DEPS" ] && echo " "
-    echo "$DEPS"
+    echo "$SUGGESTS"
     exit
   elif sudo grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null; then
     DEBINX="$DEBINX_SECURITY"
-    DEPS="$(getDeps1 $1)"
-    [ -z "$DEPS" ] && exit 1
-    echo "$DEPS"
+    SUGGESTS="$(getSuggests1 $1)"
+    #[ -z "$SUGGESTS" ] && exit 1
+    echo "$SUGGESTS"
   else
     read DEBINX < /tmp/debinx
     DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
-    DEPS="$(getDeps1 $1)"
-    [ -z "$DEPS" ] && exit 1
-    echo "$DEPS"
+    SUGGESTS="$(getSuggests1 $1)"
+    #[ -z "$SUGGESTS" ] && exit 1
+    echo "$SUGGESTS"
   fi
   
-elif sudo grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null; then
+elif sudo grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
     DEBINX="$DEBINX_SECURITY"
-    DEPS="$(getDeps1 $1)"
-    [ -z "$DEPS" ] && exit 1
-    echo "$DEPS"
+    SUGGESTS="$(getSuggests1 $1)"
+    #[ -z "$SUGGESTS" ] && exit 1
+    echo "$SUGGESTS"
 else
     read DEBINX < /tmp/debinx
     DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
-    DEPS="$(getDeps1 $1)"
-    [ -z "$DEPS" ] && exit 1
-    echo "$DEPS"
+    SUGGESTS="$(getSuggests1 $1)"
+    #[ -z "$SUGGESTS" ] && exit 1
+    echo "$SUGGESTS"
 fi
 

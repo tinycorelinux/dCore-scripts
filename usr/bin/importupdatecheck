@@ -19,7 +19,7 @@ fi
 [ -f /tmp/.lstchanged ] && sudo rm /tmp/.lstchanged
 [ -f /tmp/file.lst ] && sudo rm /tmp/file.lst
 [ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
-ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/.*deb2sce
+#ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/.*deb2sce
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 [ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
 [ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
@@ -134,8 +134,15 @@ if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
 	for I in `echo "$SCE" && cat "$TCEDIR"/sce/"$SCE".sce.lst`; do 
 		sudo debGetDeps "$I" > /dev/null 2>&1
 	done
+	for I in `cat "$FILE" | cut -f1 -d:`; do
+		 sudo debGetDeps "$I" > /dev/null 2>&1
+	done
+		
 else
-	sudo debGetDeps "$SCE" > /dev/null 2>&1 
+	sudo debGetDeps "$SCE" > /dev/null 2>&1
+		for I in `cat "$FILE" | cut -f1 -d:`; do
+			sudo debGetDeps "$I" > /dev/null 2>&1
+		done
 fi
 ##
 	
@@ -145,30 +152,40 @@ for I in `ls /tmp/work/`; do
 done 
 ##
 
+if [ -f "$DATADIR"/recommends ]; then
+	touch /tmp/"$1".recommended
+fi
+
+if [ -f "$DATADIR"/suggests ]; then
+	touch /tmp/"$1".suggested
+fi
+
+## No longer useful with recommends and suggests options, but maybe in the future.
 ## Update if pacakges are no longer required that are in the main SCE or it's deps.
-for I in `cat "$FILE" | cut -f1 -d:`; do
-	if ! ls /tmp/work/"$I" > /dev/null 2>&1 && [ ! -f /tmp/.updatechanged ]; then
-		echo "$I" >> /tmp/.importnotneeded
-	fi
-done
+#for I in `cat "$FILE" | cut -f1 -d:`; do
+#	if ! ls /tmp/work/"$I" > /dev/null 2>&1 && [ ! -f /tmp/.updatechanged ]; then
+#		echo "$I" >> /tmp/.importnotneeded
+#	fi
+#done
 ##
 
-for I in `ls /tmp/work/`; do
-	if [ ! -s /tmp/work/"$I" ] && ! grep "^$I:" /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
-		continue
-	fi
-	if ls "$DATADIR"/*.debs > /dev/null 2>&1; then
-		if ! grep "^$I:" "$FILE" > /dev/null 2>&1; then
-			if ! grep "^$I$" "$DATADIR"/*.debs > /dev/null 2>&1; then
-				echo "$I" >> /tmp/.importmissing
-			fi
-		fi
-	else
-		if ! grep "^$I:" "$FILE" > /dev/null 2>&1; then
-			echo "$I" >> /tmp/.importmissing
-		fi
-	fi
-done
+## No longer useful with recommends and suggests options, but maybe in the future.
+#for I in `ls /tmp/work/`; do
+#	if [ ! -s /tmp/work/"$I" ] && ! grep "^$I:" /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
+#		continue
+#	fi
+#	if ls "$DATADIR"/*.debs > /dev/null 2>&1; then
+#		if ! grep "^$I:" "$FILE" > /dev/null 2>&1; then
+#			if ! grep "^$I$" "$DATADIR"/*.debs > /dev/null 2>&1; then
+#				echo "$I" >> /tmp/.importmissing
+#			fi
+#		fi
+#	else
+#		if ! grep "^$I:" "$FILE" > /dev/null 2>&1; then
+#			echo "$I" >> /tmp/.importmissing
+#		fi
+#	fi
+#done
 
 while read line; do 
 	E=`echo $line | cut -f1 -d:`

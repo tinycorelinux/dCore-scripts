@@ -1,0 +1,39 @@
+#!/bb/ash
+# getDeps is based on concepts from tce-tree.sh - Copyright 2010 Brian Smith
+# Licensed under GPLv2 License
+# getDeps morphed from tree.sh by Robert Shingledecker - Nov 2012
+# getSuggests based on above 2016 Jason Williams
+
+. /etc/init.d/tc-functions
+
+
+
+TCEDIR="/etc/sysconfig/tcedir"
+#BUILD=`getBuild`
+
+
+getSuggests()
+{
+        PKG=${1}
+	grep "^$1$" /tmp/sce.suggests > /dev/null 2>&1 && continue
+	if grep -wq "^$PKG$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
+		echo "$PKG" >> /tmp/.blocked
+		return
+	fi
+	
+	echo "$PKG"
+	#touch /tmp/work/"$PKG"
+	if grep "^Package: $PKG$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
+		SUGGESTLIST=`debGetSuggestList $PKG 2>/dev/null`
+	else
+		SUGGESTLIST=`debGetSuggestList $PKG 2>/dev/null`
+	fi
+	for D in $SUGGESTLIST; do getSuggests $D; done
+}
+
+TARGET="$1"
+if [ -n "$TARGET" ]; then
+        getSuggests "$TARGET"
+    #    echo
+fi
+
