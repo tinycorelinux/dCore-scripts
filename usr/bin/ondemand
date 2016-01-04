@@ -23,6 +23,22 @@ selectList() {
 	sort -f "$TMPFILE"
 	rm -f "$TMPFILE"
 }
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	echo
+	echo "${YELLOW}sce-ondemand - manage ondemand SCE(s), scripts created in /tce/ondemand.${NORMAL}"
+	echo
+	echo "Usage:"
+	echo
+	echo "${YELLOW}'"sce-ondemand SCE"'${NORMAL}      add SCE to ondemand, update menus."
+	echo "${YELLOW}'"sce-ondemand -r SCE"'${NORMAL}   remove ondemand SCE, update menus."
+	echo "${YELLOW}'"sce-ondemand -c"'${NORMAL}       current ondemand SCE(s)."
+	echo "${YELLOW}'"sce-ondemand -l"'${NORMAL}       list of available SCE(s) to add, those"
+        echo "                        not yet in sceboot.lst or ondemand."
+	echo
+exit 1
+fi
+
 TCUSER=`cat /etc/sysconfig/tcuser`
 TCEDIR=/etc/sysconfig/tcedir
 [ -d "$TCEDIR" ] || exit 1
@@ -41,9 +57,11 @@ do
 		l) LISTITEMS=1 ;;
 		e) EXECITEM=1 ;;
 		r) REMOVEITEM=1 ;;
-		*) exit 1 ;;
+		*) echo "Run  sce-ondemand --help  for usage information."
+                   exit 1 ;;
 	esac
 done
+
 shift `expr $OPTIND - 1`
 
 TYPE="sce"
@@ -56,11 +74,17 @@ fi
 DIRNAME="sce"
 
 if [ "$LISTITEMS" ]; then
+        echo
+        echo "List of available SCE(s) to add to ondemand:"
+        echo
 	selectList
 	exit 0
 fi
 
 if [ "$CURRITEMS" ]; then
+        echo
+	echo "Current ondemand SCE(s):"
+        echo
 	for F in `ls "$TCEDIR"/ondemand/*`
 	do
 		grep -l ."$TYPE" "$F" | awk 'BEGIN{FS="/"}{print $NF}'

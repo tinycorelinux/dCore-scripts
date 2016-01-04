@@ -16,21 +16,32 @@ HERE=`pwd`
 
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-	echo "Usage:"
-	echo "'"sce-import"' with no options will prompt for characters of desired package name."
-	echo "'"sce-import -c"' will look for all packages whose names contain the desired package name."
-	echo "'"sce-import -l"' to use a file list of packages - '"sce-import -l FILENAME"'."
-	echo "'"sce-import -b"' to add package to sceboot.lst."
-	echo "'"sce-import -r"' to use RAM for unpacking source debs."
-	echo "'"sce-import -s"' to list sizes of packages to be fetched and installed."
-	echo "'"sce-import -d"' to make use of existing SCE packages as dependencies.  A select menu will appear."
-	echo "'"sce-import -o"' to add resulting SCE package to ondemand."
-	echo "'"sce-import -n"' for non interactive mode."
-	echo "'"sce-import -u"' (DEFAULT) for update mode, syncing a new debinx files."
-	echo "'"sce-import -p"' for preserve debinx mode, use existing rather than fetch new for better performance." 
-	echo "'"sce-import -v"' to see a list of packages that the imported SCE will contain."
-	echo "'"sce-import -z"' will ignore /etc/sysconfig/sceconfig and only use current command line options."
-exit 0
+echo
+	echo "${YELLOW}sce-import - search, convert, install DEB and pre-built packages as local SCEs,"
+        echo "             use simple package name (example emelfm not emelfm.tar.gz, nano"
+        echo "             not nano_2.2.6-3_i386.deb), may use some option combinations"
+        echo "             (example sce-import -zbrs nano).${NORMAL}"
+	echo
+	echo "${YELLOW}'"sce-import"'${NORMAL}             prompt to enter starting characters of package sought."
+	echo "${YELLOW}'"sce-import PKG"'${NORMAL}         search packages that start with desired package name."
+	echo "${YELLOW}'"sce-import -c PKG"'${NORMAL}      search packages that contain desired package name."
+	echo "${YELLOW}'"sce-import -l FILENAME"'${NORMAL} create an SCE mega-extension, use a plain text file"
+        echo "                         that lists one package per line (example 'sce-import -l"
+        echo "                         /tmp/my_apps', file my_apps contains emelfm and nano)."
+	echo "${YELLOW}'"sce-import -b"'${NORMAL}          add resulting SCE to sceboot.lst."
+	echo "${YELLOW}'"sce-import -r"'${NORMAL}          use RAM for unpacking source DEBs."
+	echo "${YELLOW}'"sce-import -s"'${NORMAL}          list sizes of packages to be fetched and installed."
+	echo "${YELLOW}'"sce-import -d"'${NORMAL}          use existing SCE(s) as dependencies"
+	echo "${YELLOW}'"sce-import -o"'${NORMAL}          add resulting SCE to ondemand."
+	echo "${YELLOW}'"sce-import -n"'${NORMAL}          non-interactive mode."
+	echo "${YELLOW}'"sce-import -u"'${NORMAL}          (DEFAULT) update mode, sync new debinx files."
+	echo "${YELLOW}'"sce-import -p"'${NORMAL}          use existing debinx, no new fetch, better performance."
+	echo "${YELLOW}'"sce-import -v"'${NORMAL}          see listed of packages the imported SCE contains."
+	echo "${YELLOW}'"sce-import -z"'${NORMAL}          use only CLI options, ignore etc/sysconfig/sceconfig."
+	echo "${YELLOW}'"sce-import -R"'${NORMAL}          include packages listed as recommended in Debian."
+	echo "${YELLOW}'"sce-import -S"'${NORMAL}          include packages listed as suggested in Debian."
+	echo
+exit 1
 fi
 
 mksce() {
