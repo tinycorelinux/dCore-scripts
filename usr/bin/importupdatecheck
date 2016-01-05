@@ -19,13 +19,15 @@ fi
 [ -f /tmp/.lstchanged ] && sudo rm /tmp/.lstchanged
 [ -f /tmp/file.lst ] && sudo rm /tmp/file.lst
 [ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
-#ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/.*deb2sce
+ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/*.deb2sce
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 [ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
 [ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
 [ -f /tmp/.updateavailable ] && sudo rm /tmp/.updateavailable
 [ -f/tmp/.importupdates ] && sudo rm /tmp/.importupdates
 [ -d /tmp/work ] && sudo rm -r /tmp/work
+[ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
+[ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
 
 exit_tcnet() {
 	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
@@ -48,16 +50,22 @@ if [ -f "$SCEDIR"/update/"$SCE".sce ]; then
    DATADIR=/tmp/sceupdatetest/usr/local/sce/"$SCE"
    FILE=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE".md5sum
    FILEDATA=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE"-data.md5sum
+   RECOMMENDS=/tmp/sceupdatetest/usr/local/sce/"$SCE"/recommends
+   SUGGESTS=/tmp/sceupdatetest/usr/local/sce/"$SCE"/suggests
 elif sudo busybox mount | grep "/tmp/tcloop/$SCE " > /dev/null 2>&1; then
    DATADIR=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"
    FILE=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"/"$SCE".md5sum
    FILEDATA=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"/"$SCE"-data.md5sum
+   RECOMMENDS=/tmp/sceupdatetest/usr/local/sce/"$SCE"/recommends
+   SUGGESTS=/tmp/sceupdatetest/usr/local/sce/"$SCE"/suggests
 elif [ -f "$SCEDIR"/"$SCE".sce ]; then
    DATADIR=/tmp/sceupdatetest/usr/local/sce/"$SCE"
    [ -d /tmp/sceupdatetest ] || mkdir /tmp/sceupdatetest
    sudo busybox mount "$SCEDIR"/"$SCE".sce /tmp/sceupdatetest
    FILE=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE".md5sum
    FILEDATA=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE"-data.md5sum
+   RECOMMENDS=/tmp/sceupdatetest/usr/local/sce/"$SCE"/recommends
+   SUGGESTS=/tmp/sceupdatetest/usr/local/sce/"$SCE"/suggests
 fi
 ##
 echo "$FILE" > /tmp/FILE
@@ -131,7 +139,7 @@ fi
 
 ## Use list file in SCE dir and get deps of those packages.
 if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
-	for I in `echo "$SCE" && cat "$TCEDIR"/sce/"$SCE".sce.lst`; do 
+	for I in `cat "$TCEDIR"/sce/"$SCE".sce.lst`; do 
 		sudo debGetDeps "$I" > /dev/null 2>&1
 	done
 	for I in `cat "$FILE" | cut -f1 -d:`; do
@@ -146,6 +154,28 @@ else
 fi
 ##
 	
+if [ -f "$RECOMMENDS" ]; then
+	for I in `ls /tmp/work/`; do
+		debGetRecommends "$I" > /dev/null 2>&1
+	done 
+	if [ -s /tmp/sce.recommends ]; then
+		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
+			debGetDeps "$I" > /dev/null 2>&1
+		done 
+	fi
+fi
+
+if [ -f "$SUGGESTS" ]; then
+	for I in `ls /tmp/work/`; do
+		debGetSuggests "$I" > /dev/null 2>&1
+	done 
+	if [ -s /tmp/sce.recommends ]; then
+		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
+			debGetDeps "$I" > /dev/null 2>&1
+		done 
+	fi
+fi
+
 ## Get md5sum data and list of package dependencies.
 for I in `ls /tmp/work/`; do
 	sudo debGetUpdateList "$I"
@@ -197,8 +227,8 @@ while read line; do
 	if [ -z "$F" ]; then
 		continue
 	fi 
-	#echo "$E: ""$F" >> /tmp/updateavailable
-	#echo "$E: ""$G" >> /tmp/updateavailable
+	echo "$E: ""$F" >> /tmp/updateavailable
+	echo "$E: ""$G" >> /tmp/updateavailable
 	## Update if md5sum of existing package and one on the server differ.
      	if [[ "$F" != "$G" ]] && ! grep "^$E$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
      		echo "$E" >> /tmp/.importupdates
@@ -322,6 +352,8 @@ busybox mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo busybox umount 
 [ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
 [ -f /tmp/.updateavailable ] && sudo rm /tmp/.updateavailable
 [ -f/tmp/.importupdates ] && sudo rm /tmp/.importupdates
+[ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
+[ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
 
 sudo chmod 1777 /tmp
 cd "$SCEDIR" || exit 0
