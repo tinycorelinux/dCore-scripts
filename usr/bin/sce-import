@@ -156,11 +156,17 @@ tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
 cd "$HERE"
 
+# Determine if debinx is desired to be updated in this session.
+if grep -i "^PRESERVEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
+	PRESERVEDEBINXMODE=TRUE
+	echo "Using the -p option."
+else
+	echo "Using the -u option."
+fi
 
 
 
-
-if [ "$UPDATEDEBINXMODE" == "TRUE" ]; then
+if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	sudo debGetEnv "$2"
 	if [ "$?" != "0" ]; then
 		echo "Error in updating DEBINX files.  Exiting..."

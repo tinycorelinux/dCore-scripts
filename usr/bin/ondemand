@@ -6,7 +6,7 @@ PATH=`echo "$PATH" | sed 's|:/etc/sysconfig/tcedir/ondemand||g'`
 
 selectList() {
 	TMPFILE=`mktemp`	
-	for F in `find ${TCEDIR}/${DIRNAME} -name "*"${TYPE} 2>/dev/null`; do
+	for F in `ls ${TCEDIR}/${DIRNAME}/*${TYPE}`; do
 		ITEM="${F##*/}"
 		ADDITEM=1
 		
@@ -113,6 +113,10 @@ if  [ -n "$1" ]; then
 	then
 		EXTN="$EXTN".sce
 	fi
+	if [ ! -f "$TCEDIR"/"$DIRNAME"/"$EXTN" ]; then
+		echo "$EXTN does not exist in your SCE directory.  Exiting.."
+		exit 1
+	fi
 else
 	exit 1
 fi
@@ -122,8 +126,8 @@ if [ "$EXECITEM" ]; then
 	unset FROMWHERE
 	COMMAND="sce-load"
 	INSTALLED=/usr/local/tce.installed
-	if [ ! -e /tmp/tcloop/"$APPNAME" ] && ! grep ^"$APPNAME": /tmp/.debinstalled > /dev/null 2>&1; then
-		shift 1 && sudo su "$TCUSER" -c "${COMMAND} "$APPNAME""
+	if [ ! -d /tmp/tcloop/"$APPNAME" ] || ! grep "^$APPNAME": /tmp/.debinstalled > /dev/null 2>&1; then
+		shift 1 && sudo su "$TCUSER" -c ""${COMMAND}" "$APPNAME""
 	fi
 	if [ -e /usr/share/applications/"$APPNAME".desktop ]; then
 		shift 1 && launchApp "$APPNAME" "$@"

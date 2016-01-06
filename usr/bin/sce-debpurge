@@ -31,7 +31,7 @@ read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 read DEBINX_SECURITY < /tmp/debinx_security
-DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
+DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/"$DEBINX_SECURITY""
 
 while getopts pa OPTION
 do
