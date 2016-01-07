@@ -9,7 +9,7 @@ checknotroot
 BUILD=`getBuild`
 
 read IMPORTMIRROR < /opt/tcemirror
-PREBUILTMIRROR="${IMPORTMIRROR%/}/$(getMajorVer).x/"$BUILD"/import"
+PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
 
@@ -25,4 +25,4 @@ echo "Below are available packages in the prebuilt area."
 
 cat /tmp/.pkgprebuilt | cut -f1 -d: | sudo grep -i "$1"  
   
-#[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
+[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt

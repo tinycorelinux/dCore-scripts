@@ -28,7 +28,7 @@ getRecommends()
 	else
 		RECCOMENDLIST=`debGetRecommendList $PKG 2>/dev/null`
 	fi
-	for D in $RECOMMENDLIST; do getRecommends $D; done
+	#for D in $RECOMMENDLIST; do getRecommends $D; done
 }
 
 TARGET="$1"

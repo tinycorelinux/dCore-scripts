@@ -285,9 +285,13 @@ fi
 ## Determine if 'Recommended' packages are desired.
 if [ -f /tmp/.recommends ]; then
 	echo "Gathering Recommended packages info.."
-	for I in `ls /tmp/work/`; do
-		debGetRecommends "$I" > /dev/null 2>&1
-	done &
+	if [ -s /tmp/.targetfile ]; then
+		for I in `cat /tmp/.targetfile`; do
+			debGetRecommends "$I" > /dev/null 2>&1 &
+		done 
+	else
+		debGetRecommends "$1" > /dev/null 2>&1 &
+	fi
 	/usr/bin/rotdash $!
 	if [ -s /tmp/sce.recommends ]; then
 		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
@@ -303,9 +307,13 @@ fi
 ## Determine if 'Suggested' packages are desired.
 if [ -f /tmp/.suggests ]; then
 	echo "Gathering Suggested packages info.."
-	for I in `ls /tmp/work/`; do
-		debGetSuggests "$I" > /dev/null 2>&1
-	done &
+	if [ -s /tmp/.targetfile ]; then
+		for I in `cat /tmp/.targetfile`; do
+			debGetSuggests "$I" > /dev/null 2>&1 &
+		done 
+	else
+		debGetSuggests "$1" > /dev/null 2>&1 &
+	fi
 	/usr/bin/rotdash $!
 	if [ -s /tmp/sce.suggests ]; then
 		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
@@ -340,7 +348,7 @@ if [ -f /tmp/.importdep ]; then
 	## Copy .dep file to SCE for integrity check ability.
 	[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 	cp /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep usr/local/sce/"$TARGET"/"$TARGET".dep
-	debGetSceDep "$TARGET" #|| exit 1
+	debGetSceDep "$TARGET" || exit 1
 	##
 fi
 
@@ -627,6 +635,7 @@ then
 	echo "Done."
 else
 	echo "Failed."
+	exit 1
 fi
 
 cleanup

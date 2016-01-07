@@ -155,9 +155,13 @@ fi
 ##
 	
 if [ -f "$RECOMMENDS" ]; then
-	for I in `ls /tmp/work/`; do
-		debGetRecommends "$I" > /dev/null 2>&1
-	done 
+	if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
+		for I in `cat "$TCEDIR"/sce/"$SCE".sce.lst`; do
+			debGetRecommends "$I" > /dev/null 2>&1
+		done 
+	else
+		debGetRecommends "$SCE" > /dev/null 2>&1
+	fi
 	if [ -s /tmp/sce.recommends ]; then
 		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
@@ -166,10 +170,14 @@ if [ -f "$RECOMMENDS" ]; then
 fi
 
 if [ -f "$SUGGESTS" ]; then
-	for I in `ls /tmp/work/`; do
-		debGetSuggests "$I" > /dev/null 2>&1
-	done 
-	if [ -s /tmp/sce.recommends ]; then
+	if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
+		for I in `cat "$TCEDIR"/sce/"$SCE".sce.lst`; do
+			debGetSuggests "$I" > /dev/null 2>&1
+		done 
+	else
+		debGetSuggests "$SCE" > /dev/null 2>&1
+	fi
+	if [ -s /tmp/sce.suggests ]; then
 		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
 		done 
