@@ -74,6 +74,7 @@ fi
 [ -f /tmp/updateavailable ] && sudo rm /tmp/updateavailable
 [ -f /tmp/importupdated ] && sudo rm /tmp/importupdated
 [ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
+[ -f /tmp/.updatechecked ] && sudo rm /tmp/.updatechecked
 
 cleanup() {
 [ -f /tmp/.sceupdatechoose ] && sudo rm /tmp/.sceupdatechoose
@@ -95,6 +96,7 @@ ls /tmp/*.md5sum > /dev/null 2>&1 && sudo rm /tmp/*.md5sum
 [ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
+[ -f /tmp/.updatechecked ] && sudo rm /tmp/.updatechecked
 [ -d /tmp/work ] && sudo rm -r /tmp/work
 sudo rm /tmp/*suggested > /dev/null 2>&1
 sudo rm /tmp*recommended > /dev/null 2>&1
@@ -155,8 +157,12 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	echo "Searching for available updates for all existing SCEs."
 	## Get list of SCEs to be updated, should be all.
 	for I in `ls *.sce | sed 's:.sce$::' | sort`; do 
+		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
+			continue
+		fi
 		echo "$I: Checkup for updates.."
 		importupdatecheck "$I" > /dev/null 2>&1
+		echo "$I" >> /tmp/.updatechecked
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
@@ -214,7 +220,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		fi
 	else
 		clear
-		echo "No updates available."
+		echo ""$I": No updates available for main or dependency SCEs."
 	fi
 	##
 elif [ -f update/"$UPDATETARGET".sce ]; then
@@ -225,8 +231,12 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 	unset DEPLIST
 	getDeps "$UPDATETARGET"
 	for I in `echo "$DEPLIST"`; do
+		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
+			continue
+		fi
 		echo "$I: Checkup for updates.."
 		importupdatecheck "$I" > /dev/null 2>&1
+		echo "$I" >> /tmp/.updatechecked
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
@@ -284,7 +294,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 		fi
 	else
 		clear
-		echo "No updates available."
+		echo ""$I": No updates available for main or dependency SCEs."
 	fi
 	cd ..
 elif [ -f "$UPDATETARGET".sce ]; then
@@ -294,8 +304,12 @@ elif [ -f "$UPDATETARGET".sce ]; then
 	unset DEPLIST
 	getDeps "$UPDATETARGET"
 	for I in `echo "$DEPLIST"`; do
+		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
+			continue
+		fi
 		echo "$I: Checkup for updates.."
 		importupdatecheck "$I" > /dev/null 2>&1
+		echo "$I" >> /tmp/.updatechecked
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
@@ -353,7 +367,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		fi
 	else
 		clear
-		echo "No updates available."
+		echo ""$I": No updates available for main or dependency SCEs."
 	fi
 	
 	
@@ -388,8 +402,12 @@ You can choose more than one, and enter "q" for quit when you have completed you
 			unset DEPLIST
 			getDeps "$D"
 			for I in `echo "$DEPLIST"`; do
+				if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
+					continue
+				fi
 				echo "$I: Checkup for updates.."
 				importupdatecheck "$I" > /dev/null 2>&1
+				echo "$I" >> /tmp/.updatechecked
 			done
 			if [ -s /tmp/.sceupdatelist ]; then
 				if [ "$CHECKONLY" != "TRUE" ]; then
@@ -446,7 +464,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 						fi
 				fi
 			else
-				echo ""$I": No updates available."
+				echo ""$I": No updates available for main or dependency SCEs."
 			fi
 			unset DEPLIST
 		done
