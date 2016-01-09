@@ -108,6 +108,11 @@ getisize_extra() {
 
 for I in `ls /tmp/work`; do 
 grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 && continue
+
+if ! ps a | grep "/usr/bin/deb2sce" | grep -v grep > /dev/null 2>&1; then
+	exit 1
+fi
+
 if grep ^"$I": /tmp/.importsizelist >/dev/null; then
 	DSIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $2}'`
 	ISIZE=`grep ^"$I": /tmp/.importsizelist | awk '{print $3}'`

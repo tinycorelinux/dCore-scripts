@@ -10,7 +10,10 @@ SCEDIR="$TCEDIR"/sce
 read SSMIRROR < /opt/tcemirror                                                                             
 SSMIRROR="${SSMIRROR%/}/dCore/import"   
 
-pgrep sce-update > /dev/null 2>&1 || exit 1
+if ! ps a | grep "/usr/bin/sce-update" | grep -v grep > /dev/null 2>&1; then
+	exit 1
+fi
+
 if sudo busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
      sudo busybox umount /tmp/sceupdatetest
 fi
