@@ -1,0 +1,54 @@
+#!/bb/ash
+# (c) Robert Shingledecker 2012
+. /etc/init.d/tc-functions
+
+PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+export PATH
+
+checknotroot
+BUILD=`getBuild`
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+        echo
+	echo "${YELLOW}sce-searchprebuilt - search dCore repository for pre-built SCE(s), including"
+        echo "                     firmware, kernel modules, select lightweight and dCore"
+        echo "                     specific software, custom prepared Debian and Ubuntu"
+        echo "                     packages to work with dCore.${NORMAL}"
+        echo
+	echo "Usage:"
+        echo
+	echo "${YELLOW}'"sce-searchprebuilt"'${NORMAL}  search dCore repository for pre-built SCE(s), use"
+        echo "                      sce-import command to install desired extensions."
+        echo
+exit 1
+fi
+
+while getopts a OPTION
+do
+	case ${OPTION} in
+		*) echo "Run  sce-searchprebuilt --help  for usage information."
+                   exit 1 ;;
+	esac
+done
+
+read IMPORTMIRROR < /opt/tcemirror
+PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
+
+[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
+
+exit_tcnet() {
+	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
+	exit 1
+}
+
+wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null || exit_tcnet
+
+echo
+
+echo "Available packages in the prebuilt area:"
+
+echo
+
+cat /tmp/.pkgprebuilt | cut -f1 -d: | sudo grep -i "$1"   
+  
+[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt

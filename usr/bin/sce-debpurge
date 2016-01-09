@@ -17,15 +17,23 @@ fi
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo
-	echo "sce-debpurge - purge deprecated local DEB files."
+	echo "${YELLOW}sce-debpurge - purge deprecated DEB files or all files from /etc/"
+        echo "               sysconfig/tcedir/import/debs.${NORMAL}"
 	echo
 	echo "Usage:"
 	echo
-	echo -e "'"sce-debpurge"'    without options update DEBINX package index, purge deprecated \n                  debs from import directory."
-	echo -e "'"sce-debpurge -p"' do not update DEBINX package index, purge deprecated debs \n                  based on current index."
+	echo "${YELLOW}'"sce-debpurge"'${NORMAL}     update DEBINX files (Debian Index files located in /etc/"
+        echo "                   sysconfig/tcedir/import/debinx), purge deprecated DEBs."
+	echo "${YELLOW}'"sce-debpurge -p"'${NORMAL}  preserve local DEBINX files, purge deprecated DEBs"
+        echo "                   based on current index."
+	echo "${YELLOW}'"sce-debpurge -a"'${NORMAL}  purge all files from /etc/sysconfig/tcedir/import/debs,"
+        echo "                   including *.deb and *.tar.gz, note purged files will"
+        echo "                   need to be re-downloaded to rebuild SCEs during"
+        echo "                   updates or re-imports."
 	echo
 exit 1
 fi
+
 
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
@@ -38,7 +46,8 @@ do
 	case ${OPTION} in
 		p) PRESERVEDEBINXMODE=TRUE ;;
 		a) PURGEALL=TRUE ;;
-		*) exit 1 ;;
+		*) echo "Run  sce-debpurge --help  for usage information."
+                   exit 1 ;;
 	esac
 done
 
@@ -52,11 +61,15 @@ else
 fi
 
 if [ "$PURGEALL" == "TRUE" ]; then
-	cd /etc/sysconfig/tcedir/import/debs
+        echo
+        echo "Purging all files from /etc/sysconfig/tcedir/import/debs.."
+	echo
+        cd /etc/sysconfig/tcedir/import/debs
 	if ls *.deb > /dev/null 2>&1; then
 		for I in `ls *.deb`; do
 			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
 			echo "Removing "$I".."
+                        echo
 			sudo rm "$I"
 			echo "$I" >> /tmp/.debpurged
 		done
@@ -65,15 +78,21 @@ if [ "$PURGEALL" == "TRUE" ]; then
 		for I in `ls *.tar.gz`; do
 			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
 			echo "Removing "$I".."
+                        echo
 			sudo rm "$I"
 			echo "$I" >> /tmp/.debpurged
 		done
 	fi
-	echo "All packages removed from /etc/sysconfig/tcedir/import/debs." 
+        echo
+	echo "All packages removed from /etc/sysconfig/tcedir/import/debs."
 	DPURGESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.debpurgedsize` | awk '{printf("%.2f\n", $1)}')
+        echo
 	echo "Total space freed by removing unneeded files:  "$DPURGESIZEFINAL" MB"
 	exit 0
 fi
+
+
+
 		
 
 exit_tcnet() {
@@ -140,10 +159,13 @@ getName1() {
 > /tmp/.debpurged
 
 if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
-	cd /tmp
-	sudo debGetEnv 
+        echo
+        echo "Fetching updated DEBINX, checking for deprecated DEB files.."
+	echo
+        cd /tmp
+	sudo debGetEnv
 	if [ "$?" != "0" ]; then
-		echo "Error in updating needed DEBINX files.  Exiting..."
+		echo "Error in updating needed DEBINX files, exiting.."
 		exit 1
 	fi
 	wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
@@ -156,6 +178,11 @@ if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
 	tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
 	tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
+fi
+
+if [ "$PRESERVEDEBINXMODE" = "TRUE" ]; then
+       echo
+       echo "Preserving local DEBINX, checking for deprecated DEB files.."
 fi
 
 cd /etc/sysconfig/tcedir/import/debs
@@ -242,9 +269,12 @@ if ls *.tar.gz > /dev/null 2>&1; then
  done
 fi
 
-echo "All non current packages removed from /etc/sysconfig/tcedir/import/debs." 
+echo
+echo "All non current packages removed from /etc/sysconfig/tcedir/import/debs."
 DPURGESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.debpurgedsize` | awk '{printf("%.2f\n", $1)}')
+echo
 echo "Total space freed by removing unneeded files:  "$DPURGESIZEFINAL" MB"
+echo
 exit 0
 
 

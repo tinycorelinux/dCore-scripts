@@ -9,18 +9,21 @@ BUILD=`getBuild`
 unset DEPLIST
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo
-	echo "sce-update - check for updates and/or update SCEs."
+	echo "${YELLOW}sce-update - check for updates and update SCE(s).${NORMAL}"
 	echo
 	echo "Usage:"
 	echo
-	echo "'"sce-update"'    without options brings up menu of SCEs to choose to update."
-	echo "'"sce-update -a"' updates all existing SCEs, both loaded and unloaded."
-	echo "'"sce-update -n"' non-interactive mode."
-	echo "'"sce-update -c"' check only 'dry run' mode, no option to update."
-	echo "'"sce-update -r"' sce-import unpacks files in RAM during update."
-	echo "'"sce-update -s"' sce-import checks for size and available space during update."
-	echo -e "'"sce-update -z"' ignore /etc/sysconfig/sceconfig, use only current command \n                line options."
-	echo "'"sce-update iceweasel"' update Iceweasel."
+	echo "${YELLOW}'"sce-update"'${NORMAL}      menu prompt, choose SCE(s) to check, update if required."
+       	echo "${YELLOW}'"sce-update SCE"'${NORMAL}  check specific SCE for updates, update if required."
+	echo "${YELLOW}'"sce-update -a"'${NORMAL}   check all SCEs for updates, both loaded and unloaded,"
+        echo "                  update if required."
+	echo "${YELLOW}'"sce-update -n"'${NORMAL}   non-interactive mode."
+	echo "${YELLOW}'"sce-update -c"'${NORMAL}   menu prompt, check selected SCE(s) for updates,"
+        echo "                  no actual updates performed."
+	echo "${YELLOW}'"sce-update -r"'${NORMAL}   sce-import unpacks files in RAM during update."
+	echo "${YELLOW}'"sce-update -s"'${NORMAL}   sce-import checks for size, available space during update."
+	echo "${YELLOW}'"sce-update -z"'${NORMAL}   ignore /etc/sysconfig/sceconfig, use only current"
+        echo "                  command line options."
 	echo
 	exit 0
 fi
@@ -34,8 +37,12 @@ do
 		a) UPDATEALL=TRUE ;;
 		s) SIZE=TRUE ;;
 		z) NOCONFIG=TRUE ;;
+                *) echo "Run  sce-update --help  for usage information."
+                   exit 1 ;;
 	esac
 done
+
+
 
 # Determine if non-interactive mode is being used.
 if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
