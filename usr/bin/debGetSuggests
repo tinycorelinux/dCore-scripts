@@ -28,7 +28,7 @@ getSuggests()
 	else
 		SUGGESTLIST=`debGetSuggestList $PKG 2>/dev/null`
 	fi
-	for D in $SUGGESTLIST; do getSuggests $D; done
+	#for D in $SUGGESTLIST; do getSuggests $D; done
 }
 
 TARGET="$1"

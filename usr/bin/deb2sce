@@ -597,45 +597,46 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TA
 	[ -d "$TCEDIR"/sce/update ] || mkdir -p "$TCEDIR"/sce/update
 	mksquashfs "$TARGET" "$TCEDIR"/sce/update/"$TARGET".sce -noappend
 	if [ "$?" == "0" ]; then
+		sudo rm -rf "$TARGET"
 		cd "$TCEDIR"/sce/update/
 		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
 		cd "$IMPORT"
+		if [ "$ONBOOT" ]; then
+			if ! grep -wq "$TARGET" "$TCEDIR"/sceboot.lst
+			then
+				echo "$TARGET" >> "$TCEDIR"/sceboot.lst
+			fi
+		fi
+		[ "$ONDEMAND" ] && su "$TCUSER" -c "ondemand "$TARGET""
+		if [ -s /tmp/.targetfile ]; then
+			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
+		fi
+		echo "Done."
 	else
 		echo "Error creating "$TARGET".sce.  Exiting.." 
 		exit 1
 	fi
-	
 else
 	mksquashfs "$TARGET" "$TCEDIR"/sce/"$TARGET".sce -noappend
 	if [ "$?" == "0" ]; then
 		cd "$TCEDIR"/sce/
 		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
 		cd "$IMPORT"
+		if [ "$ONBOOT" ]; then
+			if ! grep -wq "$TARGET" "$TCEDIR"/sceboot.lst
+			then
+				echo "$TARGET" >> "$TCEDIR"/sceboot.lst
+			fi
+		fi
+		[ "$ONDEMAND" ] && su "$TCUSER" -c "ondemand "$TARGET""
+		if [ -s /tmp/.targetfile ]; then
+			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
+		fi
+		echo "Done."
 	else
 		echo "Error creating "$TARGET".sce.  Exiting.." 
 		exit 1
 	fi
-fi
-
-if [ "$?" == "0" ]
-then
-	#mv "$TARGET".sce "$TCEDIR"/sce/.
-	sudo rm -rf "$TARGET"
-	if [ "$ONBOOT" ]
-	then
-		if ! grep -wq "$TARGET" "$TCEDIR"/sceboot.lst
-		then
-			echo "$TARGET" >> "$TCEDIR"/sceboot.lst
-		fi
-	fi
-	[ "$ONDEMAND" ] && su "$TCUSER" -c "ondemand "$TARGET""
-	if [ -s /tmp/.targetfile ]; then
-		cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
-	fi
-	echo "Done."
-else
-	echo "Failed."
-	exit 1
 fi
 
 cleanup

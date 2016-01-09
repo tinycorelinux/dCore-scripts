@@ -155,11 +155,19 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
 			if [ "$NONINTERACTIVE" == "TRUE" ]; then
 				for I in `cat /tmp/.sceupdatelist`; do 
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" != "0" ]; then
-						echo "Error in updating "$I".  Exiting.."
-						exit 1
-					fi 
+					if [ -f /tmp/"$I".recommended ]; then
+						OPTIONS="$OPTIONS"R
+					fi
+					if [ -f /tmp/"$I".suggested ]; then
+						OPTIONS="$OPTIONS"S
+					fi
+					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+						sce-import -"$OPTIONS"np "$I"
+						#if [ "$?" != "0" ]; then
+						#	echo "Error in updating "$I".  Exiting.."
+						#	exit 1
+						#fi 
+					fi
 					echo "$I" >> /tmp/importupdated
 				done
 			else
@@ -172,17 +180,19 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 					less /tmp/updateavailable
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do 
-					if [ -f /tmp/"$I".recommended]; then
+					if [ -f /tmp/"$I".recommended ]; then
 						OPTIONS="$OPTIONS"R
 					fi
 					if [ -f /tmp/"$I".suggested ]; then
 						OPTIONS="$OPTIONS"S
 					fi
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" != "0" ]; then
-						echo "Error in updating "$I".  Exiting.."
-						exit 1
-					fi 
+					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+						sce-import -"$OPTIONS"np "$I"
+						#if [ "$?" != "0" ]; then
+						#	echo "Error in updating "$I".  Exiting.."
+						#	exit 1
+						#fi 
+					fi
 					echo "$I" >> /tmp/importupdated
 				done
 			fi
@@ -200,9 +210,6 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		echo "No updates available."
 	fi
 	##
-	echo " "
-	
-	echo " "
 elif [ -f update/"$UPDATETARGET".sce ]; then
 	cd update/
 	updateenv
@@ -224,11 +231,13 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 					if [ -f /tmp/"$I".suggested ]; then
 						OPTIONS="$OPTIONS"S
 					fi
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" != "0" ]; then
-						echo "Error in updating "$I".  Exiting.."
-						exit 1
-					fi 
+					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+						sce-import -"$OPTIONS"np "$I"
+						#if [ "$?" != "0" ]; then
+						#	echo "Error in updating "$I".  Exiting.."
+						#	exit 1
+						#fi 
+					fi
 					echo "$I" >> /tmp/importupdated
 				done
 			else
@@ -247,11 +256,13 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 					if [ -f /tmp/"$I".suggested ]; then
 						OPTIONS="$OPTIONS"S
 					fi
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" != "0" ]; then
-						echo "Error in updating "$I".  Exiting.."
-						exit 1
-					fi 
+					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+						sce-import -"$OPTIONS"np "$I"
+						#if [ "$?" != "0" ]; then
+						#	echo "Error in updating "$I".  Exiting.."
+						#	exit 1
+						#fi 
+					fi
 					echo "$I" >> /tmp/importupdated
 				done
 			fi
@@ -289,11 +300,13 @@ elif [ -f "$UPDATETARGET".sce ]; then
 					if [ -f /tmp/"$I".suggested ]; then
 						OPTIONS="$OPTIONS"S
 					fi
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" != "0" ]; then
-						echo "Error in updating "$I".  Exiting.."
-						exit 1
-					fi 
+					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+						sce-import -"$OPTIONS"np "$I"
+						#if [ "$?" != "0" ]; then
+						#	echo "Error in updating "$I".  Exiting.."
+						#	exit 1
+						#fi 
+					fi
 					echo "$I" >> /tmp/importupdated
 				done
 			else
@@ -312,11 +325,13 @@ elif [ -f "$UPDATETARGET".sce ]; then
 					if [ -f /tmp/"$I".suggested ]; then
 						OPTIONS="$OPTIONS"S
 					fi
-					grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-					if [ "$?" != "0" ]; then
-						echo "Error in updating "$I".  Exiting.."
-						exit 1
-					fi 
+					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+						sce-import -"$OPTIONS"np "$I"
+						#if [ "$?" != "0" ]; then
+						#	echo "Error in updating "$I".  Exiting.."
+						#	exit 1
+						#fi 
+					fi
 					echo "$I" >> /tmp/importupdated
 				done
 			fi
@@ -379,10 +394,12 @@ You can choose more than one, and enter "q" for quit when you have completed you
 							if [ -f /tmp/"$I".suggested ]; then
 								OPTIONS="$OPTIONS"S
 							fi
-							grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-							if [ "$?" != "0" ]; then
-								echo "Error in updating "$I".  Exiting.."
-								exit 1
+							if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+								sce-import -"$OPTIONS"np "$I"
+								#if [ "$?" != "0" ]; then
+								#	echo "Error in updating "$I".  Exiting.."
+								#	exit 1
+								#fi 
 							fi 
 							echo "$I" >> /tmp/importupdated
 						done
@@ -402,11 +419,13 @@ You can choose more than one, and enter "q" for quit when you have completed you
 							if [ -f /tmp/"$I".suggested ]; then
 								OPTIONS="$OPTIONS"S
 							fi
-							grep "^$I$" /tmp/importupdated > /dev/null 2>&1 || sce-import -"$OPTIONS"np "$I"
-							if [ "$?" != "0" ]; then
-								echo "Error in updating "$I".  Exiting.."
-								exit 1
-							fi 
+							if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+								sce-import -"$OPTIONS"np "$I"
+								#if [ "$?" != "0" ]; then
+								#	echo "Error in updating "$I".  Exiting.."
+								#	exit 1
+								#fi 
+							fi
 							echo "$I" >> /tmp/importupdated
 						done
 					fi
