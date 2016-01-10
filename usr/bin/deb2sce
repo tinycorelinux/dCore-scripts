@@ -146,6 +146,7 @@ cleanup() {
 	#[ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps
 	[ -f /tmp/.recommends ] && sudo rm /tmp/.recommends
 	[ -f /tmp/.suggests ] && sudo rm /tmp/.suggests
+	[ -d "$TCEDIR"/import/"$TARGET" ] && sudo rm -r "$TCEDIR"/import/"$TARGET"
 }
 
 # Main

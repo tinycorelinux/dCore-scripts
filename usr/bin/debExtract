@@ -118,4 +118,5 @@ echo "Merging $BASENAME "
 if [ "$?" != "0" ]; then
 	exit 1
 fi	
-sudo rm -r "$CFG"
+cd ..
+
