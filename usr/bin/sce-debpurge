@@ -34,13 +34,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 exit 1
 fi
 
-
-read IMPORTMIRROR < /opt/tcemirror
-PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
-IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
-read DEBINX_SECURITY < /tmp/debinx_security
-DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/"$DEBINX_SECURITY""
-
 while getopts pa OPTION
 do
 	case ${OPTION} in
@@ -168,6 +161,8 @@ if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 		echo "Error in updating needed DEBINX files, exiting.."
 		exit 1
 	fi
+	read IMPORTMIRROR < /opt/tcemirror
+	PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 	wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
 
 	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
@@ -181,9 +176,21 @@ if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 fi
 
 if [ "$PRESERVEDEBINXMODE" = "TRUE" ]; then
-       echo
-       echo "Preserving local DEBINX, checking for deprecated DEB files.."
+	echo
+	echo "Preserving local DEBINX, checking for deprecated DEB files.."
+	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
+	if [ "$?" != "0" ]; then
+		echo "Error in updating DEBINX files.  Exiting..."
+	fi
 fi
+
+
+read IMPORTMIRROR < /opt/tcemirror
+PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
+IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
+read DEBINX_SECURITY < /tmp/debinx_security
+DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/"$DEBINX_SECURITY""
+
 
 cd /etc/sysconfig/tcedir/import/debs
 if ls *.deb > /dev/null 2>&1; then

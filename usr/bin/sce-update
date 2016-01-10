@@ -157,12 +157,8 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	echo "Searching for available updates for all existing SCEs."
 	## Get list of SCEs to be updated, should be all.
 	for I in `ls *.sce | sed 's:.sce$::' | sort`; do 
-		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
-			continue
-		fi
 		echo "$I: Checkup for updates.."
 		importupdatecheck "$I" > /dev/null 2>&1
-		echo "$I" >> /tmp/.updatechecked
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
@@ -220,7 +216,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		fi
 	else
 		clear
-		echo ""$I": No updates available for main or dependency SCEs."
+		echo "No updates available for main or dependency SCEs."
 	fi
 	##
 elif [ -f update/"$UPDATETARGET".sce ]; then
@@ -232,11 +228,11 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 	getDeps "$UPDATETARGET"
 	for I in `echo "$DEPLIST"`; do
 		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
-			continue
+			:
+		else
+			echo "$I: Checkup for updates.."
+			importupdatecheck "$I" > /dev/null 2>&1
 		fi
-		echo "$I: Checkup for updates.."
-		importupdatecheck "$I" > /dev/null 2>&1
-		echo "$I" >> /tmp/.updatechecked
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
@@ -294,7 +290,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 		fi
 	else
 		clear
-		echo ""$I": No updates available for main or dependency SCEs."
+		echo "No updates available for main or dependency SCEs."
 	fi
 	cd ..
 elif [ -f "$UPDATETARGET".sce ]; then
@@ -305,11 +301,11 @@ elif [ -f "$UPDATETARGET".sce ]; then
 	getDeps "$UPDATETARGET"
 	for I in `echo "$DEPLIST"`; do
 		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
-			continue
+			:
+		else
+			echo "$I: Checkup for updates.."
+			importupdatecheck "$I" > /dev/null 2>&1
 		fi
-		echo "$I: Checkup for updates.."
-		importupdatecheck "$I" > /dev/null 2>&1
-		echo "$I" >> /tmp/.updatechecked
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
@@ -367,7 +363,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		fi
 	else
 		clear
-		echo ""$I": No updates available for main or dependency SCEs."
+		echo "No updates available for main or dependency SCEs."
 	fi
 	
 	
@@ -403,71 +399,71 @@ You can choose more than one, and enter "q" for quit when you have completed you
 			getDeps "$D"
 			for I in `echo "$DEPLIST"`; do
 				if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
-					continue
+					:
+				else
+					echo "$I: Checkup for updates.."
+					importupdatecheck "$I" > /dev/null 2>&1
 				fi
-				echo "$I: Checkup for updates.."
-				importupdatecheck "$I" > /dev/null 2>&1
-				echo "$I" >> /tmp/.updatechecked
 			done
-			if [ -s /tmp/.sceupdatelist ]; then
-				if [ "$CHECKONLY" != "TRUE" ]; then
-					if [ "$NONINTERACTIVE" == "TRUE" ]; then
-						for I in `cat /tmp/.sceupdatelist`; do 
-							if [ -f /tmp/"$I".recommended ]; then
-								OPTIONS="$OPTIONS"R
-							fi
-							if [ -f /tmp/"$I".suggested ]; then
-								OPTIONS="$OPTIONS"S
-							fi
-							if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-								sce-import -"$OPTIONS"np "$I"
-								#if [ "$?" != "0" ]; then
-								#	echo "Error in updating "$I".  Exiting.."
-								#	exit 1
-								#fi 
-							fi 
-							echo "$I" >> /tmp/importupdated
-						done
-					else
-						clear
-						cat  /tmp/.sceupdatelist | sort | uniq
-						echo " "
-						echo "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
-						read ans
-						if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-							less /tmp/updateavailable
+		done
+		if [ -s /tmp/.sceupdatelist ]; then
+			if [ "$CHECKONLY" != "TRUE" ]; then
+				if [ "$NONINTERACTIVE" == "TRUE" ]; then
+					for I in `cat /tmp/.sceupdatelist`; do 
+						if [ -f /tmp/"$I".recommended ]; then
+							OPTIONS="$OPTIONS"R
 						fi
-						for I in `cat /tmp/.sceupdatelist`; do 
-							if [ -f /tmp/"$I".recommended ]; then
-								OPTIONS="$OPTIONS"R
-							fi
-							if [ -f /tmp/"$I".suggested ]; then
-								OPTIONS="$OPTIONS"S
-							fi
-							if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-								sce-import -"$OPTIONS"np "$I"
-								#if [ "$?" != "0" ]; then
-								#	echo "Error in updating "$I".  Exiting.."
-								#	exit 1
-								#fi 
-							fi
-							echo "$I" >> /tmp/importupdated
-						done
-					fi
+						if [ -f /tmp/"$I".suggested ]; then
+							OPTIONS="$OPTIONS"S
+						fi
+						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+							sce-import -"$OPTIONS"np "$I"
+							#if [ "$?" != "0" ]; then
+							#	echo "Error in updating "$I".  Exiting.."
+							#	exit 1
+							#fi 
+						fi 
+						echo "$I" >> /tmp/importupdated
+					done
 				else
 					clear
 					cat  /tmp/.sceupdatelist | sort | uniq
-					echo "The above SCEs need to be updated.  Press y to view package updates, or Ctrl-C to abort.."
-						read ans
-						if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-							less /tmp/updateavailable
+					echo " "
+					echo "The above SCEs are about to be updated.  Press Enter to proceed, y to view package updates, or Ctrl-C to abort.."
+					read ans
+					if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+						less /tmp/updateavailable
+					fi
+					for I in `cat /tmp/.sceupdatelist`; do 
+						if [ -f /tmp/"$I".recommended ]; then
+							OPTIONS="$OPTIONS"R
 						fi
+						if [ -f /tmp/"$I".suggested ]; then
+							OPTIONS="$OPTIONS"S
+						fi
+						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+							sce-import -"$OPTIONS"np "$I"
+							#if [ "$?" != "0" ]; then
+							#	echo "Error in updating "$I".  Exiting.."
+							#	exit 1
+							#fi 
+						fi
+						echo "$I" >> /tmp/importupdated
+					done
 				fi
 			else
-				echo ""$I": No updates available for main or dependency SCEs."
+				clear
+				cat  /tmp/.sceupdatelist | sort | uniq
+				echo "The above SCEs need to be updated.  Press y to view package updates, or Ctrl-C to abort.."
+					read ans
+					if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+						less /tmp/updateavailable
+					fi
 			fi
+		else
+			echo "No updates available for main or dependency SCEs."
+		fi
 			unset DEPLIST
-		done
 		if [ ! -s /tmp/.sceupdatelist ]; then
 			clear
 			echo "No updates available for chosen SCEs at this time."

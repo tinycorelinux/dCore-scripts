@@ -233,13 +233,13 @@ while read line; do
         if grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1; then
 			continue
 	fi
-	F=`echo $line | awk '{print $2}'`
-    	G=`grep "^$E:" "$FILE" | awk '{print $2}'`
+	F=`echo $line | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
+    	G=`grep "^$E:" "$FILE" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 	if [ -z "$F" ]; then
 		continue
 	fi 
-	#echo "$E: ""$F" >> /tmp/updateavailable
-	#echo "$E: ""$G" >> /tmp/updateavailable
+	echo "$E: ""$F" >> /tmp/updateavailable
+	echo "$E: ""$G" >> /tmp/updateavailable
 	## Update if md5sum of existing package and one on the server differ.
      	if [[ "$F" != "$G" ]] && ! grep "^$E$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
      		echo "$E" >> /tmp/.importupdates
@@ -252,8 +252,8 @@ while read line; do
 		fi
 	
 		if grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
-			MD5SSNEW=`grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
-			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}'`
+			MD5SSNEW=`grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
+			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			if ! grep "^$E-deb2sce:" "$FILEDATA" > /dev/null 2>&1; then
 				MD5SSOLD="0"
 				echo "    "$E"   New "$E".deb2sce startup script update available." >>  /tmp/updateavailable 
@@ -265,8 +265,8 @@ while read line; do
 				fi
 			fi
 		elif grep "^$E-deb2sce:" "$FILEDATA" > /dev/null 2>&1; then
-			MD5SSNEW=`grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
-			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}'`
+			MD5SSNEW=`grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
+			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			if ! grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 				MD5SSNEW="0"
 				echo "    "$E"   "$E".deb2sce startup script has been removed in the repo." >>  /tmp/updateavailable
@@ -284,8 +284,8 @@ while read line; do
 		fi
 		
 		if grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
-	        	MD5DATANEW=`grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
-			MD5DATAOLD=`grep "^$E-data:" "$FILEDATA" | awk '{print $2}'`
+	        	MD5DATANEW=`grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
+			MD5DATAOLD=`grep "^$E-data:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			if ! grep "^$E-data:" "$FILEDATA" > /dev/null 2>&1; then
 				MD5DATAOLD="0"
 			fi
@@ -297,8 +297,8 @@ while read line; do
 			fi
 		
 		elif grep "^$E-data:" "$FILEDATA" > /dev/null 2>&1; then
-	        	MD5DATANEW=`grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}'`
-			MD5DATAOLD=`grep "^$E-data:" "$FILEDATA" | awk '{print $2}'`
+	        	MD5DATANEW=`grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
+			MD5DATAOLD=`grep "^$E-data:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			if ! grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 				MD5DATANEW="0"
 			fi
@@ -347,6 +347,7 @@ fi
 
 echo " " >> /tmp/updateavailable
 echo " " >> /tmp/updateavailable
+echo "$SCE" >> /tmp/.updatechecked
 
 busybox mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo busybox umount /tmp/sceupdatetest
 #[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
