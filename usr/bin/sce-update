@@ -152,7 +152,6 @@ if [ "$MDOLD" == "$MDNEW" ]; then
 	exit 0
 else
 	echo "Checking for updates of existing SCEs.."
-	sudo rm NEWDEBINX
 fi
 	
 cd "$SCEDIR"
@@ -506,6 +505,9 @@ else
 fi
 
 cleanup
+
+cd /etc/sysconfig/tcedir/import/debinx
+sudo cp NEWDEBINX OLDDEBINX
 
 if ls /tmp/*.pkglist > /dev/null 2>&1; then 
 	sudo rm /tmp/*.pkglist
