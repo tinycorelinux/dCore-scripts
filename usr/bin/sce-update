@@ -137,12 +137,15 @@ tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
 cd /etc/sysconfig/tcedir/import/debinx
 if [ ! -f OLDDEBINX ]; then
 	updateenv
-	sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > OLDDEBINX > /dev/null 2>&1
 fi
 updateenv
 cd /etc/sysconfig/tcedir/import/debinx
-sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX > OLDDEBINX > /dev/null 2>&1
-MDOLD=`md5sum OLDDEBINX | cut -f1 -d" "` 
+sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+if [ -f OLDDEBINX ]; then
+	MDOLD=`md5sum OLDDEBINX | cut -f1 -d" "`
+else
+	MDOLD="0"
+fi
 MDNEW=`md5sum NEWDEBINX | cut -f1 -d" "`
 
 if [ "$MDOLD" == "$MDNEW" ]; then
@@ -507,7 +510,7 @@ fi
 cleanup
 
 cd /etc/sysconfig/tcedir/import/debinx
-sudo cp NEWDEBINX OLDDEBINX > OLDDEBINX > /dev/null 2>&1
+sudo cp NEWDEBINX OLDDEBINX
 
 if ls /tmp/*.pkglist > /dev/null 2>&1; then 
 	sudo rm /tmp/*.pkglist
