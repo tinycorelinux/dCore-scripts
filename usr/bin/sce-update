@@ -114,6 +114,7 @@ read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
+
 sudo debGetEnv "$2"
 if [ "$?" != "0" ]; then
 	echo "Error in updating needed DEBINX files.  Exiting..."
@@ -131,8 +132,30 @@ tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
-cd "$SCEDIR"
 }
+
+cd /etc/sysconfig/tcedir/import/debinx
+if [ ! -f OLDDEBINX ]; then
+	updateenv
+	sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > OLDDEBINX
+fi
+updateenv
+cd /etc/sysconfig/tcedir/import/debinx
+sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+MDOLD=`md5sum OLDDEBINX | cut -f1 -d" "`
+MDNEW=`md5sum NEWDEBINX | cut -f1 -d" "`
+
+if [ "$MDOLD" == "$MDNEW" ]; then
+	echo "Your SCEs are up to date."
+	sudo rm NEWDEBINX
+	sleep 5
+	exit 0
+else
+	echo "Checking for updates of existing SCEs.."
+	sudo rm NEWDEBINX
+fi
+	
+cd "$SCEDIR"
 
 ## Get recursive list of dependency SCEs.
 getDeps() {
@@ -152,7 +175,6 @@ fi
 ##
 
 if [ "$UPDATEALL" == "TRUE" ]; then
-	updateenv
 	echo " "
 	echo "Searching for available updates for all existing SCEs."
 	## Get list of SCEs to be updated, should be all.
@@ -221,7 +243,6 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	##
 elif [ -f update/"$UPDATETARGET".sce ]; then
 	cd update/
-	updateenv
 	echo " "
 	echo "Searching for available updates for "$UPDATETARGET".sce."
 	unset DEPLIST
@@ -294,7 +315,6 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 	fi
 	cd ..
 elif [ -f "$UPDATETARGET".sce ]; then
-	updateenv
 	echo " "
 	echo "Searching for available updates for "$UPDATETARGET".sce."
 	unset DEPLIST
@@ -390,7 +410,6 @@ You can choose more than one, and enter "q" for quit when you have completed you
 	echo -n "You are about to check for updates to the above SCEs. y to continue, n to exit. (y/N): "
 	read ANS
 	if [ "$ANS" == "y" ] || [ "$ANS" == "Y" ]; then
-		updateenv
 		## Update selected SCEs
 		for D in `cat /tmp/.sceupdatechoose | tr -d :`; do
 			echo " "
