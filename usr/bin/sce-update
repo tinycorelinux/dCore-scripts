@@ -109,17 +109,10 @@ exit_tcnet() {
 	exit 1
 }
 
-updateenv() {
+
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
-
-
-sudo debGetEnv "$2"
-if [ "$?" != "0" ]; then
-	echo "Error in updating needed DEBINX files.  Exiting..."
-	exit 1
-fi
 read DEBINX < /tmp/debinx
 cd /tmp
 
@@ -132,15 +125,24 @@ tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
-}
+
 
 cd /etc/sysconfig/tcedir/import/debinx
 if [ ! -f OLDDEBINX ]; then
-	updateenv
+	sudo debGetEnv "$2"
+	if [ "$?" != "0" ]; then
+		echo "Error in updating needed DEBINX files.  Exiting..."
+		exit 1
+	fi
 fi
-updateenv
+
 cd /etc/sysconfig/tcedir/import/debinx
-sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+if ls debinx.* > /dev/null 2>&1; then
+	sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+else
+	sudo cat *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+fi
+
 if [ -f OLDDEBINX ]; then
 	MDOLD=`md5sum OLDDEBINX | cut -f1 -d" "`
 else
