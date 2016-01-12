@@ -16,7 +16,6 @@ HERE=`pwd`
 
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-echo
 	echo "${YELLOW}sce-import - search, convert, install DEB and pre-built packages as local SCEs,"
         echo "             use simple package name (example emelfm not emelfm.tar.gz, nano"
         echo "             not nano_2.2.6-3_i386.deb), may use some option combinations"
@@ -38,9 +37,8 @@ echo
 	echo "${YELLOW}'"sce-import -p"'${NORMAL}          use existing debinx, no new fetch, better performance."
 	echo "${YELLOW}'"sce-import -v"'${NORMAL}          see listed of packages the imported SCE contains."
 	echo "${YELLOW}'"sce-import -z"'${NORMAL}          use only CLI options, ignore etc/sysconfig/sceconfig."
-	echo "${YELLOW}'"sce-import -R"'${NORMAL}          include packages listed as recommended in Debian."
-	echo "${YELLOW}'"sce-import -S"'${NORMAL}          include packages listed as suggested in Debian."
-	echo
+	echo "${YELLOW}'"sce-import -R"'${NORMAL}          include recommended Debian packages, warning large SCE."
+	echo "${YELLOW}'"sce-import -S"'${NORMAL}          include suggested Debian packages, warning large SCE."
 exit 1
 fi
 
@@ -118,7 +116,8 @@ do
 		z) NOCONFIG=TRUE ;;
 		R) RECOMMENDS=TRUE ;;
 		S) SUGGESTS=TRUE ;;
-		*) exit 1 ;;
+		*) echo "Run  sce-import --help  for usage information."
+                   exit 1 ;;
 	esac
 done
 
@@ -391,10 +390,14 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   		echo " "
   		if [ -f /tmp/.importinteractive ]; then
   			echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
-  			mksce "$TARGET" 
+  			mksce "$TARGET"
   		else
-			echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?  Press (n/N) to import a standard "$TARGET" package if it exists, any key will use the existing package list.  WARNING: Pressing (n/N) will delete "$TARGETFILE" now."
-	  		read ans                   
+                        echo "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?"
+                        echo "Press (n/N) to import a standard "$TARGET" package if it exists,"
+                        echo "any key will use the existing package list."
+                        echo
+                        echo "WARNING: Pressing (n/N) will delete "$TARGETFILE" now."
+                        read ans                  
 	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  			sudo rm /tmp/.targetfile
 				mksce "$TARGET" 
@@ -412,10 +415,14 @@ elif [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	echo " "
   	if [ -f /tmp/.importinteractive ]; then
   		echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
-  		mksce "$TARGET" 
+  		mksce "$TARGET"
   	else
-		echo -n "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?  Press (n/N) to import a standard "$TARGET" package if it exists, any key will use the existing package list.  WARNING: Pressing (n/N) will delete "$TARGETFILE" now."
-	  	read ans                   
+	  	echo "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?"
+                echo "Press (n/N) to import a standard "$TARGET" package if it exists,"
+                echo "any key will use the existing package list."
+                echo
+                echo "WARNING: Pressing (n/N) will delete "$TARGETFILE" now."
+                read ans                  
 	  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  		sudo rm /tmp/.targetfile
 			mksce "$TARGET" 

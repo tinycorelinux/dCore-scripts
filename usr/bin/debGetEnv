@@ -19,6 +19,9 @@ zsyncDebianIndex()
 	else
 		wget -O "$TCEDIR"/import/debinx/"$DEBINX" "$MIRROR"/"$DEBINX"
 	fi
+        echo
+        echo "Debian Index synced: "$DEBINX""
+        echo
 	cd - > /dev/null
 }
 
@@ -33,8 +36,13 @@ zsyncDebianSecurityIndex()
 	else
 		wget -O "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" "$MIRROR"/"$DEBINX_SECURITY"
 	fi
+        echo
+        echo "Debian Security Index synced: "$DEBINX_SECURITY""
+        echo
 	cd - > /dev/null
 }
+
+
 
 unset DEBINX MIRROR
 TCEDIR=/etc/sysconfig/tcedir
