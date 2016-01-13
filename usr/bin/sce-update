@@ -128,13 +128,12 @@ tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
 
 
 cd /etc/sysconfig/tcedir/import/debinx
-if [ ! -f OLDDEBINX ]; then
-	sudo debGetEnv "$2"
-	if [ "$?" != "0" ]; then
-		echo "Error in updating needed DEBINX files.  Exiting..."
-		exit 1
-	fi
+sudo debGetEnv "$2"
+if [ "$?" != "0" ]; then
+	echo "Error in updating needed DEBINX files.  Exiting..."
+	exit 1
 fi
+
 
 cd /etc/sysconfig/tcedir/import/debinx
 if ls debinx.* > /dev/null 2>&1; then
