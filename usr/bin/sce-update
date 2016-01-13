@@ -113,7 +113,7 @@ exit_tcnet() {
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
-read DEBINX < /tmp/debinx
+
 cd /tmp
 
 [ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
@@ -125,7 +125,7 @@ tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
 tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
-
+tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
 
 cd /etc/sysconfig/tcedir/import/debinx
 sudo debGetEnv "$2"
@@ -133,7 +133,7 @@ if [ "$?" != "0" ]; then
 	echo "Error in updating needed DEBINX files.  Exiting..."
 	exit 1
 fi
-
+read DEBINX < /tmp/debinx
 
 cd /etc/sysconfig/tcedir/import/debinx
 if ls debinx.* > /dev/null 2>&1; then
@@ -153,11 +153,27 @@ if [ "$MDOLD" == "$MDNEW" ]; then
 	echo "Your SCEs are up to date."
 	sudo rm NEWDEBINX
 	sleep 5
-	exit 0
-else
+	exit 0-
+elif [ -f OLDDEBINX ]; then
+	diff OLDDEBINX NEWDEBINX > /tmp/debinx.diff
+	echo " "
+	echo  "Sce-update is about to proceed.  Press Enter to proceed, y to view the"	         
+	echo -n "difference in new and old debinx data, or Ctrl-C to abort.."
+	read ans
+	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+		less /tmp/debinx.diff
+		echo -n "Do you wish to proceed with updates (y/N)?"
+		read ans
+		if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+			:
+		else
+			echo "Exiting.."
+			exit 0
+		fi
+	fi
 	echo "Checking for updates of existing SCEs.."
 fi
-	
+echo "Checking for updates of existing SCEs.."	
 cd "$SCEDIR"
 
 ## Get recursive list of dependency SCEs.
