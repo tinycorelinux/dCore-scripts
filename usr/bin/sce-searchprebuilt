@@ -49,6 +49,6 @@ echo "Available packages in the prebuilt area:"
 
 echo
 
-cat /tmp/.pkgprebuilt | cut -f1 -d: | sudo grep -i "$1"   
+cat /tmp/.pkgprebuilt | cut -f1 -d: | sort | sudo grep -i "$1"   
   
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt

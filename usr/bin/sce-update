@@ -135,45 +135,6 @@ if [ "$?" != "0" ]; then
 fi
 read DEBINX < /tmp/debinx
 
-cd /etc/sysconfig/tcedir/import/debinx
-if ls debinx.* > /dev/null 2>&1; then
-	sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
-else
-	sudo cat *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
-fi
-
-if [ -f OLDDEBINX ]; then
-	MDOLD=`md5sum OLDDEBINX | cut -f1 -d" "`
-else
-	MDOLD="0"
-fi
-MDNEW=`md5sum NEWDEBINX | cut -f1 -d" "`
-
-if [ "$MDOLD" == "$MDNEW" ]; then
-	echo "Your SCEs are up to date."
-	sudo rm NEWDEBINX
-	sleep 5
-	exit 0-
-elif [ -f OLDDEBINX ]; then
-	diff OLDDEBINX NEWDEBINX > /tmp/debinx.diff
-	echo " "
-	echo  "Sce-update is about to proceed.  Press Enter to proceed, y to view the"	         
-	echo -n "difference in new and old debinx data, or Ctrl-C to abort.."
-	read ans
-	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-		less /tmp/debinx.diff
-		echo -n "Do you wish to proceed with updates (y/N)?"
-		read ans
-		if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-			:
-		else
-			echo "Exiting.."
-			exit 0
-		fi
-	fi
-	echo "Checking for updates of existing SCEs.."
-fi
-echo "Checking for updates of existing SCEs.."	
 cd "$SCEDIR"
 
 ## Get recursive list of dependency SCEs.
@@ -194,6 +155,53 @@ fi
 ##
 
 if [ "$UPDATEALL" == "TRUE" ]; then
+	
+##### OLDDEBINX, NEWDEBINX
+#####
+
+	cd /etc/sysconfig/tcedir/import/debinx
+	if ls debinx.* > /dev/null 2>&1; then
+		sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+	else
+		sudo cat *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+	fi
+	if [ -f OLDDEBINX ]; then
+		MDOLD=`md5sum OLDDEBINX | cut -f1 -d" "`
+	else
+		MDOLD="0"
+	fi
+	MDNEW=`md5sum NEWDEBINX | cut -f1 -d" "`
+	if [ "$MDOLD" == "$MDNEW" ]; then
+		echo "Your SCEs are up to date."
+		sudo rm NEWDEBINX
+		sleep 5
+		exit 0
+	elif [ -f OLDDEBINX ]; then
+		echo " "
+		echo "Obtaining diff of new and old package data, this may take time.."
+		sudo diff OLDDEBINX NEWDEBINX > /tmp/debinx.diff
+		echo " "
+		echo  "Sce-update is about to proceed.  Press Enter to proceed, y to view the"	         
+		echo -n "difference in new and old debinx data, or Ctrl-C to abort.."
+		read ans
+		if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+			less /tmp/debinx.diff
+			echo -n "Do you wish to proceed with updates (y/N)?"
+			read ans
+			if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+				:
+			else
+				echo "Exiting.."
+				exit 0
+			fi
+		fi
+	fi
+	sudo cp NEWDEBINX OLDDEBINX
+
+##### /OLDDEBINX, NEWDEBINX
+#####	
+
+	cd "$SCEDIR"
 	echo " "
 	echo "Searching for available updates for all existing SCEs."
 	## Get list of SCEs to be updated, should be all.
@@ -525,9 +533,6 @@ else
 fi
 
 cleanup
-
-cd /etc/sysconfig/tcedir/import/debinx
-sudo cp NEWDEBINX OLDDEBINX
 
 if ls /tmp/*.pkglist > /dev/null 2>&1; then 
 	sudo rm /tmp/*.pkglist

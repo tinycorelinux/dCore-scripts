@@ -7,7 +7,7 @@ PATH=`echo "$PATH" | sed 's|:/etc/sysconfig/tcedir/ondemand||g'`
 selectList() {
 	TMPFILE=`mktemp`	
 	for F in `ls ${TCEDIR}/${DIRNAME}/*${TYPE}`; do
-		ITEM="${F##*/}"
+		ITEM=`basename "$F" .sce`
 		ADDITEM=1
 		
 #		Exclude onboot items from select for on demand.
