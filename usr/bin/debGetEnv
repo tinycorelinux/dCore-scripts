@@ -208,6 +208,11 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 	done
 fi
 
+cd "$TCEDIR"/import/debinx
+if ls rcksum* > /dev/null 2>&1; then
+	rm rcksum*
+fi
+
 # Test mirror
 if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
 	echo "$MIRROR" > /opt/debmirror
