@@ -196,7 +196,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			fi
 		fi
 	fi
-	sudo cp NEWDEBINX OLDDEBINX
+	
 
 ##### /OLDDEBINX, NEWDEBINX
 #####	
@@ -267,6 +267,8 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		clear
 		echo "No updates available for main or dependency SCEs."
 	fi
+	cd /etc/sysconfig/tcedir/import/debinx
+	sudo cp NEWDEBINX OLDDEBINX > /dev/null 2>&1
 	##
 elif [ -f update/"$UPDATETARGET".sce ]; then
 	cd update/
