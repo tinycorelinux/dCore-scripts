@@ -174,7 +174,6 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	if [ "$MDOLD" == "$MDNEW" ]; then
 		echo "Your SCEs are up to date."
 		sudo rm NEWDEBINX
-		sleep 5
 		exit 0
 	elif [ -f OLDDEBINX ]; then
 		echo " "
