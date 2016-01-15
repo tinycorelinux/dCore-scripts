@@ -32,8 +32,8 @@ do
        		RUNNING="${RESULTS##*:}"
        		if [ "$LATEST" != "$RESULTS" ]; then
        			echo "Warning:"
-       			echo "You are running:          "$RESULTS""
-       			echo "The latest release is:    $LATEST"
+       			echo "You are running:                    "$RESULTS""
+       			echo "The latest release candidate is:    $LATEST"
 		else
 			echo "You are running "$RESULTS", the latest release candidate."
        		fi

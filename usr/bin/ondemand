@@ -31,10 +31,11 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "Usage:"
 	echo
 	echo "${YELLOW}'"sce-ondemand SCE"'${NORMAL}      add SCE to ondemand, update menus."
-	echo "${YELLOW}'"sce-ondemand -r SCE"'${NORMAL}   remove ondemand SCE, update menus."
-	echo "${YELLOW}'"sce-ondemand -c"'${NORMAL}       current ondemand SCE(s)."
-	echo "${YELLOW}'"sce-ondemand -l"'${NORMAL}       list of available SCE(s) to add, those"
+	echo "${YELLOW}'"sce-ondemand -c"'${NORMAL}       display SCE(s) currently in ondemand."
+	echo "${YELLOW}'"sce-ondemand -e SCE"'${NORMAL}   load and execute any SCE, do not add to ondemand."
+	echo "${YELLOW}'"sce-ondemand -l"'${NORMAL}       list available SCE(s) to add to ondemand, those"
         echo "                        not yet in sceboot.lst or ondemand."
+	echo "${YELLOW}'"sce-ondemand -r SCE"'${NORMAL}   remove SCE from ondemand, update menus."
 	echo
 exit 1
 fi
@@ -76,19 +77,19 @@ DIRNAME="sce"
 if [ "$LISTITEMS" ]; then
         echo
         echo "List of available SCE(s) to add to ondemand:"
-        echo
 	selectList
+        echo
 	exit 0
 fi
 
 if [ "$CURRITEMS" ]; then
         echo
-	echo "Current ondemand SCE(s):"
-        echo
+	echo "${YELLOW}Current ondemand SCE(s):${NORMAL}"
 	for F in `ls "$TCEDIR"/ondemand/*`
 	do
 		grep -l ."$TYPE" "$F" | awk 'BEGIN{FS="/"}{print $NF}'
 	done
+        echo
 	exit 0
 fi
 

@@ -38,9 +38,10 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}'"sce-load"'${NORMAL}            menu prompt, select SCE to load."
 	echo "${YELLOW}'"sce-load SCE"'${NORMAL}        directly load the named SCE."
 	echo "${YELLOW}'"sce-load SCE1 SCE2"'${NORMAL}  directly load multiple SCEs."
-	echo "${YELLOW}'"sce-load -b"'${NORMAL}         internal use only to load extensions at boot-time."
-	echo "${YELLOW}'"sce-load -d"'${NORMAL}         write debug information to var/log/sce.log."
-	echo "${YELLOW}'"sce-load -f"'${NORMAL}         overwrite existing file system tree files, default not."
+	echo "${YELLOW}'"sce-load -b SCE"'${NORMAL}     internal use only to load extensions at boot-time."
+	echo "${YELLOW}'"sce-load -d SCE"'${NORMAL}     write any debug information to var/log/sce.log."
+	echo "${YELLOW}'"sce-load -f SCE"'${NORMAL}     overwrite existing file system tree files, default not."
+	echo "${YELLOW}'"sce-load -s SCE"'${NORMAL}     suppress outputs like ' *.sce: OK ' when loading SCE."
 	echo
 exit 1
 fi
