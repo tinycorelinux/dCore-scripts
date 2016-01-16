@@ -601,6 +601,8 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TA
 		sudo rm -rf "$TARGET"
 		cd "$TCEDIR"/sce/update/
 		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
+		MD5SUMDEBINX=`md5sum "$TCEDIR"/import/debinx/NEWDEBINX | cut -f1 -d" "`
+		echo "$MD5SUMDEBINX" > "$TARGET".sce.debinx
 		cd "$IMPORT"
 		if [ "$ONBOOT" ]; then
 			if ! grep -wq "$TARGET" "$TCEDIR"/sceboot.lst
@@ -621,7 +623,9 @@ else
 	mksquashfs "$TARGET" "$TCEDIR"/sce/"$TARGET".sce -noappend
 	if [ "$?" == "0" ]; then
 		cd "$TCEDIR"/sce/
-		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
+		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt
+		MD5SUMDEBINX=`md5sum "$TCEDIR"/import/debinx/NEWDEBINX | cut -f1 -d" "`
+		echo "$MD5SUMDEBINX" > "$TARGET".sce.debinx	
 		cd "$IMPORT"
 		if [ "$ONBOOT" ]; then
 			if ! grep -wq "$TARGET" "$TCEDIR"/sceboot.lst

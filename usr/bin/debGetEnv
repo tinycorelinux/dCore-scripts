@@ -213,6 +213,12 @@ if ls rcksum* > /dev/null 2>&1; then
 	rm rcksum*
 fi
 
+if ls debinx.* > /dev/null 2>&1; then
+	sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+else
+	sudo cat *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+fi
+
 # Test mirror
 if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
 	echo "$MIRROR" > /opt/debmirror
