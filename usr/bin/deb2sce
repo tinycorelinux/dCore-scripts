@@ -176,9 +176,11 @@ read DEBINX_SECURITY < /tmp/debinx_security
 DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 echo " "
 echo " "
-echo "Using Package Index: $DEBINX"
+echo "Using Package Index:"
+echo ""$DEBINX""
 echo " "
-echo "Using Package Index: $DEBINX_SECURITY"
+echo "Using Security Index:"
+echo ""$DEBINX_SECURITY""
 echo " "
 read MIRROR < /opt/debmirror
 read MIRROR_SECURITY < /opt/securitymirror
@@ -207,9 +209,11 @@ if [ -s /tmp/.targetfile ]; then
 
 elif sudo grep -q "^$TARGET:" /tmp/PKGADDDEP && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a meta package of related "$DISTRO" ones."
+        echo
 	META="$TARGET"
 elif sudo grep "^$TARGET:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
 	echo "$TARGET is a dCore premade package."
+        echo
 	META="$TARGET"
 elif sudo grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
 	EXTRAINX=`grep -l "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
@@ -218,13 +222,17 @@ elif sudo grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* > /dev/null
 	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
 	EXTRAPOOL=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $3}'`
 	echo "$TARGET is a "$DISTRO" `echo "$EXTRAREPO"` `echo "$EXTRAPOOL"` package from `echo "$EXTRAMIRROR"`."
+        echo
 elif sudo grep -q "^Package: $TARGET$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
 	echo "$TARGET is a "$DISTRO" "$REPO" security update package from `cat /opt/securitymirror`."
+        echo
 elif sudo grep -q "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a standard "$DISTRO" "$REPO" package."
+        echo
 else
 	echo "$TARGET is not a standard "$DISTRO", dCore precompiled, or meta package, exiting.."
-	cleanup 
+        echo
+	cleanup
 	exit 1
 fi
 ##

@@ -166,7 +166,8 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	fi
 	MDNEW=`md5sum NEWDEBINX | cut -f1 -d" "`
 	if [ "$MDOLD" == "$MDNEW" ]; then
-		echo "Your SCEs are up to date."
+		echo " "
+		echo "Your entire SCE directory is up to date."
 		sudo rm NEWDEBINX
 		exit 0
 	elif [ -f OLDDEBINX ]; then
@@ -270,7 +271,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 		MDOLD=`cat update/"$UPDATETARGET".sce.debinx`
 		if [ "$MDOLD" == "$MDNEW" ]; then
 			echo " "
-			echo ""$UPDATETARGET" is up to date."
+			echo ""$UPDATETARGET".sce is up to date."
 			exit 0
 		fi
 	fi
@@ -344,7 +345,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 		fi
 	else
 		echo " "
-		echo "No updates available for main or dependency SCEs."
+		echo "No updates available for "$UPDATETARGET".sce or dependency SCEs."
 	fi
 	cd ..
 elif [ -f "$UPDATETARGET".sce ]; then
@@ -353,7 +354,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		MDOLD=`cat "$UPDATETARGET".sce.debinx`
 		if [ "$MDOLD" == "$MDNEW" ]; then
 			echo " "
-			echo ""$UPDATETARGET" is up to date."
+			echo ""$UPDATETARGET".sce is up to date."
 			exit 0
 		fi
 	fi
@@ -426,7 +427,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		fi
 	else
 		echo " "
-		echo "No updates available for main or dependency SCEs."
+		echo "No updates available for "$UPDATETARGET".sce or dependency SCEs."
 	fi
 	
 	
@@ -534,7 +535,7 @@ You can choose more than one, and enter "q" for quit when you have completed you
 					fi
 			fi
 		else
-			echo "No updates available for main or dependency SCEs."
+			:
 		fi
 			unset DEPLIST
 		if [ ! -s /tmp/.sceupdatelist ]; then

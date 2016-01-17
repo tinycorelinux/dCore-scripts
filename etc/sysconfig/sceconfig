@@ -1,34 +1,45 @@
-# Change FALSE to TRUE for any option desired. 
+# SCE configuration file
+# Default actions for managing SCEs
 
-# Use KEEPDOC=TRUE to keep /usr/share/doc and /usr/share/man
-# directories in sce's. Useful for the man command form the 
-# man-db package.
+# Add /opt/.filetool.lst entry to save changes:
+#   etc/sysconfig/sceconfig
+
+# For more information run:
+#   sce-debpurge --help
+#   sce-import --help
+#   sce-remove --help
+#   sce-update --help
+
+# Change FALSE to TRUE for any option desired.
+
+# Use KEEPDOC=TRUE to keep /usr/share/doc and /usr/share/man data
+# in SCEs. Useful for the man command from the man-db package.
 KEEPDOC=FALSE
 
-# Use RAM=TRUE to use RAM to unpack the contents of packages used
-# when making an SCE.  Particularly useful for flash devices.
+# Use RAM=TRUE to unpack package contents in RAM when making
+# an SCE. Particularly useful for flash devices.
 RAM=FALSE
 
-# Use SIZE=TRUE for the displaying of the sizes of needed RAM, HD
-# space and download when importing.
+# Use SIZE=TRUE to display estimated RAM, HD space
+# and download sizes when importing.
 SIZE=FALSE
 
-# Keep .lst and .dep files of SCEs removed by removesce.  Useful for 
-# future re-importing.
+# Use KEEPLIST=TRUE to keep .lst and .dep files of SCEs removed
+# by sce-remove. Useful for future re-importing.
 KEEPLIST=FALSE
 
-# Below is for the non-interactive use of importsce.  If package name exists,
-# then no further action is needed by the user for a complete import.
+# Use NONINTERACTIVE=TRUE for non-interactive use of sce-import. If package
+# name exists no further user interaction is needed for a complete import.
 NONINTERACTIVE=FALSE
 
-# For complete listing of Debian packages that have part of the target name
+# Use CHECKALL=TRUE for a complete list of Debian packages
+# that have part of the target name.
 CHECKALL=FALSE
 
-# To show a list of packages that will be imported
+# USE VIEWPKGS=TRUE to show a list of packages that will be imported.
 VIEWPKGS=FALSE
 
-# To not update the DEBINX package files.
+# Use PRESERVEDEBINXMODE=TRUE to not update the DEBINX package files.
 PRESERVEDEBINXMODE=FALSE
 
 # UPDATEDEBINXMODE is default and not needed to be specified here.
-

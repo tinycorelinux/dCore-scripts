@@ -34,6 +34,25 @@ do
        			echo "Warning:"
        			echo "You are running:                    "$RESULTS""
        			echo "The latest release candidate is:    $LATEST"
+                        echo
+                        echo -n "To download latest release candidate press (y)es, to exit press (q)uit: "
+                        read TARGET
+                        echo
+                        if [ $TARGET = Y ] || [ $TARGET = y ]; then
+                        rm -rf /tmp/release_candidate
+                        mkdir -p /tmp/release_candidate
+                        cd /tmp/release_candidate
+                        wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz
+                        echo
+                        echo "Downloaded:   /tmp/release_candidate/"$PORT".gz."
+                        echo
+                        echo "Manually copy /tmp/release_candidate/"$PORT".gz to boot directory,"
+                        echo "recommend backing up old version, reboot to complete uprade."
+                        sleep 3
+                        echo
+                          else
+		            exit
+ 	                  fi                       
 		else
 			echo "You are running "$RESULTS", the latest release candidate."
        		fi
@@ -47,9 +66,29 @@ do
        			echo "Warning:"
        			echo "You are running:          "$RESULTS""
        			echo "The latest release is:    $LATEST"
+                        echo
+                        echo "To download latest release press (y)es, to exit press (q)uit. To check for"
+                        echo -n "the latest release candidate instead, exit and run 'version -r': "
+                        read TARGET
+                        echo
+                        if [ $TARGET = Y ] || [ $TARGET = y ]; then
+                        rm -rf /tmp/release
+                        mkdir -p /tmp/release
+                        cd /tmp/release
+                        wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz
+                        echo
+                        echo "Downloaded:   /tmp/release/"$PORT".gz."
+                        echo
+                        echo "Manually copy /tmp/release/"$PORT".gz to boot directory, recommend"
+                        echo "backing up old version, reboot to complete uprade."
+                        sleep 3
+                        echo
+                          else
+		            exit
+ 	                  fi
 		else
 			echo "You are running "$RESULTS", the latest release."
-       		fi
+                fi
        fi
        exit
        ;;
