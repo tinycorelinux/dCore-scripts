@@ -264,12 +264,14 @@ cd "$TARGET"
 ## Get the dependencies of the desired packages or list of packages.
 if [ -s /tmp/.targetfile ]; then
 	echo "Gathering dependency info.."
+	echo
 	for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
 		debGetDeps "$I" > /dev/null 2>&1
 	done &
 	/usr/bin/rotdash $!
 else
 	echo "Gathering dependency info.."
+	echo
 	debGetDeps "$TARGET" > /dev/null 2>&1 &
 	/usr/bin/rotdash $!
 fi
@@ -294,6 +296,7 @@ fi
 ## Determine if 'Recommended' packages are desired.
 if [ -f /tmp/.recommends ]; then
 	echo "Gathering Recommended packages info.."
+	echo
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
 			debGetRecommends "$I" > /dev/null 2>&1 &
@@ -306,6 +309,7 @@ if [ -f /tmp/.recommends ]; then
 		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 		touch usr/local/sce/"$TARGET"/recommends
 		echo "Gathering dependency info on Recommended packages.."
+		echo
 		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
 		done &
@@ -316,6 +320,7 @@ fi
 ## Determine if 'Suggested' packages are desired.
 if [ -f /tmp/.suggests ]; then
 	echo "Gathering Suggested packages info.."
+	echo
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
 			debGetSuggests "$I" > /dev/null 2>&1 &
@@ -328,6 +333,7 @@ if [ -f /tmp/.suggests ]; then
 		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 		touch usr/local/sce/"$TARGET"/suggests
 		echo "Gathering dependency info on Suggested packages.."
+		echo
 		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
 		done &
@@ -645,7 +651,9 @@ else
 		if [ -s /tmp/.targetfile ]; then
 			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
 		fi
-		echo "Done."
+		echo
+		echo "Finished importing "$TARGET".sce."
+                echo
 	else
 		echo "Error creating "$TARGET".sce.  Exiting.." 
 		exit 1

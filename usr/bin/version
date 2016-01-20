@@ -10,18 +10,25 @@ RESULTS="$PORT:$VERSION"
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo
-	echo "${YELLOW}version - confirm dCore version. check for release & release candidate updates.${NORMAL}"
+	echo "${YELLOW}version - confirm dCore version, check for release or release candidate (RC)"
+        echo "          updates, if dCore update available prompted to download, manually"
+        echo "          copy into desired boot directory, reboot to complete upgrade.${NORMAL}"
 	echo
 	echo "Usage:"
 	echo
-	echo "${YELLOW}'"version"'${NORMAL}        print the running dCore name and version."
-	echo "${YELLOW}'"version -c"'${NORMAL}     check if running the latest release."
-	echo "${YELLOW}'"version -r"'${NORMAL}     check if running the latest release candidate (RC)."
-	echo "${YELLOW}'"version -l"'${NORMAL}     list running dCore name and version."
-	echo "${YELLOW}'"version -s"'${NORMAL}     see dCore version."
+	echo "${YELLOW}'"version"'${NORMAL}     list running dCore name and version."
+	echo "${YELLOW}'"version -c"'${NORMAL}  check if running the latest stable release, if different"
+        echo "              version available prompted to download latest stable"
+        echo "              release to /tmp/release/."
+	echo "${YELLOW}'"version -r"'${NORMAL}  check if running the latest release candidate, if updated"
+        echo "              version available prompted to download latest release"
+        echo "              candidate to /tmp/release_candidate/."
+	echo "${YELLOW}'"version -l"'${NORMAL}  list running dCore name and version."
+	echo "${YELLOW}'"version -s"'${NORMAL}  see dCore version only."
 	echo
 exit 1
 fi
+
 
 
 while getopts rcls OPTION
@@ -35,9 +42,10 @@ do
        			echo "You are running:                    "$RESULTS""
        			echo "The latest release candidate is:    $LATEST"
                         echo
-                        echo -n "To download latest release candidate press (y)es, to exit press (q)uit: "
+                        echo -n "To download latest release candidate enter (y)es, to exit enter (q)uit: "
                         read TARGET
                         echo
+
                         if [ $TARGET = Y ] || [ $TARGET = y ]; then
                         rm -rf /tmp/release_candidate
                         mkdir -p /tmp/release_candidate
@@ -59,7 +67,7 @@ do
        fi
        exit
        ;;
-    c) LATEST=`wget -q -O - $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".latest 2>/dev/null`
+     c) LATEST=`wget -q -O - $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".latest 2>/dev/null`
        if [ "$?" == 0 ]; then
        		RUNNING="${RESULTS##*:}"
        		if [ "$LATEST" != "$RESULTS" ]; then
@@ -67,8 +75,8 @@ do
        			echo "You are running:          "$RESULTS""
        			echo "The latest release is:    $LATEST"
                         echo
-                        echo "To download latest release press (y)es, to exit press (q)uit. To check for"
-                        echo -n "the latest release candidate instead, exit and run 'version -r': "
+                        echo "To download latest stable release enter (y)es, to exit enter (q)uit. To check"
+                        echo -n "for the latest release candidate instead, exit and run 'version -r': "
                         read TARGET
                         echo
                         if [ $TARGET = Y ] || [ $TARGET = y ]; then

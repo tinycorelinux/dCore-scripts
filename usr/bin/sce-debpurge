@@ -17,8 +17,8 @@ fi
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo
-	echo "${YELLOW}sce-debpurge - purge deprecated DEB files or all files from /etc/"
-        echo "               sysconfig/tcedir/import/debs.${NORMAL}"
+	echo "${YELLOW}sce-debpurge - purge deprecated DEB files (Debian package files) or all"
+        echo "               files from /etc/sysconfig/tcedir/import/debs.${NORMAL}"
 	echo
 	echo "Usage:"
 	echo

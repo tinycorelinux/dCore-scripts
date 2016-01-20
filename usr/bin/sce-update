@@ -7,6 +7,13 @@ checknotroot
 SCEDIR="/etc/sysconfig/tcedir/sce"
 BUILD=`getBuild`
 unset DEPLIST
+
+if [ -n "$2" ]; then
+     echo "Warning: only one SCE per sce-update session can be entered in command line."
+     echo "Run 'sce-update' to check more than one SCE per session."
+     exit 1
+fi
+
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo
 	echo "${YELLOW}sce-update - check for updates and update SCE(s).${NORMAL}"
