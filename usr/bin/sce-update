@@ -208,7 +208,30 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	echo " "
 	## Get list of SCEs to be updated, should be all.
 	for I in `ls *.sce | sed 's:.sce$::' | sort`; do 
-		echo "$I: Checkup for updates.."
+		if [ -f update/"$I".sce.debinx ]; then
+			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+			MDOLD=`cat update/"$I".sce.debinx`
+			if [ "$MDOLD" == "$MDNEW" ]; then
+				echo " "
+				echo ""$I" is up to date."
+				continue
+			
+			else
+				echo
+			fi
+		elif [ -f "$I".sce.debinx ]; then
+			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+			MDOLD=`cat "$I".sce.debinx`
+			if [ "$MDOLD" == "$MDNEW" ]; then
+				echo " "
+				echo ""$I" is up to date."
+				continue
+			else
+				echo
+			fi
+		fi
+		echo
+		echo "$I Checkup for updates.."
 		importupdatecheck "$I" > /dev/null 2>&1
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
