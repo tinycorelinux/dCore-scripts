@@ -490,16 +490,23 @@ for DEBINFO in `ls -t /tmp/work`; do
 					exit 1
 				fi
 			fi
+
+			if ! grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
+				echo ""$DEBINFO" is missing from the prebuilt md5sum list.  Exiting.."
+				cleanup
+				exit 1
+			fi 
 	
 			if [ -f "${DEBINFO}".tar.gz ] && [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then	 
 				echo "${DEBINFO}: `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		  
 				echo "Merging "${DEBINFO}":"
-	    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET" 
+	    	   		tar xvf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET" 
 				if [ "$?" != 0 ]
 				then
 					echo "failed merging of "${DEBINFO}".tar.gz"
 					echo "${DEBINFO}".tar.gz  >> /tmp/import.log
-				fi  		  
+				fi  
+				echo		  
 			else 
 				echo "md5sum failed for "${DEBINFO}".tar.gz, exiting.."
 				cleanup
