@@ -500,7 +500,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			if [ -f "${DEBINFO}".tar.gz ] && [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then	 
 				echo "${DEBINFO}: `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		  
 				echo "Merging "${DEBINFO}":"
-	    	   		tar xvf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET" 
+	    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET" 
 				if [ "$?" != 0 ]
 				then
 					echo "failed merging of "${DEBINFO}".tar.gz"
