@@ -57,12 +57,42 @@ getMd5sum1() {
 		
 	} ' < "$DEBINX"
 }
+
+getMd5sum2() {
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: " -v md5sum="/tmp/sce.md5new" '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+			
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+				
+				if ( f[1] == "MD5sum" )
+					print FIELD f[2] >> md5sum
+			}
+		
+		}
+		
+	} ' < "$DEBINX_SECURITY"
+}
+
 read IMPORTMIRROR < /opt/tcemirror                                                                             
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 read DEBINX < /tmp/debinx
 read DEBINX_SECURITY < /tmp/debinx_security
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
-if [ -f /etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY ]; then
+if [ -f /etc/sysconfig/tcedir/import/debinx/"$DEBINX_SECURITY" ]; then
 	read DEBINX_SECURITY < /tmp/debinx_security
 	DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 fi
@@ -77,11 +107,11 @@ elif sudo grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1
  echo ""$1";   "$REPO"" >> /tmp/.importpkgtype
  getMd5sum1 "$1"
 elif sudo grep "^Package: $1$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
-  DEBINX="$DEBINX_SECURITY"
+  #DEBINX="$DEBINX_SECURITY"
   DISTRO=`cat /usr/share/doc/tc/distro.txt`
   REPO=`cat /usr/share/doc/tc/repo.txt` 
   grep ""$1";" /tmp/.importpkgtype || echo ""$1";   "$DISTRO" "$REPO" main" >> /tmp/.importpkgtype
-  getMd5sum1 "$1"
+  getMd5sum2 "$1"
 elif sudo grep "^Package: $1$" "$DEBINX" > /dev/null 2>&1; then
   DISTRO=`cat /usr/share/doc/tc/distro.txt`
   REPO=`cat /usr/share/doc/tc/repo.txt` 

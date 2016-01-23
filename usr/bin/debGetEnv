@@ -6,7 +6,10 @@
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
 
-
+exit_tcnet() {
+	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
+	exit 1
+}
 
 zsyncDebianIndex()
 {
@@ -207,6 +210,23 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 		fi
 	done
 fi
+ 
+read IMPORTMIRROR < /opt/tcemirror
+PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
+
+cd /tmp
+[ -f deb2sce.tar.gz ] && rm deb2sce.tar.gz
+/bb/wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
+
+tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
+[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
+tar xvf /tmp/deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
 
 cd "$TCEDIR"/import/debinx
 if ls rcksum* > /dev/null 2>&1; then

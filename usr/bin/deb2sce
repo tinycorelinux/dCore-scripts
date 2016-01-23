@@ -131,18 +131,11 @@ cleanup() {
 	fi	 
 	[ -f /tmp/control.tar.gz ] && sudo rm /tmp/control.tar.gz
 	[ -f /tmp/data.tar.gz ] && sudo rm /tmp/data.tar.gz
+	[ -f /tmp/data.tar.bz2 ] && sudo rm /tmp/data.tar.bz2
 	[ -f /tmp/data.tar.xz ] && sudo rm /tmp/data.tar.xz
-	[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
+	#[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
 	[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 	[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
-	[ -f /tmp/PKGADDDEP ] && sudo rm /tmp/PKGADDDEP
-	[ -f /tmp/PKGEXTRAFILEMD5SUMLIST ] && sudo rm /tmp/PKGEXTRAFILEMD5SUMLIST
-	[ -f /tmp/PKGDATAFILEMD5SUMLIST ] && sudo rm /tmp/PKGDATAFILEMD5SUMLIST
-	[ -f /tmp/PKGEXTRAFILES ] && sudo rm /tmp/PKGEXTRAFILES
-	[ -f /tmp/PKGEXTRAREPODEP ] && sudo rm /tmp/PKGEXTRAREPODEP
-	[ -f /tmp/PKGPREBUILTDEP ] && sudo rm /tmp/PKGPREBUILTDEP
-	[ -f /tmp/PREBUILTMD5SUMLIST ] && sudo rm /tmp/PREBUILTMD5SUMLIST
-	[ -f /tmp/KEEPDOC ] && sudo rm /tmp/KEEPDOC
 	#[ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps
 	[ -f /tmp/.recommends ] && sudo rm /tmp/.recommends
 	[ -f /tmp/.suggests ] && sudo rm /tmp/.suggests

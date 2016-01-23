@@ -85,15 +85,6 @@ if [ "$PURGEALL" == "TRUE" ]; then
 fi
 
 
-
-		
-
-exit_tcnet() {
-	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
-	exit 1
-}
-
-
 getName() {
 > /tmp/"$1".pkglist
 sudo grep -B 1 -A 8 "^Package: $1$" "$DEBINX" |  grep -B8 "^$" > /tmp/"$1".pkglist
@@ -155,24 +146,11 @@ if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
         echo
         echo "Fetching updated DEBINX, checking for deprecated DEB files.."
 	echo
-        cd /tmp
 	sudo debGetEnv
 	if [ "$?" != "0" ]; then
 		echo "Error in updating needed DEBINX files, exiting.."
 		exit 1
 	fi
-	read IMPORTMIRROR < /opt/tcemirror
-	PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
-	wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
-
-	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
-	[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
 fi
 
 if [ "$PRESERVEDEBINXMODE" = "TRUE" ]; then

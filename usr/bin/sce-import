@@ -79,7 +79,7 @@ exit_tcnet() {
 [ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
 [ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
 [ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
-[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
+#[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
 [ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.blocked ] && sudo rm /tmp/.blocked
@@ -140,20 +140,6 @@ TARGET="$1"
 # and preceding directory if specified on command line.
 TARGET=`basename "$TARGET"`
 TARGET=${TARGET%%.sce}
-cd /tmp
-
-wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
-
-tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
-[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
-cd "$HERE"
 
 # Determine if debinx is desired to be updated in this session.
 if grep -i "^PRESERVEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then

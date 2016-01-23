@@ -343,6 +343,8 @@ fi
 
 if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.importmissing ] && [ ! -s /tmp/.importnotneeded ]; then
 	echo "    None" >> /tmp/updateavailable
+	MD5SUMDEBINX=`md5sum "$TCEDIR"/import/debinx/NEWDEBINX | cut -f1 -d" "`
+	echo "$MD5SUMDEBINX" > "$SCEDIR"/"$SCE".sce.debinx
 fi
 
 echo " " >> /tmp/updateavailable
