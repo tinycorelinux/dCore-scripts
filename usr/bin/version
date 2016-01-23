@@ -43,27 +43,27 @@ do
        			echo "You are running:                    "$RESULTS""
        			echo "The latest release candidate is:    $LATEST"
                         echo
-                                                echo -n "To download latest release candidate enter (y)es, to exit enter (q)uit: "
+                        echo -n "To download latest release candidate enter (y)es, to exit enter (q)uit: "
                         read TARGET
                         echo
-                        if [ $TARGET = Y ] || [ $TARGET = y ]; then
-                        rm -rf /tmp/release_candidate
-                        mkdir -p /tmp/release_candidate
-                        cd /tmp/release_candidate
-                        wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz
-                        echo
-                        wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz.md5.txt
-                        echo
-                        echo "Downloaded:   /tmp/release_candidate/"$PORT".gz."
-                        echo "              /tmp/release_candidate/"$PORT".gz.md5.txt"
-                        echo
-                        echo "Manually copy /tmp/release_candidate/"$PORT".gz to boot directory,"
-                        echo "recommend backing up old version, reboot to complete update."
-                        sleep 3
-                        echo
-                          else
-		            exit
- 	                  fi                      
+                        if [ "$TARGET" == "Y" ] || [ "$TARGET" == "y" ] || [ "$TARGET" == "" ]; then
+                        	rm -rf /tmp/release_candidate
+                        	mkdir -p /tmp/release_candidate
+                        	cd /tmp/release_candidate
+                        	wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz
+                        	echo
+                        	wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz.md5.txt
+                        	echo
+                        	echo "Downloaded:   /tmp/release_candidate/"$PORT".gz."
+                        	echo "              /tmp/release_candidate/"$PORT".gz.md5.txt"
+                        	echo
+                        	echo "Manually copy /tmp/release_candidate/"$PORT".gz to boot directory,"
+                        	echo "recommend backing up old version, reboot to complete update."
+                        	sleep 3
+                        	echo
+                        else
+		        	exit
+ 	                fi                      
                 
 		else
 			echo "You are running "$RESULTS", the latest release candidate."
@@ -83,24 +83,24 @@ do
                         echo -n "for the latest release candidate instead, exit and run 'version -r': "
                         read TARGET
                         echo
-                        if [ $TARGET = Y ] || [ $TARGET = y ]; then
-                        rm -rf /tmp/release
-                        mkdir -p /tmp/release
-                        cd /tmp/release
-                        wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz
-                        echo
-                        wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz.md5.txt
-                        echo
-                        echo "Downloaded:   /tmp/release/"$PORT".gz"
-                        echo "              /tmp/release/"$PORT".gz.md5.txt"
-                        echo
-                        echo "Manually copy /tmp/release/"$PORT".gz to boot directory, recommend"
-                        echo "backing up old version, reboot to complete update."
-                        sleep 3
-                        echo
-                          else
-		            exit
- 	                  fi
+                        if [ "$TARGET" = "Y" ] || [ "$TARGET" = "y" ] || [ "$TARGET" == "" ]; then
+                        	rm -rf /tmp/release
+                        	mkdir -p /tmp/release
+                        	cd /tmp/release
+                        	wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz
+                        	echo
+                        	wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz.md5.txt
+                        	echo
+                        	echo "Downloaded:   /tmp/release/"$PORT".gz"
+                        	echo "              /tmp/release/"$PORT".gz.md5.txt"
+                        	echo
+                        	echo "Manually copy /tmp/release/"$PORT".gz to boot directory, recommend"
+                        	echo "backing up old version, reboot to complete update."
+                        	sleep 3
+                        	echo
+                        else
+		        	exit
+ 	                fi
 
 		else
 			echo "You are running "$RESULTS", the latest release."

@@ -55,8 +55,6 @@ process_normal_tcedir() {
 	sync
 	
 #	Next check for and if found process any sces
-	SCEDIR="$TCEDIR"/sce
-	SCELIST="$TCEDIR"/"$TARGETLIST"
 	if [ -s "$SCELIST" ] && [ "$(ls -A "$SCEDIR"/*.sce 2>/dev/null)" ]; then
 		process_sce 
 	fi
@@ -122,7 +120,9 @@ for i in `cat /proc/cmdline`; do
 	esac
 done
 
-[ -n "$TARGETLIST" ] || TARGETLIST="sceboot.lst"
+TARGETLIST="sceboot.lst"
+SCEDIR="$TCEDIR"/sce
+SCELIST="$TCEDIR"/"$TARGETLIST"
 
 # Process any .gzs before attempting to mount tce directory.
 # /tmp/builtin support provided for embedding extensions inside the initrd.
