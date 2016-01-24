@@ -250,7 +250,6 @@ else
     	fi
     fi
 fi            
-echo " "
 
 [ -f /tmp/.importarchsize ] && sudo rm /tmp/.importarchsize
 [ -f /tmp/.importdsize ] && sudo rm /tmp/.importdsize
