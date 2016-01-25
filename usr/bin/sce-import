@@ -17,19 +17,19 @@ HERE=`pwd`
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}sce-import - search, convert, install DEB and pre-built packages as local SCEs,"
-        echo "             use simple name eg. nano not nano_2.2.6-3_i386.deb, may use"
-        echo "             some option combinations eg. sce-import -zbrs nano, see"
-        echo "             /etc/sysconfig/sceconfig for more information.${NORMAL}"
+        echo "             use simple name eg. nano not nano_2.2.6-3_i386.deb, may use some"
+        echo "             option combinations, also see /etc/sysconfig/sceconfig.${NORMAL}"
 	echo "${YELLOW}'"sce-import"'${NORMAL}             prompt, enter starting characters of package sought."
 	echo "${YELLOW}'"sce-import PKG"'${NORMAL}         search packages that start with desired package name."
 	echo "${YELLOW}'"sce-import -b PKG"'${NORMAL}      add resulting SCE to sceboot.lst."
 	echo "${YELLOW}'"sce-import -c PKG"'${NORMAL}      search packages that contain desired package name."
-	echo "${YELLOW}'"sce-import -d PKG"'${NORMAL}      choose existing SCE(s) as dependencies of new SCE."
+	echo "${YELLOW}'"sce-import -d PKG"'${NORMAL}      choose existing SCE(s) to provide dependencies for"
+        echo "                         new SCE, may make new SCE significantly smaller."
         echo "${YELLOW}'"sce-import -k PKG"'${NORMAL}      keep /usr/share/doc and /man in SCE, see man-db."
-	echo "${YELLOW}'"sce-import -l FILENAME"'${NORMAL} create an SCE mega-extension, use a plain text file"
-        echo "                         that lists one package per line, eg. 'sce-import -l"
-        echo "                         /tmp/my_apps', file my_apps contains emelfm and nano."
-	echo "${YELLOW}'"sce-import -n PKG"'${NORMAL}      non-interactive mode."
+	echo "${YELLOW}'"sce-import -l FILENAME"'${NORMAL} SCE mega-extension created from text file listing one"
+        echo "                         PKG per line, eg. sce-import -l /tmp/my_apps contains"
+        echo "                         emelfm & nano, which can now share common dependencies."
+	echo "${YELLOW}'"sce-import -n PKG"'${NORMAL}      non-interactive mode if exact PKG name exists."
 	echo "${YELLOW}'"sce-import -o PKG"'${NORMAL}      add resulting SCE to ondemand."
 	echo "${YELLOW}'"sce-import -p PKG"'${NORMAL}      preserve old DEBINX, no new fetch, better performance."
 	echo "${YELLOW}'"sce-import -r PKG"'${NORMAL}      use RAM, swap partition/file to unpack source DEBs."
@@ -154,12 +154,12 @@ fi
 if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	sudo debGetEnv "$2"
 	if [ "$?" != "0" ]; then
-		echo "Error in updating DEBINX files.  Exiting..."
+		echo "Error updating DEBINX files, exiting..."
 	fi
 else
 	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
 	if [ "$?" != "0" ]; then
-		echo "Error in updating DEBINX files.  Exiting..."
+		echo "Error updating DEBINX files, exiting..."
 	fi
 fi
 
@@ -183,7 +183,7 @@ fi
 
 if grep -wq "^$TARGET$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
 	echo " "
-	echo "$TARGET is a blocked package.  Exiting.."
+	echo "$TARGET is a blocked package, exiting.."
 	echo " "
 	exit 0
 fi
@@ -280,7 +280,7 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 			echo " "
 			if [ ! -f /tmp/.importinteractive ]; then
 				echo "The above files in "$TARGETFILE" do not exist in dCore repos."
-				echo -n "Do you want to proceed anyway? (y/N):"
+				echo -n "Do you want to proceed anyway, enter (y)es or (n)o: "
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 					:
@@ -305,7 +305,7 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 			echo " "
 			if [ ! -f /tmp/.importinteractive ]; then
 				echo "The above files in "$TARGETFILE" do not exist in dCore repos."
-				echo -n "Do you want to proceed anyway? (y/N):"
+				echo -n "Do you want to proceed anyway, enter (y)es or (n)o: "
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 					:
@@ -379,10 +379,10 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   			mksce "$TARGET"
   		else
                         echo "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?"
-                        echo "Press (n/N) to import a standard "$TARGET" package if it exists,"
+                        echo "Enter (n)o to import a standard "$TARGET" package if it exists,"
                         echo "any key will use the existing package list."
                         echo
-                        echo "WARNING: Pressing (n/N) will delete "$TARGETFILE" now."
+                        echo "WARNING: Entering (n)o will delete "$TARGETFILE" now."
                         read ans                  
 	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  			sudo rm /tmp/.targetfile
@@ -393,7 +393,7 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 			fi
 		fi
 	else 
-		echo "Please specify a target file when using the -l option.  Exiting.."
+		echo "Please specify a target file when using the -l option, exiting.."
 		exit 1
 	fi  
 # Below is where an existing .lst file is found in sce dir.
@@ -404,10 +404,10 @@ elif [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   		mksce "$TARGET"
   	else
 	  	echo "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?"
-                echo "Press (n/N) to import a standard "$TARGET" package if it exists,"
+		echo "Enter (n)o to import a standard "$TARGET" package if it exists,"
                 echo "any key will use the existing package list."
                 echo
-                echo "WARNING: Pressing (n/N) will delete "$TARGETFILE" now."
+		echo "WARNING: Entering (n)o will delete "$TARGETFILE" now."
                 read ans                  
 	  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  		sudo rm /tmp/.targetfile
@@ -491,8 +491,6 @@ elif [ "$CHECKALL" != "TRUE" ]; then
   mksce "$DEB"
 fi                                        
 else
- echo ""$TARGET" is not available as a package.  Exiting..."
+ echo ""$TARGET" is not available as a package, exiting..."
  exit 1
 fi
-
-

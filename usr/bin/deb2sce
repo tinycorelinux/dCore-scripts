@@ -168,7 +168,6 @@ DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 read DEBINX_SECURITY < /tmp/debinx_security
 DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 echo " "
-echo " "
 echo "Using Package Index:"
 echo ""$DEBINX""
 echo " "
@@ -256,14 +255,14 @@ cd "$TARGET"
 
 ## Get the dependencies of the desired packages or list of packages.
 if [ -s /tmp/.targetfile ]; then
-	echo "Gathering dependency info.."
+	echo "Gathering dependency info..."
 	echo
 	for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
 		debGetDeps "$I" > /dev/null 2>&1
 	done &
 	/usr/bin/rotdash $!
 else
-	echo "Gathering dependency info.."
+	echo "Gathering dependency info..."
 	echo
 	debGetDeps "$TARGET" > /dev/null 2>&1 &
 	/usr/bin/rotdash $!
@@ -273,9 +272,12 @@ fi
 ## Determine if any blocked packages are in the dependency list.
 if [ -s /tmp/.blocked ] && [ ! -f /tmp/.importinteractive ]; then
 	cat /tmp/.blocked
-	echo -n "The above packages are blocked dependencies of $TARGET and will not be included in \
-the final SCE. This can cause problems.  Proceed anyway? (y/N): "
+	echo " "
+	echo "The above packages are blocked dependencies of $TARGET"
+	echo "and will not be included in the final SCE, which can cause problems,"
+	echo -n "proceed anyway enter (y)es or (n)o: "
 	read ans
+	echo " "
 	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 		:
 	else
@@ -288,7 +290,7 @@ fi
 
 ## Determine if 'Recommended' packages are desired.
 if [ -f /tmp/.recommends ]; then
-	echo "Gathering Recommended packages info.."
+	echo "Gathering Recommended packages info..."
 	echo
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
@@ -301,7 +303,7 @@ if [ -f /tmp/.recommends ]; then
 	if [ -s /tmp/sce.recommends ]; then
 		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 		touch usr/local/sce/"$TARGET"/recommends
-		echo "Gathering dependency info on Recommended packages.."
+		echo "Gathering dependency info on Recommended packages..."
 		echo
 		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
@@ -312,7 +314,7 @@ fi
 
 ## Determine if 'Suggested' packages are desired.
 if [ -f /tmp/.suggests ]; then
-	echo "Gathering Suggested packages info.."
+	echo "Gathering Suggested packages info..."
 	echo
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
@@ -325,7 +327,7 @@ if [ -f /tmp/.suggests ]; then
 	if [ -s /tmp/sce.suggests ]; then
 		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 		touch usr/local/sce/"$TARGET"/suggests
-		echo "Gathering dependency info on Suggested packages.."
+		echo "Gathering dependency info on Suggested packages..."
 		echo
 		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
@@ -339,7 +341,9 @@ fi
 if [ -f /tmp/.importdep ]; then
 	if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 		if [ ! -f /tmp/.importinteractive ]; then
-			echo -n "Do you want to use the existing "$TARGET".sce.dep file for dependencies? WARNING:  Answering no will delete "$TARGET".sce.dep now. (y/N):"	
+			echo "Do you want to use the existing "$TARGET".sce.dep file for dependencies?"
+			echo "WARNING: Answering no will delete "$TARGET".sce.dep now."
+			echo -n "Enter (y)es or (n)o: "		
 			read ans
 			if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
 				sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
@@ -362,7 +366,8 @@ fi
 
 
 if [ -f /tmp/.sceconflict ]; then
-	echo "$TARGET already exists in the dep files of the below SCEs.  Aborting to prevent circular dependency."
+	echo "$TARGET already exists in the dep files of the SCEs below,"
+	echo "aborting to prevent circular dependency."
 	echo " "
 	cat /tmp/.sceconflict
 	cleanup
@@ -370,7 +375,7 @@ if [ -f /tmp/.sceconflict ]; then
 fi
 
 if [ -f /tmp/.pkgexists ]; then
-	echo "$TARGET already exists in below dependency sce's, aborting."
+	echo "$TARGET already exists in below dependency SCEs, aborting."
 	echo " "
 	cat /tmp/.pkgexists
 	cleanup
@@ -381,8 +386,7 @@ fi
 ## Bring up list of SCEs that will profide package dependencies for the TARGET one.
 if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 	echo
-	echo
-	echo "The below SCE's in your SCE directory will be used as"
+	echo "The SCEs below from your SCE directory will be used"
 	echo "to provide dependencies for "$TARGET".sce."
 	echo
 	for FILE in `cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep`; do
@@ -406,8 +410,9 @@ fi
 ## Echo when not enough free space in RAM or chosen working partition.
 if [ -s /tmp/.importfree ]; then
 	cat /tmp/.importfree
-	echo "The above errors have occured. Do you wish to continue"
-	echo -n "importing "$TARGET" despite the warnings? (y/N):"
+	echo " "
+	echo "The above errors occured. Do you wish to continue importing"
+	echo -n ""$TARGET" despite the warnings, enter (y)es or (n)o: "
 	read ans
 	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 		:
@@ -426,15 +431,14 @@ for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo 
 ## Function to provide a "less" list of packages that will be imported.
 if [ -f /tmp/.viewpkgs ]; then
 	echo "Do you want to review the list of packages that $TARGET.sce"
-	echo "will consist of? Enter y to view and q to exit reading"
-	echo -n "the package list. (y/N): "
+	echo "will consist of? Enter (y)es or (n)o to view and (q)uit to exit"
+	echo -n "reading the package list: "
 	read ans
 	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
 		less /tmp/.pkglist
 	fi
 	echo
-	echo
-	echo  "Proceeding to create $TARGET.sce.."
+	echo  "Proceeding to create $TARGET.sce..."
 fi
 ##
 
@@ -468,7 +472,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 					/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
 					if [ "$?" != 0 ]
 					then
-						echo "failed on download of "${DEBINFO}".tar.gz"
+						echo "Failed download of "${DEBINFO}".tar.gz, exiting.."
 						cleanup
 						exit 1
 					fi
@@ -478,28 +482,27 @@ for DEBINFO in `ls -t /tmp/work`; do
 				/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
 				if [ "$?" != 0 ]
 				then
-					echo "failed on download of "${DEBINFO}".tar.gz"
+					echo "Failed download of "${DEBINFO}".tar.gz, exiting.."
 					cleanup
 					exit 1
 				fi
 			fi
 
 			if ! grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
-				echo ""$DEBINFO" is missing from the prebuilt md5sum list.  Exiting.."
+				echo ""$DEBINFO" is missing from the prebuilt md5sum list, exiting.."
 				cleanup
 				exit 1
 			fi 
 	
 			if [ -f "${DEBINFO}".tar.gz ] && [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then	 
 				echo "${DEBINFO}: `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		  
-				echo "Merging "${DEBINFO}":"
+				echo "Merging "${DEBINFO}""
 	    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET" 
 				if [ "$?" != 0 ]
 				then
-					echo "failed merging of "${DEBINFO}".tar.gz"
+					echo "Failed merging of "${DEBINFO}".tar.gz."
 					echo "${DEBINFO}".tar.gz  >> /tmp/import.log
 				fi  
-				echo		  
 			else 
 				echo "md5sum failed for "${DEBINFO}".tar.gz, exiting.."
 				cleanup
@@ -628,9 +631,11 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TA
 		if [ -s /tmp/.targetfile ]; then
 			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
 		fi
-		echo "Done."
+		echo " "
+		echo "Finished importing "$TARGET".sce."
 	else
-		echo "Error creating "$TARGET".sce.  Exiting.." 
+		echo " "
+		echo "Error creating "$TARGET".sce, exiting.." 
 		exit 1
 	fi
 else
@@ -651,11 +656,11 @@ else
 		if [ -s /tmp/.targetfile ]; then
 			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
 		fi
-		echo
+		echo " "
 		echo "Finished importing "$TARGET".sce."
-                echo
 	else
-		echo "Error creating "$TARGET".sce.  Exiting.." 
+		echo " "
+		echo "Error creating "$TARGET".sce, exiting.." 
 		exit 1
 	fi
 fi
