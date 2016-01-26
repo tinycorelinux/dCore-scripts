@@ -5,6 +5,7 @@
 . /etc/init.d/tc-functions
 checknotroot
 SCEDIR="/etc/sysconfig/tcedir/sce"
+DEBINXDIR="/etc/sysconfig/tcedir/import/debinx"
 BUILD=`getBuild`
 unset DEPLIST
 
@@ -168,12 +169,13 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		echo " "
 		if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 			echo "Obtaining diff of new and old package data..."
-			cat OLDDEBINX | grep -E 'Package|MD5sum' > /tmp/OLDDEBINXDIFF
-			cat NEWDEBINX | grep -E 'Package|MD5sum' > /tmp/NEWDEBINXDIFF
-			diff /tmp/OLDDEBINXDIFF /tmp/NEWDEBINXDIFF > /tmp/debinx.diff
+			#cat OLDDEBINX | grep -E 'Package|MD5sum' > /tmp/OLDDEBINXDIFF
+			#cat NEWDEBINX | grep -E 'Package|MD5sum' > /tmp/NEWDEBINXDIFF
+			diff "$DEBINXDIR"/OLDDEBINX "$DEBINXDIR"/NEWDEBINX > /tmp/debinx.diff
+			#diff /tmp/OLDDEBINXDIFF /tmp/NEWDEBINXDIFF > /tmp/debinx.diff
 			less /tmp/debinx.diff
-			rm /tmp/OLDDEBINXDIFF
-			rm /tmp/NEWDEBINXDIFF
+			#rm /tmp/OLDDEBINXDIFF
+			#rm /tmp/NEWDEBINXDIFF
 			rm /tmp/debinx.diff
 			echo " "
 			echo -n "Do you wish to proceed with updates, enter (y)es or (n)o: "
@@ -187,6 +189,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			fi
 		fi
 	fi
+
 	
 
 ##### /OLDDEBINX, NEWDEBINX
@@ -276,7 +279,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		echo "No updates available for main or dependency SCEs."
 	fi
 	cd /etc/sysconfig/tcedir/import/debinx
-	sudo cp NEWDEBINX OLDDEBINX > /dev/null 2>&1
+	sudo mv NEWDEBINX OLDDEBINX > /dev/null 2>&1
 	##
 elif [ -f update/"$UPDATETARGET".sce ]; then
 	if [ -f "$UPDATETARGET".sce.debinx ]; then
