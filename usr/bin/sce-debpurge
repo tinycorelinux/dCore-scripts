@@ -16,12 +16,12 @@ elif [ "$BUILD" == "armv7" ]; then
 fi
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-	echo
+	echo " "
 	echo "${YELLOW}sce-debpurge - purge deprecated DEB files (Debian package files) or all"
         echo "               files from /etc/sysconfig/tcedir/import/debs.${NORMAL}"
-	echo
+	echo " "
 	echo "Usage:"
-	echo
+	echo " "
 	echo "${YELLOW}'"sce-debpurge"'${NORMAL}     update DEBINX files (Debian Index files located in /etc/"
         echo "                   sysconfig/tcedir/import/debinx), purge deprecated DEBs."
 	echo "${YELLOW}'"sce-debpurge -p"'${NORMAL}  preserve local DEBINX files, purge deprecated DEBs"
@@ -30,7 +30,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
         echo "                   including *.deb and *.tar.gz, note purged files will"
         echo "                   need to be re-downloaded to rebuild SCEs during"
         echo "                   updates or re-imports."
-	echo
+	echo " "
 exit 1
 fi
 
@@ -49,20 +49,26 @@ shift `expr $OPTIND - 1`
 if ls /etc/sysconfig/tcedir/import/debs/*.deb > /dev/null 2>&1 ||  ls /etc/sysconfig/tcedir/import/debs/*.tar.gz > /dev/null 2>&1; then
 	:
 else
-	echo "No packages to be removed.  Exiting.."
+        echo " "
+	echo "No packages to be removed, exiting.."
 	exit 0
 fi
 
 if [ "$PURGEALL" == "TRUE" ]; then
-        echo
-        echo "Purging all files from /etc/sysconfig/tcedir/import/debs.."
-	echo
+        echo " "
+	echo "Warning: This will purge all files from /etc/sysconfig/tcedir/import/debs."
+        echo " "
+        echo "Although this will not affect the function of installed SCEs, some files will"
+        echo "need to be re-downloaded later to rebuild SCEs during updates or re-imports."
+        echo " "
+        echo -n "Press Enter to proceed, Ctrl-C aborts: "
+        read ans
+	echo " "
         cd /etc/sysconfig/tcedir/import/debs
 	if ls *.deb > /dev/null 2>&1; then
 		for I in `ls *.deb`; do
 			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
-			echo "Removing "$I".."
-                        echo
+			echo "Removing "$I"..."
 			sudo rm "$I"
 			echo "$I" >> /tmp/.debpurged
 		done
@@ -70,14 +76,13 @@ if [ "$PURGEALL" == "TRUE" ]; then
 	if ls *.tar.gz > /dev/null 2>&1; then
 		for I in `ls *.tar.gz`; do
 			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
-			echo "Removing "$I".."
-                        echo
+			echo "Removing "$I"..."
 			sudo rm "$I"
 			echo "$I" >> /tmp/.debpurged
 		done
 	fi
-        echo
-	echo "All packages removed from /etc/sysconfig/tcedir/import/debs."
+        echo " "
+	echo "All files purged from /etc/sysconfig/tcedir/import/debs."
 	DPURGESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.debpurgedsize` | awk '{printf("%.2f\n", $1)}')
         echo
 	echo "Total space freed by removing unneeded files:  "$DPURGESIZEFINAL" MB"
@@ -115,8 +120,8 @@ getName1() {
 					}
 		
 				if ( f[1] == "Filename" )
-					print f[2] 
-						     
+					print f[2]
+						    
 			
 		}
 
@@ -143,22 +148,23 @@ getName1() {
 > /tmp/.debpurged
 
 if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
-        echo
-        echo "Fetching updated DEBINX, checking for deprecated DEB files.."
-	echo
+        echo " "
+        echo "Fetching updated DEBINX, checking for deprecated DEB files..."
+	echo " "
 	sudo debGetEnv
 	if [ "$?" != "0" ]; then
-		echo "Error in updating needed DEBINX files, exiting.."
+		echo "Error updating DEBINX files, exiting.."
 		exit 1
 	fi
 fi
 
 if [ "$PRESERVEDEBINXMODE" = "TRUE" ]; then
-	echo
-	echo "Preserving local DEBINX, checking for deprecated DEB files.."
+	echo " "
+	echo "Preserving local DEBINX, checking for deprecated DEB files..."
+        echo " "
 	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
 	if [ "$?" != "0" ]; then
-		echo "Error in updating DEBINX files.  Exiting..."
+		echo "Error updating DEBINX files, exiting.."
 	fi
 fi
 
@@ -181,7 +187,7 @@ if ls *.deb > /dev/null 2>&1; then
 	NAMENEW="${NAMENEW##*/}"
 	NAMEOLD="$I"
 	if [ "$NAMENEW" != "$NAMEOLD" ]; then
-		echo "Removing "$NAMEOLD".."
+		echo "Removing "$NAMEOLD"..."
 		ls -l "$NAMEOLD" | cut -f5 -d" " >> /tmp/.debpurgedsize
 		sudo rm "$NAMEOLD"
 		echo "$I" >> /tmp/.debpurged
@@ -194,7 +200,7 @@ if ls *.deb > /dev/null 2>&1; then
 	NAMENEW="${NAMENEW##*/}"
 	NAMEOLD="$I"
 	if [ "$NAMENEW" != "$NAMEOLD" ]; then
-		echo "Removing "$NAMEOLD".."
+		echo "Removing "$NAMEOLD"..."
 		ls -l "$NAMEOLD" | cut -f5 -d" " >> /tmp/.debpurgedsize
 		sudo rm "$NAMEOLD"
 		echo "$I" >> /tmp/.debpurged
@@ -208,7 +214,7 @@ if ls *.deb > /dev/null 2>&1; then
 	NAMENEW="${NAMENEW##*/}"
 	NAMEOLD="$I"
 	if [ "$NAMENEW" != "$NAMEOLD" ]; then
-		echo "Removing "$NAMEOLD".."
+		echo "Removing "$NAMEOLD"..."
 		ls -l "$NAMEOLD" | cut -f5 -d" " >> /tmp/.debpurgedsize
 		sudo rm "$NAMEOLD"
 		echo "$I" >> /tmp/.debpurged
@@ -226,45 +232,39 @@ if ls *.tar.gz > /dev/null 2>&1; then
 		MD5OLD=$(/bb/md5sum "$I" | cut -f1 -d" ")
 		MD5NEW=$(grep "$DEBINFO:" /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" ")
 		if [ "$MD5NEW" != "$MD5OLD" ]; then
-			echo "Removing "$I".."
+			echo "Removing "$I"..."
 			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
 			sudo rm "$I"
 			echo "$I" >> /tmp/.debpurged
 		elif [ ! -n "$MD5NEW" ] || [ ! -n "$MD5OLD" ]; then
 			echo "Md5sum data for "$I" cannot be found, leaving in place."
 			sleep 1
-		else 
+		else
 			: #echo ""$DEBINFO" package files are up to date."
 		fi
 	elif grep "$DEBINFO:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 		MD5OLD=$(/bb/md5sum "$I" | cut -f1 -d" ")
 		MD5NEW=$(grep "$DEBINFO:" /tmp/PKGDATAFILEMD5SUMLIST | cut -f2 -d" ")
 		if [ "$MD5NEW" != "$MD5OLD" ]; then
-			echo "Removing "$I".."
+			echo "Removing "$I"..."
 			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
 			sudo rm "$I"
 			echo "$I" >> /tmp/.debpurged
 		elif [ ! -n "$MD5NEW" ] || [ ! -n "$MD5OLD" ]; then
 			echo "Md5sum data for "$I" cannot be found, leaving in place."
 			sleep 1
-		else 
+		else
 			: #echo ""$DEBINFO" package files are up to date."
 		fi
 	fi
  done
 fi
 
-echo
+echo " "
 echo "All non current packages removed from /etc/sysconfig/tcedir/import/debs."
 DPURGESIZEFINAL=$(echo `awk 'BEGIN{total=0};{total += $1};END{print total/1024/1024}' /tmp/.debpurgedsize` | awk '{printf("%.2f\n", $1)}')
-echo
+echo " "
 echo "Total space freed by removing unneeded files:  "$DPURGESIZEFINAL" MB"
-echo
+echo " "
 exit 0
-
-
-
-
-
-
 

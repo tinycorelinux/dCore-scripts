@@ -75,21 +75,19 @@ fi
 DIRNAME="sce"
 
 if [ "$LISTITEMS" ]; then
-        echo
-        echo "List of available SCE(s) to add to ondemand:"
 	selectList
-        echo
+	echo " "
+        echo "The above SCE(s) are available to add to ondemand."
 	exit 0
 fi
 
 if [ "$CURRITEMS" ]; then
-        echo
-	echo "${YELLOW}Current ondemand SCE(s):${NORMAL}"
 	for F in `ls "$TCEDIR"/ondemand/*`
 	do
 		grep -l ."$TYPE" "$F" | awk 'BEGIN{FS="/"}{print $NF}'
 	done
-        echo
+	echo " "
+        echo "The above SCE(s) are current ondemand items."
 	exit 0
 fi
 
@@ -115,7 +113,7 @@ if  [ -n "$1" ]; then
 		EXTN="$EXTN".sce
 	fi
 	if [ ! -f "$TCEDIR"/"$DIRNAME"/"$EXTN" ]; then
-		echo "$EXTN does not exist in your SCE directory.  Exiting.."
+		echo "$EXTN does not exist in your SCE directory, exiting.."
 		exit 1
 	fi
 else
@@ -136,14 +134,13 @@ if [ "$EXECITEM" ]; then
 		shift 1 && exec "$APPNAME" "$@"
 	else
 		echo
-		if [ -d /tmp/.X11* ]; then 
-			xmessage "Neither freedesktop file nor "$APPNAME" executable exists.  Please invoke from terminal or menu." 
+		if [ -d /tmp/.X11* ]; then
+			xmessage "Neither freedesktop file nor "$APPNAME" executable exists.  Please invoke from terminal or menu."
 			exit 1
 		else
 			echo "/usr/share/applications/"$APPNAME".desktop does not exist"
 			echo "nor does "$APPNAME" exist in the system PATH."
 			echo "Please instead invoke from regular menu or terminal."
-			echo
 			exit 1
 		fi
 		
@@ -154,8 +151,8 @@ fi
 # Arrive here if no flags were specified.
 # Create ondemand item....
 # Generic shell script for OnDemand by all WMs
-[ -d "$TCEDIR"/ondemand ] || sudo mkdir -p "$TCEDIR"/ondemand 
-[ -d "$TCEDIR"/ondemand ] && sudo chown -R "$TCUSER":staff "$TCEDIR"/ondemand 
+[ -d "$TCEDIR"/ondemand ] || sudo mkdir -p "$TCEDIR"/ondemand
+[ -d "$TCEDIR"/ondemand ] && sudo chown -R "$TCUSER":staff "$TCEDIR"/ondemand
 FILE="$TCEDIR"/ondemand/"$APPNAME"
 sudo echo '#!/bin/sh' > "$FILE"
 sudo echo "ondemand -e $APPNAME.sce" >> "$FILE"
@@ -168,3 +165,4 @@ sudo chown "$TCUSER":staff "$FILE"
 if [ $(which ${DESKTOP}_restart) ]; then
 	sudo su "$TCUSER" -c "${DESKTOP}_restart"
 fi
+

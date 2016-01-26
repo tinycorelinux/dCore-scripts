@@ -43,12 +43,11 @@ exit_tcnet() {
 
 wget -O /tmp/.pkgprebuilt -cq "$PREBUILTMIRROR"/PKGPREBUILTDEP 2>/dev/null || exit_tcnet
 
-echo
+cat /tmp/.pkgprebuilt | cut -f1 -d: | sort | sudo grep -i "$1"
 
-echo "Available packages in the prebuilt area:"
+echo " "
 
-echo
-
-cat /tmp/.pkgprebuilt | cut -f1 -d: | sort | sudo grep -i "$1"   
-  
+echo "The above extensions are available in the prebuilt area."
+ 
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
+
