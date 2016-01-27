@@ -65,7 +65,7 @@ choose(){
 	TARGETAPP="$(cat  /tmp/select.ans)"
 	rm "$TMP"
 	[ "$TARGETAPP" == "q" ] && exit 0
-	echo "Loading $TARGETAPP"
+	[ "$SUPPRESS" ] || echo "Loading $TARGETAPP"
 
 }
 
@@ -80,7 +80,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-			echo ""$APPNAME" is already installed!"
+		        [ "$SUPPRESS" ] || echo ""$APPNAME" is already installed!"
 			continue
 		fi
 	fi
@@ -88,7 +88,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-			echo ""$APPNAME" is already installed!"
+		        [ "$SUPPRESS" ] || echo ""$APPNAME" is already installed!"
 			continue
 		fi
 	fi

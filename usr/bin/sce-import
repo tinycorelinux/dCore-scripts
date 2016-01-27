@@ -142,7 +142,9 @@ TARGET=`basename "$TARGET"`
 TARGET=${TARGET%%.sce}
 
 # Determine if debinx is desired to be updated in this session.
-if grep -i "^PRESERVEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
+if [ "$PRESERVEDEBINXMODE" = "TRUE" ] ; then
+	echo "Using the -p option."
+elif grep -i "^PRESERVEDEBINXMODE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	PRESERVEDEBINXMODE=TRUE
 	echo "Using the -p option."
 else
