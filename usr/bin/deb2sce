@@ -624,8 +624,7 @@ DELETEFILE=/etc/sysconfig/sce.purge
 if [ -f "$DELETEFILE" ]; then
 	for I in `cat "$DELETEFILE" | grep -v "#"`; do
 		if [ -n "$I" ] && [ -n "$TARGET" ]; then
-			echo "$TARGET"/"$I"
-			rm -r "$TARGET"/"$I" > /dev/null 2>&1
+			rm -rf "$TARGET"/$I > /dev/null 2>&1
 		fi
 	done
 fi

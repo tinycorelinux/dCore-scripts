@@ -1,5 +1,5 @@
 ## Enter the files or directories you want to be deleted in the resulting SCE during sce-import.
-## Make sure there are no spaces before or after entries, leading slash not needed. 
+## Make sure there are no spaces before or after entries, leading slash not needed, wildcards accepted. 
 ## Copy this file to or create a new one called /etc/sysconfig/sce.purge 
 ## Example entries:
 ## /usr/lib/i386-linux-gnu/libLLVM-3.5.so.1
