@@ -347,20 +347,20 @@ if [ -f /tmp/.importdep ]; then
 			read ans
 			if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
 				sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
-				debGetSceDep "$TARGET" || exit 1
+				debGetSceDep "$TARGET" 
 			else
-				debGetSceDep "$TARGET" || exit 1
+				debGetSceDep "$TARGET" 
 			fi
 		else
-			debGetSceDep "$TARGET" || exit 1
+			debGetSceDep "$TARGET" 
 		fi
 	else
-		debGetSceDep "$TARGET" || exit 1
+		debGetSceDep "$TARGET" 
 	fi
 	## Copy .dep file to SCE for integrity check ability.
 	[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 	cp /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep usr/local/sce/"$TARGET"/"$TARGET".dep
-	debGetSceDep "$TARGET" || exit 1
+	debGetSceDep "$TARGET" 
 	##
 fi
 
@@ -609,6 +609,22 @@ fi
 
 ## Remove empty dirs.
 busybox find "$TARGET" -mindepth 1 -depth -type d -exec rmdir '{}' + 2>/dev/null
+
+LOCCONFFILE=/etc/sysconfig/locale.nopurge
+
+if [ -f "$LOCCONFFILE" ]; then
+	if [ -d "$TARGET"/usr/share/locale ]; then
+		for I in `find "$TARGET"/usr/share/locale -maxdepth 1 -mindepth 1 -type d`; do I=`basename "$I"`; grep "^$I$" "$LOCCONFFILE" || sudo rm -r "$TARGET"/usr/share/locale/"$I" ; done
+	fi
+fi
+
+DELETEFILE=/etc/sysconfig/sce.purge
+
+if [ -f "$DELETEFILE" ]; then
+	for I in `cat "$DELETEFILE"`; do
+		rm -r "$TARGET"/"$I" > /dev/null 2>&1
+	done
+fi
 
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1
 if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TARGET" " > /dev/null 2>&1; then

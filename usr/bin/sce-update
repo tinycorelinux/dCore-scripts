@@ -446,11 +446,10 @@ elif [ -f "$UPDATETARGET".sce ]; then
 	
 elif [ "$SELECT" == "TRUE" ]; then
 	ls *.sce | sed 's:.sce$::' | sort > /tmp/.scelistchoose
-	echo "quit" >> /tmp/.scelistchoose
 	while true; do
-		cat /tmp/.scelistchoose | select "Choose SCE(s) to update check, can choose more than one, quit to proceed." "-"
+		cat /tmp/.scelistchoose | select2 "Choose SCE(s) to update check, can choose more than one, quit to proceed." "-"
 		read ANS < /tmp/select.ans
-		if [ "$ANS" == "q" ] || [ "$ANS" == "quit" ]; then
+		if [ "$ANS" == "" ]; then
 			break
 		fi
 		grep "^$ANS$" /tmp/.sceupdatechoose > /dev/null 2>&1 || echo "$ANS" >> /tmp/.sceupdatechoose

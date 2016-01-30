@@ -54,10 +54,9 @@ if [ -z "$SCE" ]; then
 			F=`echo "$I" | sed 's:.sce$::'`
 			grep "^$F$" /tmp/.removesce /tmp/.scermlist > /dev/null 2>&1 || echo "$F" >> /tmp/.scermlist
 		done
-		grep "^quit$" /tmp/.scermlist || echo "quit" >> /tmp/.scermlist
-		cat /tmp/.scermlist | select "Choose the sce you want to remove on shutdown." "-"
+		cat /tmp/.scermlist | select2 "Choose the sce(s) you want to remove on shutdown, press Enter with no selection to proceed." "-"
 		read ANS < /tmp/select.ans
-		if [ "$ANS" == "q" ] || [ "$ANS" == "quit" ]; then
+		if [ "$ANS" == "" ]; then
 			break
 		fi
 		grep "^$ANS$" /tmp/.removesce > /dev/null 2>&1 || echo "$ANS" >> /tmp/.removesce
