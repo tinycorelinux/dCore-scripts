@@ -61,10 +61,13 @@ choose(){
 		echo "Nothing found to load."
 		exit 1
 	fi
-	select "dCore - Select SCE to load" "$TMP"
+	select2 "dCore - Select SCE to load" "$TMP"
 	TARGETAPP="$(cat  /tmp/select.ans)"
 	rm "$TMP"
-	[ "$TARGETAPP" == "q" ] && exit 0
+	if [ "$TARGETAPP" == "" ]; then
+		echo "No selection was made.  Exiting.."
+		exit 0
+	fi
 	[ "$SUPPRESS" ] || echo "Loading $TARGETAPP"
 
 }

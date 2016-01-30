@@ -614,7 +614,7 @@ LOCCONFFILE=/etc/sysconfig/locale.nopurge
 
 if [ -f "$LOCCONFFILE" ]; then
 	if [ -d "$TARGET"/usr/share/locale ]; then
-		for I in `find "$TARGET"/usr/share/locale -maxdepth 1 -mindepth 1 -type d`; do I=`basename "$I"`; grep "^$I$" "$LOCCONFFILE" > /dev/null 2>&1 || sudo rm -r "$TARGET"/usr/share/locale/"$I" ; done
+		for I in `find "$TARGET"/usr/share/locale -maxdepth 1 -mindepth 1 -type d`; do I=`basename "$I"`; grep "^$I$" "$LOCCONFFILE" || sudo rm -r "$TARGET"/usr/share/locale/"$I" ; done
 	fi
 fi
 
@@ -622,7 +622,7 @@ DELETEFILE=/etc/sysconfig/sce.purge
 
 if [ -f "$DELETEFILE" ]; then
 	for I in `cat "$DELETEFILE"`; do
-		if [ -n "$I" ]; then
+		if [ -n "$I" ] && [ -e "$TARGET"/"$I" ]; then
 			rm -r "$TARGET"/"$I" > /dev/null 2>&1
 		fi
 	done
