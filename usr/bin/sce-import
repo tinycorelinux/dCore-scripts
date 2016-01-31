@@ -90,7 +90,7 @@ exit_tcnet() {
 [ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
 [ -f /tmp/.recommends ] && sudo rm /tmp/.recommends
 [ -f /tmp/.suggests ] && sudo rm /tmp/.suggests
-
+[ -f /tmp/.scenoconfig ] && sudo rm /tmp/.scenoconfig
 
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
@@ -120,6 +120,10 @@ do
                    exit 1 ;;
 	esac
 done
+
+if [ "$NOCONFIG" == "TRUE" ]; then
+	touch /tmp/.scenoconfig
+fi
 
 if grep -i "^ONBOOT=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	ONBOOT=TRUE
@@ -167,12 +171,6 @@ fi
 
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
-
-# Intermal flag to use /tmp/work provided by sce-update.
-if [ "$NOGETDEPS" == "TRUE" ]; then
-	touch /tmp/.nogetdeps
-	echo "Using the -y option."
-fi
 
 # Determine if non-interactive mode is being used.
 if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then

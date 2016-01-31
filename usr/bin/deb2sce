@@ -140,6 +140,7 @@ cleanup() {
 	[ -f /tmp/.recommends ] && sudo rm /tmp/.recommends
 	[ -f /tmp/.suggests ] && sudo rm /tmp/.suggests
 	[ -d "$TCEDIR"/import/"$TARGET" ] && sudo rm -r "$TCEDIR"/import/"$TARGET"
+	[ -f /tmp/.scenoconfig ] && sudo rm /tmp/.scenoconfig
 }
 
 # Main
@@ -249,8 +250,8 @@ fi
 
 #[ -f exclude.lst ] || gzip -dc /tmp/deb2sce.xlst.gz > exclude.lst
 
-[ -d "$TARGET" ] || rm -rf "$TARGET"
-[ -d "$TARGET" ] || mkdir "$TARGET"
+[ -d "$TARGET" ] && rm -rf "$TARGET"
+mkdir "$TARGET"
 cd "$TARGET"
 > /tmp/import.log	
 
@@ -611,22 +612,24 @@ fi
 ## Remove empty dirs.
 busybox find "$TARGET" -mindepth 1 -depth -type d -exec rmdir '{}' + 2>/dev/null
 
-LOCCONFFILE=/etc/sysconfig/locale.nopurge
+if [ ! -f /tmp/.scenoconfig ]; then
+	LOCCONFFILE=/etc/sysconfig/locale.nopurge
 
-if [ -f "$LOCCONFFILE" ]; then
-	if [ -d "$TARGET"/usr/share/locale ]; then
-		for I in `find "$TARGET"/usr/share/locale -maxdepth 1 -mindepth 1 -type d`; do I=`basename "$I"`; grep "^$I$" "$LOCCONFFILE" > /dev/null 2>&1 || sudo rm -r "$TARGET"/usr/share/locale/"$I" ; done
-	fi
-fi
-
-DELETEFILE=/etc/sysconfig/sce.purge
-
-if [ -f "$DELETEFILE" ]; then
-	for I in `cat "$DELETEFILE" | grep -v "#"`; do
-		if [ -n "$I" ] && [ -n "$TARGET" ]; then
-			rm -rf "$TARGET"/$I > /dev/null 2>&1
+	if [ -f "$LOCCONFFILE" ]; then
+		if [ -d "$TARGET"/usr/share/locale ]; then
+			for I in `find "$TARGET"/usr/share/locale -maxdepth 1 -mindepth 1 -type d`; do I=`basename "$I"`; grep "^$I$" "$LOCCONFFILE" > /dev/null 2>&1 || sudo rm -r "$TARGET"/usr/share/locale/"$I" ; done
 		fi
-	done
+	fi
+
+	DELETEFILE=/etc/sysconfig/sce.purge
+
+	if [ -f "$DELETEFILE" ]; then
+		for I in `cat "$DELETEFILE" | grep -v "#"`; do
+			if [ -n "$I" ] && [ -n "$TARGET" ]; then
+				rm -rf "$TARGET"/$I > /dev/null 2>&1
+			fi
+		done
+	fi
 fi
 
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1
