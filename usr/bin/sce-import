@@ -121,10 +121,6 @@ do
 	esac
 done
 
-if [ "$NOCONFIG" == "TRUE" ]; then
-	touch /tmp/.scenoconfig
-fi
-
 if grep -i "^ONBOOT=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	ONBOOT=TRUE
 	FLAGS="$FLAGS"b
@@ -145,6 +141,8 @@ TARGET="$1"
 TARGET=`basename "$TARGET"`
 TARGET=${TARGET%%.sce}
 
+echo " "
+
 # Determine if debinx is desired to be updated in this session.
 if [ "$PRESERVEDEBINXMODE" = "TRUE" ] ; then
 	echo "Using the -p option."
@@ -155,22 +153,11 @@ else
 	echo "Using the -u option."
 fi
 
-
-
-if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
-	sudo debGetEnv "$2"
-	if [ "$?" != "0" ]; then
-		echo "Error updating DEBINX files, exiting..."
-	fi
-else
-	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
-	if [ "$?" != "0" ]; then
-		echo "Error updating DEBINX files, exiting..."
-	fi
+# Noconfig mode, overlooking sceconfig, sce.purge, and locale.nopurge
+if [ "$NOCONFIG" == "TRUE" ]; then
+	touch /tmp/.scenoconfig
+	echo "Using the -z option."
 fi
-
-read DEBINX < /tmp/debinx
-DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 
 # Determine if non-interactive mode is being used.
 if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
@@ -250,6 +237,23 @@ elif [ "$SUGGESTS" == "TRUE" ]; then
 	echo "Using the -S option."
 fi
 
+echo " "
+echo " "
+
+if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
+	sudo debGetEnv "$2"
+	if [ "$?" != "0" ]; then
+		echo "Error updating DEBINX files, exiting..."
+	fi
+else
+	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
+	if [ "$?" != "0" ]; then
+		echo "Error updating DEBINX files, exiting..."
+	fi
+fi
+
+read DEBINX < /tmp/debinx
+DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 
 checklist() {
   if sudo grep -q "^$1:" /tmp/PKGADDDEP; then

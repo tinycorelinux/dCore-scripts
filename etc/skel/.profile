@@ -29,10 +29,9 @@ if [ -f "$HOME/.ashrc" ]; then
 fi
 
 TERMTYPE=`/bb/tty`
-[ ${TERMTYPE:5:3} == "tty" ] && (
-[ -f /etc/sysconfig/text ] ||
-[ -e /tmp/.X11-unix/X0 ] || 
-[ -f /usr/bin/Xorg ] ||
-[ -f /usr/local/bin/Xvesa ] &&
-startx
-)
+[ ${TERMTYPE:5:3} == "tty" ] && 
+if [ -f /etc/sysconfig/text ] || [ -e /tmp/.X11-unix/X0 ]; then
+	:
+elif [ -f /usr/bin/Xorg ] || [ -f /usr/local/bin/Xvesa ]; then
+	startx
+fi

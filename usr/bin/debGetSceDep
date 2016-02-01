@@ -45,7 +45,7 @@ getDeps() {
 
 grep "^$1$" /tmp/.scedeps > /dev/null 2>&1 || echo "$1" >> /tmp/.scedeps
 if [ -f "$1".sce.dep ]; then
-	if grep "$SCE" "$1".sce.dep > /dev/null 2>&1; then
+	if grep "^$SCE$" "$1".sce.dep > /dev/null 2>&1; then
 		echo "$1" >> /tmp/.sceconflict
 		#break
 		exit 0
