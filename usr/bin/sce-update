@@ -447,6 +447,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 elif [ "$SELECT" == "TRUE" ]; then
 	ls *.sce | sed 's:.sce$::' | sort > /tmp/.scelistchoose
 	while true; do
+		[ ! -s /tmp/.scelistchoose ] && break
 		cat /tmp/.scelistchoose | select2 "Choose SCE(s) to update check, and press Enter with no selection with to proceed." "-"
 		read ANS < /tmp/select.ans
 		if [ "$ANS" == "" ]; then

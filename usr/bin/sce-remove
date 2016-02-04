@@ -49,11 +49,9 @@ fi
 if [ -z "$SCE" ]; then
 	## Select sces to remove on shutdown.
 	cd "$SCEDIR"
+	ls *.sce | sed 's:.sce$::' | sort > /tmp/.scermlist
 	while true; do
-		for  I in `ls *.sce`; do 
-			F=`echo "$I" | sed 's:.sce$::'`
-			grep "^$F$" /tmp/.removesce /tmp/.scermlist > /dev/null 2>&1 || echo "$F" >> /tmp/.scermlist
-		done
+		[ ! -s /tmp/.scermlist ] && break
 		cat /tmp/.scermlist | select2 "Choose the sce(s) you want to remove on shutdown, press Enter with no selection to exit menu." "-"
 		read ANS < /tmp/select.ans
 		if [ "$ANS" == "" ]; then
