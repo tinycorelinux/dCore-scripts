@@ -23,7 +23,8 @@ else
 	## Select menu for choosing dependency sce's
 	ls *.sce | sed 's:.sce$::' | sort > /tmp/.scelist
 	while true; do 
-		cat /tmp/.scelist | select2 "Choose the sce you want use as a dependency of "$1". You can choose more than one, and press Enter when you have completed your selection." "-"
+		#cat /tmp/.scelist | select2 "You can choose more than one, press Enter to proceed." "-"
+		cat /tmp/.scelist | select2 "Choose existing SCE(s) that will provide dependencies for "$1"." "-"
 		read ANS < /tmp/select.ans
 		if [ "$ANS" == "" ]; then
 			break
@@ -74,7 +75,7 @@ unset PKGEXISTS
 		  	[ -d "$DIR1" ] || mkdir -p "$DIR1"
 			sudo mount /etc/sysconfig/tcedir/sce/update/"$I".sce "$DIR1" > /dev/null 2>&1
 			if [ "$?" != "0" ]; then
-				echo "Unable to mount "$I".sce to get needed information.  Exiting..."
+				echo "Unable to mount "$I".sce to get needed information, exiting.."
 				exit 1
 			fi
 			if [ ! -f "$DIR1"/usr/local/sce/"$I"/"$I".md5sum ]; then
@@ -108,7 +109,7 @@ unset PKGEXISTS
 		  	[ -d "$DIR1" ] || mkdir -p "$DIR1"
 			sudo mount /etc/sysconfig/tcedir/sce/"$I".sce "$DIR1" > /dev/null 2>&1
 			if [ "$?" != "0" ]; then
-				echo "Unable to mount "$I".sce to get needed information.  Exiting..."
+				echo "Unable to mount "$I".sce to get needed information, exiting.."
 				exit 1
 			fi
 			if [ ! -f "$DIR1"/usr/local/sce/"$I"/"$I".md5sum ]; then

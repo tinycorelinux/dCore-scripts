@@ -343,8 +343,9 @@ fi
 if [ -f /tmp/.importdep ]; then
 	if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 		if [ ! -f /tmp/.importinteractive ]; then
-			echo "Do you want to use the existing "$TARGET".sce.dep file for dependencies?"
+			echo "Use the existing "$TARGET".sce.dep file for dependencies?"
 			echo "WARNING: Answering no will delete "$TARGET".sce.dep now."
+			echo " "
 			echo -n "Enter (y)es or (n)o: "		
 			read ans
 			if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
@@ -388,7 +389,7 @@ fi
 ## Bring up list of SCEs that will profide package dependencies for the TARGET one.
 if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 	echo
-	echo "The SCEs below from your SCE directory will be used"
+	echo "The SCE(s) below from your SCE directory will be used"
 	echo "to provide dependencies for "$TARGET".sce."
 	echo
 	for FILE in `cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep`; do
@@ -396,6 +397,7 @@ if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 			echo "$FILE"
 		fi
 	done
+	sleep 3
 	echo
 	echo
 fi
@@ -497,8 +499,8 @@ for DEBINFO in `ls -t /tmp/work`; do
 			fi 
 	
 			if [ -f "${DEBINFO}".tar.gz ] && [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then	 
-				echo "${DEBINFO}: `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		  
-				echo "Merging "${DEBINFO}""
+				echo "${DEBINFO}: `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		
+				echo "Merging ${YELLOW}"${DEBINFO}"${NORMAL}"
 	    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET" 
 				if [ "$?" != 0 ]
 				then

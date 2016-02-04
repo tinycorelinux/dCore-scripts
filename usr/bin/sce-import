@@ -26,7 +26,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}'"sce-import -d PKG"'${NORMAL}      choose existing SCE(s) to provide dependencies for"
         echo "                         new SCE, may make new SCE significantly smaller."
         echo "${YELLOW}'"sce-import -k PKG"'${NORMAL}      keep /usr/share/doc and /man in SCE, see man-db."
-	echo "${YELLOW}'"sce-import -l FILENAME"'${NORMAL} SCE mega-extension created from text file listing one"
+	echo "${YELLOW}'"sce-import -l LISTFILE"'${NORMAL} SCE mega-extension created from text file listing one"
         echo "                         PKG per line, eg. sce-import -l /tmp/my_apps contains"
         echo "                         emelfm & nano, which can now share common dependencies."
 	echo "${YELLOW}'"sce-import -n PKG"'${NORMAL}      non-interactive mode if exact PKG name exists."
@@ -36,7 +36,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}'"sce-import -s PKG"'${NORMAL}      list sizes of packages to be fetched and installed."
 	echo "${YELLOW}'"sce-import -u PKG"'${NORMAL}      (DEFAULT) update mode, sync new DEBINX files."
 	echo "${YELLOW}'"sce-import -v PKG"'${NORMAL}      view list of packages the imported SCE contains."
-	echo "${YELLOW}'"sce-import -z PKG"'${NORMAL}      use only CLI options, ignore etc/sysconfig/sceconfig."
+	echo "${YELLOW}'"sce-import -z PKG"'${NORMAL}      ignore locale.nopurge, sce.purge, sceconfig files."
 	echo "${YELLOW}'"sce-import -R PKG"'${NORMAL}      include recommended Debian packages, warning large SCE."
 	echo "${YELLOW}'"sce-import -S PKG"'${NORMAL}      include suggested Debian packages, warning large SCE."
 exit 1
@@ -243,12 +243,12 @@ echo " "
 if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	sudo debGetEnv "$2"
 	if [ "$?" != "0" ]; then
-		echo "Error updating DEBINX files, exiting..."
+		echo "Error updating DEBINX files, exiting.."
 	fi
 else
 	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
 	if [ "$?" != "0" ]; then
-		echo "Error updating DEBINX files, exiting..."
+		echo "Error updating DEBINX files, exiting.."
 	fi
 fi
 
@@ -362,13 +362,20 @@ esac
 echo " "
 
 # When no package is specified on command line, ask for one.
-if [ -z "$TARGET" ]
-then
+if [ -z "$TARGET" ] && [ "$CHECKALL" == "TRUE" ]; then
+	echo -n "Enter search characters contained in package sought: "
+	read TARGET
+elif [ -z "$TARGET" ]; then
 	echo -n "Enter starting characters of package sought: "
 	read TARGET
 fi
 
-[ -n "$TARGET" ] || exit 1
+echo " "
+
+if [ ! "$TARGET" ]; then
+	echo "No search characters entered, exiting.."
+	exit 1
+fi
 
 # Below is where the package is found either in prebuilt, main
 # Packages file, or in extra repos.  And then proceeds to deb2sce.
@@ -456,7 +463,7 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 #  	[ "$ans" == "y" ] || exit 1                                           
 #  	mksce "$DEB"
 # fi
-  echo "Importing $DEB."
+  echo "Importing ${YELLOW}"$DEB"${NORMAL}."
   mksce "$DEB"
 fi  
 elif [ "$CHECKALL" != "TRUE" ]; then   
@@ -491,10 +498,10 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 #  	[ "$ans" == "y" ] || exit 1                                           
 #  	mksce "$DEB"
 # fi
-  echo "Importing $DEB."
+  echo "Importing ${YELLOW}"$DEB"${NORMAL}."
   mksce "$DEB"
 fi                                        
 else
- echo ""$TARGET" is not available as a package, exiting..."
+ echo ""$TARGET" is not available as a package, exiting.."
  exit 1
 fi

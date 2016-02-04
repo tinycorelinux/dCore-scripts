@@ -58,7 +58,7 @@ cd /tmp
 if sudo tar xzf /tmp/deb2sce.tar.gz "${BASENAME}".deb2sce > /dev/null 2>&1
 then
 	[ -d "$PKG"/usr/local/sce/"$BASENAME" ] || mkdir -p "$PKG"/usr/local/sce/"$BASENAME"
-	echo Merging Tiny Core custom start script for ${BASENAME}: "${BASENAME}.deb2sce"
+	echo "Merging ${YELLOW}"${BASENAME}".deb2sce${NORMAL}: Tiny Core custom ${BASENAME} start script."
 	setupStartupScript
 	cat /tmp/"${BASENAME}.deb2sce" > "$PKG/usr/local/tce.installed/${BASENAME}"
 	echo ""$BASENAME"-deb2sce: `md5sum ${BASENAME}.deb2sce | cut -f1 -d" "`" >> "$PKG"/usr/local/sce/"$TARGET"/"$TARGET"-data.md5sum
@@ -83,11 +83,11 @@ if grep "^$BASENAME"-data: /tmp/PKGDATAFILEMD5SUMLIST >/dev/null; then
   fi
 
   if [ `md5sum "$DEBS"/"$BASENAME"-data.tar.gz | cut -f1 -d" "` == `grep "^$BASENAME"-data: /tmp/PKGDATAFILEMD5SUMLIST | cut -f2 -d" "` ]; then
-    echo "Merging extra files for "${BASENAME}": "$BASENAME"-data.tar.gz"
+    echo "Merging ${YELLOW}"$BASENAME"-data.tar.gz${NORMAL}: extra files for "${BASENAME}"."
     echo ""$BASENAME"-data: `grep "^$BASENAME"-data: /tmp/PKGDATAFILEMD5SUMLIST | cut -f2 -d" "`" >> "$PKG"/usr/local/sce/"$TARGET"/"$TARGET"-data.md5sum
     tar xf "$DEBS"/"$BASENAME"-data.tar.gz -C "$PKG"|| exit 1
   else
-    echo "Md5sum failed for "$BASENAME"-data.tar.gz, exiting..."
+    echo "Md5sum failed for "$BASENAME"-data.tar.gz, exiting.."
     exit 1
   fi
 
@@ -112,7 +112,7 @@ fi
 
 #	cd pkg
 
-echo "Merging $BASENAME "
+echo "Merging ${YELLOW}"$BASENAME"${NORMAL}"
 #find . -depth | cpio -pmd "$PKG" 2>&1 > /dev/null
 #(tar -cf - .) | (cd "$PKG" && tar -xpf -)
 if [ "$?" != "0" ]; then
