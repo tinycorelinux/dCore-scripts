@@ -14,7 +14,6 @@ checknotroot
 BUILD=`getBuild`
 HERE=`pwd`
 
-
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}sce-import - search, convert, install DEB and pre-built packages as local SCEs,"
         echo "             use simple name eg. nano not nano_2.2.6-3_i386.deb, may use some"
@@ -41,6 +40,16 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}'"sce-import -S PKG"'${NORMAL}      include suggested Debian packages, warning large SCE."
 exit 1
 fi
+
+if [ -f /tmp/.scelock ]; then
+	LOCK=`cat /tmp/.scelock`
+	if /bb/ps | /bb/grep "$LOCK" | /bb/grep -v grep > /dev/null 2>&1; then
+		echo "Another SCE utility is presently in use, exiting.."
+		exit 1
+	fi
+fi
+
+echo "$$" > /tmp/.scelock
 
 mksce() {
 	if [ "$FLAGS" ]
