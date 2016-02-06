@@ -11,8 +11,9 @@ unset DEPLIST
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
         echo
-	echo "${YELLOW}sce-update - check and update all or individual SCE(s), view DEBINX (Debian"
-	echo "             index) diff if desired, may use some option combinations.${NORMAL}"
+	echo "${YELLOW}sce-update - check and update all or individual SCE(s) and any dependencies,"
+	echo "             view DEBINX (Debian index) diff if desired, may use some"
+	echo "             option combinations.${NORMAL}"
 	echo
 	echo "Usage:"
 	echo
@@ -32,16 +33,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	exit 0
 fi
 
-if [ -f /tmp/.scelock ]; then
-	LOCK=`cat /tmp/.scelock`
-	if /bb/ps | /bb/grep "$LOCK" | /bb/grep -v grep > /dev/null 2>&1; then
-		echo "Another SCE utility is presently in use, exiting.."
-		exit 1
-	fi
-fi
-
-echo "$$" > /tmp/.scelock
-
 while getopts canrsz OPTION
 do
 	case ${OPTION} in
@@ -55,6 +46,8 @@ do
                    exit 1 ;;
 	esac
 done
+
+echo " "
 
 # Determine if non-interactive mode is being used.
 if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
@@ -171,7 +164,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		echo "Your entire SCE directory is up to date."
 		sudo rm NEWDEBINX
 		exit 0
-	else
+	elif [ ! "$NONINTERACTIVE" == "TRUE" ]; then
 		echo " "
 		echo "Press Enter to proceed with update(s), (v)iew DEBINX diff, Ctrl-C aborts,"
 		echo -n "to view diff use page up/down or spacebar and enter (q)uit when done: "
@@ -225,7 +218,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 				continue
 			fi
 		fi
-		echo "         "$I" checkup for updates..."
+		echo "         "$I" update check..."
 		importupdatecheck "$I" > /dev/null 2>&1
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
@@ -308,7 +301,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
 			:
 		else
-			echo "         "$I" checkup for updates..."
+			echo "         "$I" update check..."
 			importupdatecheck "$I" > /dev/null 2>&1
 		fi
 	done
@@ -369,7 +362,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 				fi
 		fi
 	else
-		echo "No updates available for "$UPDATETARGET".sce or dependency SCEs."
+		echo "No updates available for "$UPDATETARGET".sce or any dependency SCE(s)."
 	fi
 	cd ..
 elif [ -f "$UPDATETARGET".sce ]; then
@@ -377,18 +370,20 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 		MDOLD=`cat "$UPDATETARGET".sce.debinx`
 		if [ "$MDOLD" == "$MDNEW" ]; then
-			echo "         "$UPDATETARGET".sce is up to date."
+			echo " "
+			echo ""$UPDATETARGET".sce is up to date."
 			exit 0
 		fi
 	fi
-	echo "Searching for available updates for "$UPDATETARGET".sce."
+	echo " "
+	echo "Searching for available updates for ${YELLOW}"$UPDATETARGET".sce${NORMAL}."
 	unset DEPLIST
 	getDeps "$UPDATETARGET"
 	for I in `echo "$DEPLIST"`; do
 		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
 			:
 		else
-			echo "         "$I" checkup for updates..."
+			echo "         "$I" update check..."
 			importupdatecheck "$I" > /dev/null 2>&1
 		fi
 	done
@@ -450,7 +445,8 @@ elif [ -f "$UPDATETARGET".sce ]; then
 				fi
 		fi
 	else
-		echo "No updates available for "$UPDATETARGET".sce or dependency SCEs."
+		echo " "
+		echo "No updates available for "$UPDATETARGET".sce or any dependency SCE(s)."
 	fi
 	
 	
@@ -458,7 +454,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 	ls *.sce | sed 's:.sce$::' | sort > /tmp/.scelistchoose
 	while true; do
 		[ ! -s /tmp/.scelistchoose ] && break
-		cat /tmp/.scelistchoose | select2 "Choose SCE(s) to update check, and press Enter with no selection with to proceed." "-"
+		cat /tmp/.scelistchoose | select2 "Choose SCE(s) to update check, press Enter with no selection to proceed." "-"
 		read ANS < /tmp/select.ans
 		if [ "$ANS" == "" ]; then
 			break
@@ -480,7 +476,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 	if [ "$ANS" == "y" ] || [ "$ANS" == "Y" ]; then
 		## Update selected SCEs
 		for D in `cat /tmp/.sceupdatechoose | tr -d :`; do
-			echo "Checking "$D".sce..."
+			echo "Checking ${YELLOW}"$D".sce${NORMAL}..."
 			unset DEPLIST
 			getDeps "$D"
 			for I in `echo "$DEPLIST"`; do
@@ -497,7 +493,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 				if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
 					:
 				else
-					echo "         "$I" checkup for updates..."
+					echo "         "$I" update check..."
 					importupdatecheck "$I" > /dev/null 2>&1
 				fi
 			done
@@ -565,7 +561,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 			unset DEPLIST
 		if [ ! -s /tmp/.sceupdatelist ]; then
 			echo " "
-			echo "No updates available for chosen SCEs at this time."
+			echo "No updates available for chosen SCE(s) at this time."
 			exit 0
 		else
 			echo " "

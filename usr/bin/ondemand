@@ -82,6 +82,11 @@ if [ "$LISTITEMS" ]; then
 fi
 
 if [ "$CURRITEMS" ]; then
+	if [ ! "$(ls -A "$TCEDIR"/ondemand)" ]; then
+	echo " "
+	echo "No SCE(s) currently in ondemand."
+	exit 0
+	fi
 	for F in `ls "$TCEDIR"/ondemand/*`
 	do
 		grep -l ."$TYPE" "$F" | awk 'BEGIN{FS="/"}{print $NF}'

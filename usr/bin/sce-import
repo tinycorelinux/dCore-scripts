@@ -16,8 +16,8 @@ HERE=`pwd`
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}sce-import - search, convert, install DEB and pre-built packages as local SCEs,"
-        echo "             use simple name eg. nano not nano_2.2.6-3_i386.deb, may use some"
-        echo "             option combinations, also see /etc/sysconfig/sceconfig.${NORMAL}"
+        echo "             use simple name (nano not nano_*_i386.deb), may use option combos,"
+        echo "             also see /etc/sysconfig/sceconfig, locale.nopurge and sce.purge.${NORMAL}"
 	echo "${YELLOW}'"sce-import"'${NORMAL}             prompt, enter starting characters of package sought."
 	echo "${YELLOW}'"sce-import PKG"'${NORMAL}         search packages that start with desired package name."
 	echo "${YELLOW}'"sce-import -b PKG"'${NORMAL}      add resulting SCE to sceboot.lst."
@@ -40,16 +40,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}'"sce-import -S PKG"'${NORMAL}      include suggested Debian packages, warning large SCE."
 exit 1
 fi
-
-if [ -f /tmp/.scelock ]; then
-	LOCK=`cat /tmp/.scelock`
-	if /bb/ps | /bb/grep "$LOCK" | /bb/grep -v grep > /dev/null 2>&1; then
-		echo "Another SCE utility is presently in use, exiting.."
-		exit 1
-	fi
-fi
-
-echo "$$" > /tmp/.scelock
 
 mksce() {
 	if [ "$FLAGS" ]
@@ -247,7 +237,6 @@ elif [ "$SUGGESTS" == "TRUE" ]; then
 fi
 
 echo " "
-echo " "
 
 if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	sudo debGetEnv "$2"
@@ -379,8 +368,6 @@ elif [ -z "$TARGET" ]; then
 	read TARGET
 fi
 
-echo " "
-
 if [ ! "$TARGET" ]; then
 	echo "No search characters entered, exiting.."
 	exit 1
@@ -453,7 +440,7 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 	fi
 	if [ -z "$DEB" ]; then
 		{ sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
-  		read DEB < /tmp/select.ans                                                                           
+  		read DEB < /tmp/select.ans   
   		[ "$DEB" == "q" ] && exit 1
 	fi     
   else
@@ -461,8 +448,6 @@ elif [ "$CHECKALL" == "TRUE" ]; then
   	read DEB < /tmp/select.ans                                                                           
   	[ "$DEB" == "q" ] && exit 1     
   fi 
-
-  echo " "   
 #  if [ -f /tmp/.importinteractive ]; then
 #	echo "Importing $DEB."
 #	mksce "$DEB"
@@ -496,8 +481,8 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 	{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   	read DEB < /tmp/select.ans                                                                           
   	[ "$DEB" == "q" ] && exit 1     
-  fi 
-  echo " "   
+  fi
+
 #  if [ -f /tmp/.importinteractive ]; then
 #	echo "Importing $DEB."
 #	mksce "$DEB"
@@ -507,10 +492,12 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 #  	[ "$ans" == "y" ] || exit 1                                           
 #  	mksce "$DEB"
 # fi
+  echo " "
   echo "Importing ${YELLOW}"$DEB"${NORMAL}."
   mksce "$DEB"
-fi                                        
-else
- echo ""$TARGET" is not available as a package, exiting.."
- exit 1
+fi
+
+echo " "
+echo "'"$TARGET"' is not available as a package, exiting.."
+exit 1
 fi
