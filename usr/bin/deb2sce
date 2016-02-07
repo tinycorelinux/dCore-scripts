@@ -33,6 +33,7 @@ else
 fi
 
 TCEDIR=/etc/sysconfig/tcedir
+SCEDIR="$TCEDIR"/sce
 
 [ -d /etc/sysconfig/tcedir/import/debinx ] || mkdir -p /etc/sysconfig/tcedir/import/debinx
 
@@ -111,6 +112,7 @@ getMd5sum1() {
 
 cleanup() {
 	rm -rf /tmp/work
+	sudo chown -R "$TCUSER":staff "$SCEDIR" 
 	chmod 1777 /tmp
 	chmod 775 /usr/local/tce.installed
 	chmod 775 /usr/local/tce.icons 2>/dev/null

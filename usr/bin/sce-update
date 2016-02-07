@@ -33,6 +33,16 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	exit 0
 fi
 
+if [ -f /tmp/.scelock ]; then
+	LOCK=`cat /tmp/.scelock`
+	if /bb/ps | /bb/grep "$LOCK" | /bb/grep -v grep > /dev/null 2>&1; then
+		echo "Another SCE utility is presently in use, exiting.."
+		exit 1
+	fi
+fi
+
+echo "$$" > /tmp/.scelock
+
 while getopts canrsz OPTION
 do
 	case ${OPTION} in
@@ -89,23 +99,24 @@ fi
 [ -f /tmp/.updatechecked ] && sudo rm /tmp/.updatechecked
 
 cleanup() {
-[ -f /tmp/.sceupdatechoose ] && sudo rm /tmp/.sceupdatechoose
-[ -f /tmp/.scelistchoose ] && sudo rm /tmp/.scelistchoose
-[ -f /tmp/.sceupdateall ] && sudo rm /tmp/.sceupdateall
-[ -f /tmp/.sceupdatelist ] && sudo rm /tmp/.sceupdatelist
-[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
-[ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
-[ -f /tmp/importupdates ] && sudo rm /tmp/importupdates
-[ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
-ls /tmp/*.md5sum > /dev/null 2>&1 && sudo rm /tmp/*.md5sum
-[ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
-[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
-[ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
-[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
-[ -f /tmp/.updatechecked ] && sudo rm /tmp/.updatechecked
-[ -d /tmp/work ] && sudo rm -r /tmp/work
-sudo rm /tmp/*suggested > /dev/null 2>&1
-sudo rm /tmp*recommended > /dev/null 2>&1
+	sudo chown -R "$TCUSER":staff "$SCEDIR" 
+	[ -f /tmp/.sceupdatechoose ] && sudo rm /tmp/.sceupdatechoose
+	[ -f /tmp/.scelistchoose ] && sudo rm /tmp/.scelistchoose
+	[ -f /tmp/.sceupdateall ] && sudo rm /tmp/.sceupdateall
+	[ -f /tmp/.sceupdatelist ] && sudo rm /tmp/.sceupdatelist
+	[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
+	[ -f /tmp/.importupdates ] && sudo rm /tmp/.importupdates
+	[ -f /tmp/importupdates ] && sudo rm /tmp/importupdates
+	[ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
+	ls /tmp/*.md5sum > /dev/null 2>&1 && sudo rm /tmp/*.md5sum
+	[ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
+	[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
+	[ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
+	[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
+	[ -f /tmp/.updatechecked ] && sudo rm /tmp/.updatechecked
+	[ -d /tmp/work ] && sudo rm -r /tmp/work
+	sudo rm /tmp/*suggested > /dev/null 2>&1
+	sudo rm /tmp*recommended > /dev/null 2>&1
 }
 
 cd /etc/sysconfig/tcedir/sce
@@ -166,29 +177,25 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		exit 0
 	elif [ ! "$NONINTERACTIVE" == "TRUE" ]; then
 		echo " "
-		echo "Press Enter to proceed with update(s), (v)iew DEBINX diff, Ctrl-C aborts,"
-		echo -n "to view diff use page up/down or spacebar and enter (q)uit when done: "
+		echo "Press Enter to proceed with update check, (v)iew DEBINX diff, Ctrl-C aborts"
+		echo -n "(scroll DEBINX diff with spacebar and enter (q)uit to exit): "
 		read ans
 		echo " "
 		if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 			echo "Obtaining diff of new and old package data..."
-			#cat OLDDEBINX | grep -E 'Package|MD5sum' > /tmp/OLDDEBINXDIFF
-			#cat NEWDEBINX | grep -E 'Package|MD5sum' > /tmp/NEWDEBINXDIFF
-			diff "$DEBINXDIR"/OLDDEBINX "$DEBINXDIR"/NEWDEBINX > /tmp/debinx.diff
-			#diff /tmp/OLDDEBINXDIFF /tmp/NEWDEBINXDIFF > /tmp/debinx.diff
-			less /tmp/debinx.diff
-			#rm /tmp/OLDDEBINXDIFF
-			#rm /tmp/NEWDEBINXDIFF
+			echo " "
+			diff "$DEBINXDIR"/OLDDEBINX "$DEBINXDIR"/NEWDEBINX > /tmp/debinx.diff & /usr/bin/rotdash $!
+			more -s /tmp/debinx.diff
 			rm /tmp/debinx.diff
 			echo " "
-			echo -n "Do you wish to proceed with updates, enter (y)es or (n)o: "
+			echo -n "Press Enter to proceed with update check or (q)uit to exit: "
 			read ans
 			echo " "
-			if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-				:
-			else
+			if [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
 				echo "Exiting.."
 				exit 0
+			else
+				:
 			fi
 		fi
 	fi
@@ -207,19 +214,19 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 			MDOLD=`cat update/"$I".sce.debinx`
 			if [ "$MDOLD" == "$MDNEW" ]; then
-				echo "         "$I" is up to date."
+				echo "         ${YELLOW}"$I"${NORMAL} is up to date."
 				continue
 			fi
 		elif [ -f "$I".sce.debinx ]; then
 			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 			MDOLD=`cat "$I".sce.debinx`
 			if [ "$MDOLD" == "$MDNEW" ]; then
-				echo "         "$I" is up to date."
+				echo "         ${YELLOW}"$I"${NORMAL} is up to date."
 				continue
 			fi
 		fi
-		echo "         "$I" update check..."
-		importupdatecheck "$I" > /dev/null 2>&1
+		echo "         ${YELLOW}"$I"${NORMAL} update check..."
+		importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
@@ -232,7 +239,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 						OPTIONS="$OPTIONS"S
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-						sce-import -"$OPTIONS"np "$I"
+						sce-import -"$OPTIONS"Nnp "$I"
 						#if [ "$?" != "0" ]; then
 						#	echo "Error in updating "$I", exiting.."
 						#	exit 1
@@ -248,7 +255,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 				read ans
 				echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-					less /tmp/updateavailable
+					more -s /tmp/updateavailable
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do
 					if [ -f /tmp/"$I".recommended ]; then
@@ -258,7 +265,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 						OPTIONS="$OPTIONS"S
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-						sce-import -"$OPTIONS"np "$I"
+						sce-import -"$OPTIONS"Nnp "$I"
 						#if [ "$?" != "0" ]; then
 						#	echo "Error in updating "$I", exiting.."
 						#	exit 1
@@ -275,10 +282,11 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 				read ans
 				echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-					less /tmp/updateavailable
+					more -s /tmp/updateavailable
 				fi
 		fi
 	else
+		echo " "
 		echo "No updates available for main or dependency SCEs."
 	fi
 	cd /etc/sysconfig/tcedir/import/debinx
@@ -289,7 +297,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 		MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 		MDOLD=`cat "$UPDATETARGET".sce.debinx`
 		if [ "$MDOLD" == "$MDNEW" ]; then
-			echo "         "$UPDATETARGET".sce is up to date."
+			echo "         ${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
 			exit 0
 		fi
 	fi
@@ -301,8 +309,8 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
 			:
 		else
-			echo "         "$I" update check..."
-			importupdatecheck "$I" > /dev/null 2>&1
+			echo "         ${YELLOW}"$I"${NORMAL} update check..."
+			importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 		fi
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
@@ -316,7 +324,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 						OPTIONS="$OPTIONS"S
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-						sce-import -"$OPTIONS"np "$I"
+						sce-import -"$OPTIONS"Nnp "$I"
 						#if [ "$?" != "0" ]; then
 						#	echo "Error in updating "$I", exiting.."
 						#	exit 1
@@ -332,7 +340,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 				read ans
 				echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-					less /tmp/updateavailable
+					more -s /tmp/updateavailable
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do
 					if [ -f /tmp/"$I".recommended ]; then
@@ -342,7 +350,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 						OPTIONS="$OPTIONS"S
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-						sce-import -"$OPTIONS"np "$I"
+						sce-import -"$OPTIONS"Nnp "$I"
 						#if [ "$?" != "0" ]; then
 						#	echo "Error in updating "$I", exiting.."
 						#	exit 1
@@ -358,10 +366,11 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 			read ans
 			echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-					less /tmp/updateavailable
+					more -s /tmp/updateavailable
 				fi
 		fi
 	else
+		echo " "
 		echo "No updates available for "$UPDATETARGET".sce or any dependency SCE(s)."
 	fi
 	cd ..
@@ -371,7 +380,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		MDOLD=`cat "$UPDATETARGET".sce.debinx`
 		if [ "$MDOLD" == "$MDNEW" ]; then
 			echo " "
-			echo ""$UPDATETARGET".sce is up to date."
+			echo "${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
 			exit 0
 		fi
 	fi
@@ -383,8 +392,8 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
 			:
 		else
-			echo "         "$I" update check..."
-			importupdatecheck "$I" > /dev/null 2>&1
+			echo "         ${YELLOW}"$I"${NORMAL} update check..."
+			importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 		fi
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
@@ -398,7 +407,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 						OPTIONS="$OPTIONS"S
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-						sce-import -"$OPTIONS"np "$I"
+						sce-import -"$OPTIONS"Nnp "$I"
 						#if [ "$?" != "0" ]; then
 						#	echo "Error in updating "$I", exiting.."
 						#	exit 1
@@ -414,7 +423,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 				read ans
 				echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-					less /tmp/updateavailable
+					more -s /tmp/updateavailable
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do
 					if [ -f /tmp/"$I".recommended ]; then
@@ -424,7 +433,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 						OPTIONS="$OPTIONS"S
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-						sce-import -"$OPTIONS"np "$I"
+						sce-import -"$OPTIONS"Nnp "$I"
 						#if [ "$?" != "0" ]; then
 						#	echo "Error in updating "$I", exiting.."
 						#	exit 1
@@ -441,7 +450,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 				read ans
 				echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-					less /tmp/updateavailable
+					more -s /tmp/updateavailable
 				fi
 		fi
 	else
@@ -470,10 +479,15 @@ elif [ "$SELECT" == "TRUE" ]; then
 	fi
 	cat /tmp/.sceupdatechoose | tr -d :
 	echo " "
-	echo -n "Enter (y)es to update check above SCE(s), (n)o to exit: "
+	#echo -n "Enter (y)es to update check above SCE(s), (n)o to exit: "
+	echo -n "Press Enter to update check above SCE(s), (q)uit to exit: "
 	read ANS
 	echo " "
-	if [ "$ANS" == "y" ] || [ "$ANS" == "Y" ]; then
+	if [ "$ANS" == "q" ] || [ "$ANS" == "Q" ]; then
+		echo "Exiting.."
+		cleanup
+		exit 0
+	else
 		## Update selected SCEs
 		for D in `cat /tmp/.sceupdatechoose | tr -d :`; do
 			echo "Checking ${YELLOW}"$D".sce${NORMAL}..."
@@ -485,7 +499,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 					MDOLD=`cat "$UPDATETARGET".sce.debinx`
 					if [ "$MDOLD" == "$MDNEW" ]; then
-						echo "         "$UPDATETARGET" is up to date."
+						echo "         ${YELLOW}"$UPDATETARGET"${NORMAL} is up to date."
 						echo "$UPDATETARGET" >> /tmp/.updatechecked
 						continue
 					fi
@@ -493,8 +507,8 @@ elif [ "$SELECT" == "TRUE" ]; then
 				if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
 					:
 				else
-					echo "         "$I" update check..."
-					importupdatecheck "$I" > /dev/null 2>&1
+					echo "         ${YELLOW}"$I"${NORMAL} update check..."
+					importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 				fi
 			done
 		done
@@ -509,7 +523,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 							OPTIONS="$OPTIONS"S
 						fi
 						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-							sce-import -"$OPTIONS"np "$I"
+							sce-import -"$OPTIONS"Nnp "$I"
 							#if [ "$?" != "0" ]; then
 							#	echo "Error in updating "$I", exiting.."
 							#	exit 1
@@ -525,7 +539,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 					read ans
 					echo " "
 					if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-						less /tmp/updateavailable
+						more -s /tmp/updateavailable
 					fi
 					for I in `cat /tmp/.sceupdatelist`; do
 						if [ -f /tmp/"$I".recommended ]; then
@@ -535,7 +549,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 							OPTIONS="$OPTIONS"S
 						fi
 						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-							sce-import -"$OPTIONS"np "$I"
+							sce-import -"$OPTIONS"Nnp "$I"
 							#if [ "$?" != "0" ]; then
 							#	echo "Error in updating "$I", exiting.."
 							#	exit 1
@@ -552,7 +566,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 					read ans
 					echo " "
 					if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-						less /tmp/updateavailable
+						more -s /tmp/updateavailable
 					fi
 			fi
 		else
@@ -570,14 +584,10 @@ elif [ "$SELECT" == "TRUE" ]; then
 			read ans
 			echo " "
 			if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-				less /tmp/updateavailable
+				more -s /tmp/updateavailable
 			fi			
 			exit 0
 		fi
-	else
-		echo "Exit was chosen, no action will be taken."
-		cleanup
-		exit 0
 	fi
 else
 	echo " "

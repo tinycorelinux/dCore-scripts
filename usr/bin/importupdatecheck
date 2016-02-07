@@ -337,14 +337,18 @@ if [ -s /tmp/.importupdates ]; then
 	echo "$1" >> /tmp/.sceupdatelist
 fi
 
-if [ -s /tmp/ssupdates ]; then
+if [ -s /tmp/ssupdates ]; then 
 	echo "$1" >> /tmp/.sceupdatelist
 fi
 
 if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.importmissing ] && [ ! -s /tmp/.importnotneeded ]; then
 	echo "    None" >> /tmp/updateavailable
 	MD5SUMDEBINX=`md5sum "$TCEDIR"/import/debinx/NEWDEBINX | cut -f1 -d" "`
-	echo "$MD5SUMDEBINX" > "$SCEDIR"/"$SCE".sce.debinx
+	if [ -f "$SCEDIR"/update/"$SCE".sce ]; then
+		echo "$MD5SUMDEBINX" | sudo tee "$SCEDIR"/update/"$SCE".sce.debinx > /dev/null 2>&1
+	elif [ -f "$SCEDIR"/"$SCE".sce ]; then
+		echo "$MD5SUMDEBINX" | sudo tee "$SCEDIR"/"$SCE".sce.debinx > /dev/null 2>&1
+	fi
 fi
 
 echo " " >> /tmp/updateavailable
@@ -362,10 +366,10 @@ busybox mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo busybox umount 
 [ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
-[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
-[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
+#[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
+#[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
 [ -f /tmp/.updateavailable ] && sudo rm /tmp/.updateavailable
-[ -f/tmp/.importupdates ] && sudo rm /tmp/.importupdates
+#[ -f/tmp/.importupdates ] && sudo rm /tmp/.importupdates
 [ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
 [ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
 

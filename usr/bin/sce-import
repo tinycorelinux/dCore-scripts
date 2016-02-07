@@ -1,4 +1,4 @@
-#!/bb/sh
+ #!/bb/sh
 # (c) Robert Shingledecker 2012
 # Contributions by Jason Williams
 . /etc/init.d/tc-functions
@@ -97,7 +97,7 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 
 unset FLAGS PACKAGELIST NOPGREP
-while getopts drsbolknupcvzRS OPTION
+while getopts drsbolknupcvzRSN OPTION
 do
 	case ${OPTION} in
 		c) CHECKALL=TRUE ;;
@@ -115,6 +115,7 @@ do
 		z) NOCONFIG=TRUE ;;
 		R) RECOMMENDS=TRUE ;;
 		S) SUGGESTS=TRUE ;;
+		N) NOLOCK=TRUE ;;
 		*) echo "Run  sce-import --help  for usage information."
                    exit 1 ;;
 	esac
@@ -131,6 +132,18 @@ if grep -i "^ONDEMAND=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOC
 fi
 
 shift `expr $OPTIND - 1`
+
+if [ ! "$NOLOCK" == "TRUE" ]; then
+	if [ -f /tmp/.scelock ]; then
+		LOCK=`cat /tmp/.scelock`
+		if /bb/ps | /bb/grep "$LOCK" | /bb/grep -v grep > /dev/null 2>&1; then
+			echo "Another SCE utility is presently in use, exiting.."
+			exit 1
+		fi
+	fi
+	
+	echo "$$" > /tmp/.scelock
+fi
 
 [ "$FLAGS" ] && FLAGS="-$FLAGS"
 TARGET="$1"
@@ -244,10 +257,19 @@ if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 		echo "Error updating DEBINX files, exiting.."
 	fi
 else
-	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
-	if [ "$?" != "0" ]; then
-		echo "Error updating DEBINX files, exiting.."
+	if [ ! -s /tmp/debinx ] || [ ! -f /tmp/deb2sce.tar.gz ]; then
+		echo "${YELLOW}Warning: ${NORMAL}please run sce-import without the -p option to update your DEBINX data."
+		exit 1
 	fi
+	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
+	[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
+	tar xvf /tmp/deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
 fi
 
 read DEBINX < /tmp/debinx

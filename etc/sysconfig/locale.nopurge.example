@@ -1,9 +1,15 @@
-## Enter locales that you want to keep during sce-import below.
-## Make sure there are no spaces before or after entries.  Move this file to /etc/sysconfig/locale.nopurge or create a new one.
-## Warning:  Any locales not listed will be removed in the resulting SCE.
-## Example entries:
-## en_AU
-## es_VE
-## ru_RU
-## it
-## pl
+# Enter locales that you want to keep during sce-import below.
+# Make sure there are no spaces before or after entries.
+# Move this file to /etc/sysconfig/locale.nopurge or create a new one.
+#
+# Warning: Any locales not listed will be removed in the resulting SCE.
+#
+# Add /opt/.filetool.lst entry to save any changes:
+#     etc/sysconfig/locale.nopurge
+#
+# Example entries:
+#en_AU
+#es_VE
+#ru_RU
+#it
+#pl
