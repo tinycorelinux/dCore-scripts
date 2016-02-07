@@ -4,6 +4,7 @@
 . /etc/init.d/tc-functions
 useBusybox
 TCEDIR=/etc/sysconfig/tcedir
+DEBINXDIR="$TCEDIR"/import/debinx
 SCE="$1"
 SCEDIR="$TCEDIR"/sce
 #BUILD=`getBuild`
@@ -212,7 +213,7 @@ fi
 
 ## No longer useful with recommends and suggests options, but maybe in the future.
 #for I in `ls /tmp/work/`; do
-#	if [ ! -s /tmp/work/"$I" ] && ! grep "^$I:" /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
+#	if [ ! -s /tmp/work/"$I" ] && ! grep "^$I:" "$DEBINXDIR"/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
 #		continue
 #	fi
 #	if ls "$DATADIR"/*.debs > /dev/null 2>&1; then
@@ -241,18 +242,18 @@ while read line; do
 	#echo "$E: ""$F" >> /tmp/updateavailable
 	#echo "$E: ""$G" >> /tmp/updateavailable
 	## Update if md5sum of existing package and one on the server differ.
-     	if [[ "$F" != "$G" ]] && ! grep "^$E$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
+     	if [[ "$F" != "$G" ]] && ! grep "^$E$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
      		echo "$E" >> /tmp/.importupdates
         fi
 	##
 	NAME="$E"
 		## Get updated or deleted startup script or data files info.
-		if ! grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-deb2sce:" "$FILEDATA"; then
+		if ! grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-deb2sce:" "$FILEDATA"; then
 			continue
 		fi
 	
-		if grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
-			MD5SSNEW=`grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
+		if grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
+			MD5SSNEW=`grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			if ! grep "^$E-deb2sce:" "$FILEDATA" > /dev/null 2>&1; then
 				MD5SSOLD="0"
@@ -265,9 +266,9 @@ while read line; do
 				fi
 			fi
 		elif grep "^$E-deb2sce:" "$FILEDATA" > /dev/null 2>&1; then
-			MD5SSNEW=`grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
+			MD5SSNEW=`grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
-			if ! grep "^$E-deb2sce:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
+			if ! grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 				MD5SSNEW="0"
 				echo "    "$E"   "$E".deb2sce startup script has been removed in the repo." >>  /tmp/updateavailable
 			elif [ "$MD5SSNEW" != "$MD5SSOLD" ]; then
@@ -279,12 +280,12 @@ while read line; do
 		
 		fi
 		
-		if ! grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-data:" "$FILEDATA"; then
+		if ! grep "^$E-data:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-data:" "$FILEDATA"; then
 			continue
 		fi
 		
-		if grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
-	        	MD5DATANEW=`grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
+		if grep "^$E-data:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
+	        	MD5DATANEW=`grep "^$E-data:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			MD5DATAOLD=`grep "^$E-data:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			if ! grep "^$E-data:" "$FILEDATA" > /dev/null 2>&1; then
 				MD5DATAOLD="0"
@@ -297,9 +298,9 @@ while read line; do
 			fi
 		
 		elif grep "^$E-data:" "$FILEDATA" > /dev/null 2>&1; then
-	        	MD5DATANEW=`grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
+	        	MD5DATANEW=`grep "^$E-data:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			MD5DATAOLD=`grep "^$E-data:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
-			if ! grep "^$E-data:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
+			if ! grep "^$E-data:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 				MD5DATANEW="0"
 			fi
 	        	if [ "$MD5DATANEW" != "$MD5DATAOLD" ]; then

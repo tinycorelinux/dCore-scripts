@@ -9,6 +9,7 @@
 
 
 TCEDIR="/etc/sysconfig/tcedir"
+DEBINXDIR="$TCEDIR"/import/debinx
 #BUILD=`getBuild`
 
 
@@ -16,7 +17,7 @@ getSuggests()
 {
         PKG=${1}
 	grep "^$1$" /tmp/sce.suggests > /dev/null 2>&1 && continue
-	if grep -wq "^$PKG$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
+	if grep -wq "^$PKG$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
 		echo "$PKG" >> /tmp/.blocked
 		return
 	fi

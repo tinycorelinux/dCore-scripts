@@ -6,6 +6,7 @@
 #useBusybox
 BUILD=`getBuild`
 TCEDIR=/etc/sysconfig/tcedir
+DEBINXDIR="$TCEDIR"/import/debinx
 SCE="$1"
 FULLPATH="$TCEDIR"/sce
 BUILD=`getBuild`
@@ -97,8 +98,8 @@ if [ -f /etc/sysconfig/tcedir/import/debinx/"$DEBINX_SECURITY" ]; then
 	DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 fi
 
-if grep "^$1:" /tmp/PKGPREBUILTDEP >/dev/null ; then
- echo "$1: `grep "^$1": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "`" >> /tmp/sce.md5new
+if grep "^$1:" "$DEBINXDIR"/PKGPREBUILTDEP >/dev/null ; then
+ echo "$1: `grep "^$1": "$DEBINXDIR"/PREBUILTMD5SUMLIST | cut -f2 -d" "`" >> /tmp/sce.md5new
  echo "$1;   dCore custom prebuilt" >> /tmp/.importpkgtype
 elif sudo grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
  DEBINX=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`

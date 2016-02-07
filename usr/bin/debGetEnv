@@ -50,7 +50,9 @@ zsyncDebianSecurityIndex()
 unset DEBINX MIRROR
 TCEDIR=/etc/sysconfig/tcedir
 
+
 [ -d "$TCEDIR"/import/debinx ] || sudo mkdir -p "$TCEDIR"/import/debinx
+DEBINXDIR=""$TCEDIR"/import/debinx"
 
 if [ -f /usr/share/doc/tc/distro.txt ]; then
 	DISTRO=`cat /usr/share/doc/tc/distro.txt`
@@ -214,29 +216,29 @@ fi
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 
-cd /tmp
+cd "$DEBINXDIR"
 [ -f deb2sce.tar.gz ] && rm deb2sce.tar.gz
 /bb/wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
 
-tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
-[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
-tar xvf /tmp/deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
+tar xvf deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
+[ -f PKGEXCLUDELIST ] || tar xvf deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
+tar xvf deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
+tar xvf deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
+tar xvf deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
+tar xvf deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
+tar xvf deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
+tar xvf deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
+tar xvf deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
 
-cd "$TCEDIR"/import/debinx
+
 if ls rcksum* > /dev/null 2>&1; then
 	rm rcksum*
 fi
 
 if ls debinx.* > /dev/null 2>&1; then
-	sudo cat debinx.* *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+	sudo cat debinx.* *Packages "$DEBINXDIR"/PREBUILTMD5SUMLIST "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST "$DEBINXDIR"/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
 else
-	sudo cat *Packages /tmp/PREBUILTMD5SUMLIST /tmp/PKGDATAFILEMD5SUMLIST /tmp/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+	sudo cat *Packages "$DEBINXDIR"/PREBUILTMD5SUMLIST "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST "$DEBINXDIR"/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
 fi
 
 # Test mirror

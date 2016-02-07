@@ -9,6 +9,7 @@ sudo chown "$TCUSER":staff /tmp
 sudo chmod 1777 /tmp
 TCUSER=`cat /etc/sysconfig/tcuser`
 TCEDIR=`readlink /etc/sysconfig/tcedir`
+DEBINXDIR=""$TCEDIR"/import/debinx"
 SCEBOOTLST=""$TCEDIR"/sceboot.lst"
 checknotroot
 BUILD=`getBuild`
@@ -180,7 +181,7 @@ elif [ "$NONINTERACTIVE" == "TRUE" ]; then
 	echo "Using the -n option."
 fi
 
-if grep -wq "^$TARGET$" /tmp/PKGEXCLUDELIST > /dev/null 2>&1; then
+if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
 	echo " "
 	echo "$TARGET is a blocked package, exiting.."
 	echo " "
@@ -257,28 +258,30 @@ if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 		echo "Error updating DEBINX files, exiting.."
 	fi
 else
-	if [ ! -s /tmp/debinx ] || [ ! -f /tmp/deb2sce.tar.gz ]; then
+	cd "$DEBINXDIR"
+	if [ ! -s /tmp/debinx ] || [ ! -f deb2sce.tar.gz ]; then
 		echo "${YELLOW}Warning: ${NORMAL}please run sce-import without the -p option to update your DEBINX data."
 		exit 1
 	fi
-	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
-	[ -f /tmp/PKGEXCLUDELIST ] || tar xvf /tmp/deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
-	tar xvf /tmp/deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
+	tar xvf deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
+	[ -f PKGEXCLUDELIST ] || tar xvf deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
+	tar xvf deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
+	tar xvf deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
+	tar xvf deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
+	tar xvf deb2sce.tar.gz PKGEXTRAFILEMD5SUMLIST >/dev/null 2>&1
+	tar xvf deb2sce.tar.gz PKGDATAFILEMD5SUMLIST >/dev/null 2>&1
+	tar xvf deb2sce.tar.gz PREBUILTMD5SUMLIST >/dev/null 2>&1
+	tar xvf deb2sce.tar.gz KEEPDOC >/dev/null 2>&1
+	cd "$HERE"
 fi
 
 read DEBINX < /tmp/debinx
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 
 checklist() {
-  if sudo grep -q "^$1:" /tmp/PKGADDDEP; then
+  if sudo grep -q "^$1:" "$DEBINXDIR"/PKGADDDEP; then
 	:
-  elif sudo grep "^$1:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
+  elif sudo grep "^$1:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
 	:
   elif sudo grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
 	:
@@ -449,24 +452,24 @@ elif [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 # Below checks for package in the extra repos first, then the 
 # Debian main repos, then in the prebuilt section, in that order.
 elif [ "$CHECKALL" == "TRUE" ]; then
- if sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: .*$TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
+ if sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: .*$TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
   if [ -f /tmp/.importinteractive ]; then
 	if sudo grep -i "^Package: .*$TARGET$" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1; then
 		DEB=`sudo grep -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}'`
 	elif sudo grep -i "^Package: .*$TARGET$" "$DEBINX" > /dev/null 2>&1; then
 		DEB=`sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
-	elif sudo grep -i "^$TARGET:" /tmp/PKGADDDEP > /dev/null 2>&1; then
-		DEB=`sudo grep -i "^$TARGET:" /tmp/PKGADDDEP | cut -f1 -d:`
-	elif sudo grep -i "^$TARGET:" /tmp/PKGPREBUILTDEP  > /dev/null 2>&1; then
-		DEB=`sudo grep -i "^$TARGET:" /tmp/PKGPREBUILTDEP | cut -f1 -d:`
+	elif sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d:`
+	elif sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP  > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d:`
 	fi
 	if [ -z "$DEB" ]; then
-		{ sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+		{ sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   		read DEB < /tmp/select.ans   
   		[ "$DEB" == "q" ] && exit 1
 	fi     
   else
-	{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+	{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   	read DEB < /tmp/select.ans                                                                           
   	[ "$DEB" == "q" ] && exit 1     
   fi 
@@ -483,24 +486,24 @@ elif [ "$CHECKALL" == "TRUE" ]; then
   mksce "$DEB"
 fi  
 elif [ "$CHECKALL" != "TRUE" ]; then   
- if sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
+ if sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
   if [ -f /tmp/.importinteractive ]; then
 	if sudo grep -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1; then
 		DEB=`sudo grep -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}'`
 	elif sudo grep -i "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
 		DEB=`sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
-	elif sudo grep -i "^$TARGET:" /tmp/PKGADDDEP > /dev/null 2>&1; then
-		DEB=`sudo grep -i "^$TARGET:" /tmp/PKGADDDEP | cut -f1 -d:`
-	elif sudo grep -i "^$TARGET:" /tmp/PKGPREBUILTDEP  > /dev/null 2>&1; then
-		DEB=`sudo grep -i "^$TARGET:" /tmp/PKGPREBUILTDEP | cut -f1 -d:`
+	elif sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d:`
+	elif sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP  > /dev/null 2>&1; then
+		DEB=`sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d:`
 	fi
 	if [ -z "$DEB" ]; then
-		{ sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+		{ sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   		read DEB < /tmp/select.ans                                                                           
   		[ "$DEB" == "q" ] && exit 1
 	fi     
   else
-	{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" /tmp/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" /tmp/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+	{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
   	read DEB < /tmp/select.ans                                                                           
   	[ "$DEB" == "q" ] && exit 1     
   fi

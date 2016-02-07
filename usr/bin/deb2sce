@@ -34,6 +34,7 @@ fi
 
 TCEDIR=/etc/sysconfig/tcedir
 SCEDIR="$TCEDIR"/sce
+DEBINXDIR=""$TCEDIR"/import/debinx"
 
 [ -d /etc/sysconfig/tcedir/import/debinx ] || mkdir -p /etc/sysconfig/tcedir/import/debinx
 
@@ -202,11 +203,11 @@ if [ -s /tmp/.targetfile ]; then
 	echo "`readlink /tmp/.targetfile`"
 	META="$TARGET"
 
-elif sudo grep -q "^$TARGET:" /tmp/PKGADDDEP && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
+elif sudo grep -q "^$TARGET:" "$DEBINXDIR"/PKGADDDEP && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a meta package of related "$DISTRO" ones."
         echo
 	META="$TARGET"
-elif sudo grep "^$TARGET:" /tmp/PKGPREBUILTDEP > /dev/null 2>&1; then
+elif sudo grep "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
 	echo "$TARGET is a dCore premade package."
         echo
 	META="$TARGET"
@@ -467,12 +468,12 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 	 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 	 ## Check to see if package is PREBUILT first.
-	 if grep "^${DEBINFO}:" /tmp/PKGPREBUILTDEP >/dev/null && ! grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
-	 #if [ -z "$FULLPATH" ] && grep "^${DEBINFO}:" /tmp/PKGPREBUILTDEP >/dev/null; then
-		if grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
+	 if grep "^${DEBINFO}:" "$DEBINXDIR"/PKGPREBUILTDEP >/dev/null && ! grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
+	 #if [ -z "$FULLPATH" ] && grep "^${DEBINFO}:" "$DEBINXDIR"/PKGPREBUILTDEP >/dev/null; then
+		if grep "^$DEBINFO": "$DEBINXDIR"/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
 			cd "$DEBS"
 			if [ -f "${DEBINFO}".tar.gz ]; then
-				if [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` != `grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then
+				if [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` != `grep "^$DEBINFO": "$DEBINXDIR"/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then
 					echo "Fetching updated "${DEBINFO}".tar.gz.."
 					rm "${DEBINFO}".tar.gz*
 					/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
@@ -494,13 +495,13 @@ for DEBINFO in `ls -t /tmp/work`; do
 				fi
 			fi
 
-			if ! grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
+			if ! grep "^$DEBINFO": "$DEBINXDIR"/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
 				echo ""$DEBINFO" is missing from the prebuilt md5sum list, exiting.."
 				cleanup
 				exit 1
 			fi 
 	
-			if [ -f "${DEBINFO}".tar.gz ] && [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then	 
+			if [ -f "${DEBINFO}".tar.gz ] && [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": "$DEBINXDIR"/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then	 
 				echo "${DEBINFO}: `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		
 				echo "Merging ${YELLOW}"${DEBINFO}"${NORMAL}"
 	    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET" 

@@ -34,6 +34,16 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 exit 1
 fi
 
+if [ -f /tmp/.scelock ]; then
+	LOCK=`cat /tmp/.scelock`
+	if /bb/ps | /bb/grep "$LOCK" | /bb/grep -v grep > /dev/null 2>&1; then
+		echo "Another SCE utility is presently in use, exiting.."
+		exit 1
+	fi
+fi
+
+echo "$$" > /tmp/.scelock
+
 while getopts pa OPTION
 do
 	case ${OPTION} in
@@ -230,9 +240,9 @@ fi
 if ls *.tar.gz > /dev/null 2>&1; then
  for I in `ls *.tar.gz`; do
 	DEBINFO=`echo "$I" | sed 's:-data.tar.gz::' | sed 's:.tar.gz::'`
-	if grep "$DEBINFO:" /tmp/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
+	if grep "$DEBINFO:" "$DEBINXDIR"/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
 		MD5OLD=$(/bb/md5sum "$I" | cut -f1 -d" ")
-		MD5NEW=$(grep "$DEBINFO:" /tmp/PREBUILTMD5SUMLIST | cut -f2 -d" ")
+		MD5NEW=$(grep "$DEBINFO:" "$DEBINXDIR"/PREBUILTMD5SUMLIST | cut -f2 -d" ")
 		if [ "$MD5NEW" != "$MD5OLD" ]; then
 			echo "Removing "$I"..."
 			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize
@@ -244,9 +254,9 @@ if ls *.tar.gz > /dev/null 2>&1; then
 		else
 			: #echo ""$DEBINFO" package files are up to date."
 		fi
-	elif grep "$DEBINFO:" /tmp/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
+	elif grep "$DEBINFO:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 		MD5OLD=$(/bb/md5sum "$I" | cut -f1 -d" ")
-		MD5NEW=$(grep "$DEBINFO:" /tmp/PKGDATAFILEMD5SUMLIST | cut -f2 -d" ")
+		MD5NEW=$(grep "$DEBINFO:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST | cut -f2 -d" ")
 		if [ "$MD5NEW" != "$MD5OLD" ]; then
 			echo "Removing "$I"..."
 			ls -l "$I" | cut -f5 -d" " >> /tmp/.debpurgedsize

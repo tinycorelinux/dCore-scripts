@@ -293,9 +293,9 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	sudo mv NEWDEBINX OLDDEBINX > /dev/null 2>&1
 	##
 elif [ -f update/"$UPDATETARGET".sce ]; then
-	if [ -f "$UPDATETARGET".sce.debinx ]; then
+	if [ -f update/"$UPDATETARGET".sce.debinx ]; then
 		MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
-		MDOLD=`cat "$UPDATETARGET".sce.debinx`
+		MDOLD=`cat update/"$UPDATETARGET".sce.debinx`
 		if [ "$MDOLD" == "$MDNEW" ]; then
 			echo "         ${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
 			exit 0
@@ -495,7 +495,15 @@ elif [ "$SELECT" == "TRUE" ]; then
 			getDeps "$D"
 			for I in `echo "$DEPLIST"`; do
 				UPDATETARGET="$I"
-				if [ -f "$UPDATETARGET".sce.debinx ]; then
+				if [ -f "$SCEDIR"/update/"$UPDATETARGET".sce.debinx ]; then
+					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+					MDOLD=`cat "$SCEDIR"/update/"$UPDATETARGET".sce.debinx`
+					if [ "$MDOLD" == "$MDNEW" ]; then
+						echo "         ${YELLOW}"$UPDATETARGET"${NORMAL} is up to date."
+						echo "$UPDATETARGET" >> /tmp/.updatechecked
+						continue
+					fi
+				elif [ -f "$UPDATETARGET".sce.debinx ]; then 
 					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 					MDOLD=`cat "$UPDATETARGET".sce.debinx`
 					if [ "$MDOLD" == "$MDNEW" ]; then
@@ -504,6 +512,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 						continue
 					fi
 				fi
+				
 				if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
 					:
 				else
