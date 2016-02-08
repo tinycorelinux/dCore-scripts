@@ -167,9 +167,9 @@ TARGET="$1"
 
 ## Update the DEBINX files
 # debGetEnv "$2" || exit 1
-read DEBINX < /tmp/debinx
+read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
-read DEBINX_SECURITY < /tmp/debinx_security
+read DEBINX_SECURITY < /etc/sysconfig/tcedir/import/debinx/debinx_security
 DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 echo " "
 echo "Using Package Index:"
@@ -542,7 +542,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 				exit 1
 			fi		
 			echo ""$DEBINFO":  "$MD5NEW"" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
-			read DEBINX < /tmp/debinx
+			read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		## Third check to see if package is available as security update.
@@ -568,12 +568,12 @@ for DEBINFO in `ls -t /tmp/work`; do
 			fi
 		
 			echo ""$DEBINFO":  "$MD5NEW"" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
-			read DEBINX < /tmp/debinx
+			read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		else 
 			## Fourth package is standard Debian repo one.
-			read DEBINX < /tmp/debinx
+			read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
 			MD5NEW=$(getMd5sum "$DEBINFO")
@@ -595,7 +595,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			fi
 		
 			echo ""$DEBINFO":  "$MD5NEW"" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum
-			read DEBINX < /tmp/debinx
+			read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		fi	

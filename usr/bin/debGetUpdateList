@@ -90,11 +90,11 @@ getMd5sum2() {
 
 read IMPORTMIRROR < /opt/tcemirror                                                                             
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
-read DEBINX < /tmp/debinx
-read DEBINX_SECURITY < /tmp/debinx_security
+read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
+read DEBINX_SECURITY < /etc/sysconfig/tcedir/import/debinx/debinx_security
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 if [ -f /etc/sysconfig/tcedir/import/debinx/"$DEBINX_SECURITY" ]; then
-	read DEBINX_SECURITY < /tmp/debinx_security
+	read DEBINX_SECURITY < /etc/sysconfig/tcedir/import/debinx/debinx_security
 	DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 fi
 

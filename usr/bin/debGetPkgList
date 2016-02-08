@@ -12,7 +12,7 @@ elif [ "$BUILD" == "armv7" ]; then
 	DEBBUILD="armhf"
 fi
 
-read DEBINX_SECURITY < /tmp/debinx_security
+read DEBINX_SECURITY < /etc/sysconfig/tcedir/import/debinx/debinx_security
 DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 
 getDeps1() {
@@ -88,7 +88,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
     [ -z "$DEPS" ] && exit 1
     echo "$DEPS"
   else
-    read DEBINX < /tmp/debinx
+    read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
     DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
     DEPS="$(getDeps1 $1)"
     [ -z "$DEPS" ] && exit 1
@@ -101,7 +101,7 @@ elif sudo grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null; then
     [ -z "$DEPS" ] && exit 1
     echo "$DEPS"
 else
-    read DEBINX < /tmp/debinx
+    read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
     DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
     DEPS="$(getDeps1 $1)"
     [ -z "$DEPS" ] && exit 1

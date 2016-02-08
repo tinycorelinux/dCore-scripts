@@ -172,7 +172,7 @@ if [ "$PRESERVEDEBINXMODE" = "TRUE" ]; then
 	echo " "
 	echo "Preserving local DEBINX..."
         #echo " "
-	[ -s /tmp/debinx ] || sudo debGetEnv "$2"
+	[ -s /etc/sysconfig/tcedir/import/debinx/debinx ] || sudo debGetEnv "$2"
 	if [ "$?" != "0" ]; then
 		echo "Error updating DEBINX files, exiting.."
 	fi
@@ -184,7 +184,7 @@ echo "Checking for deprecated DEB files..."
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
-read DEBINX_SECURITY < /tmp/debinx_security
+read DEBINX_SECURITY < /etc/sysconfig/tcedir/import/debinx/debinx_security
 DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/"$DEBINX_SECURITY""
 
 
@@ -220,7 +220,7 @@ if ls *.deb > /dev/null 2>&1; then
 		: #echo ""$DEBINFO" package files are up to date."
 	fi	
     else
- 	read DEBINX < /tmp/debinx
+ 	read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 	DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 	NAMENEW=$(getName "$DEBINFO")
 	NAMENEW="${NAMENEW##*/}"

@@ -11,9 +11,9 @@
 TCEDIR=/etc/sysconfig/tcedir
 DEBDIR="/etc/sysconfig/tcedir/import/debs"
 UNPACKDIR=/etc/sysconfig/tcedir/import/
-read DEBINX < /tmp/debinx
+read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
-DEBINX1="/tmp/debinx1"
+DEBINX1="/etc/sysconfig/tcedir/import/debinx/debinx1"
 TARGET="$1"
 BUILD=`getBuild`
 if [ "$BUILD" == "x86" ]; then
@@ -141,7 +141,7 @@ else
    		ISIZE=`grep ^"$I"-data: /tmp/.importsizelist | awk '{print $3}'`
    		[ ! -f "$DEBDIR"/"$I"-data.tar.gz ] && [ ! -z "$DSIZE" ] && [ "$DSIZE" -eq "$DSIZE" ] && echo $DSIZE >> /tmp/.importdsize
    		[ ! -z "$ISIZE" ] && [ "$ISIZE" -eq "$ISIZE" ] && echo "$ISIZE" >> /tmp/.importisize
-		DEBINX1="/tmp/debinx1"
+		DEBINX1="/etc/sysconfig/tcedir/import/debinx/debinx1"
 	else
 		read FULLPATH < /tmp/work/"$I"
        		THISDEB="${FULLPATH##*/}"

@@ -109,14 +109,14 @@ then
 	echo "No Package Index Available"
 	exit 1
 else
-	echo "$DEBINX" > /tmp/debinx
+	echo "$DEBINX" > /etc/sysconfig/tcedir/import/debinx/debinx
 fi
 
 if [ -z "$DEBINX_SECURITY" ]
 then
 	echo "No Security Package Index Available"
 else
-	echo "$DEBINX_SECURITY" > /tmp/debinx_security
+	echo "$DEBINX_SECURITY" > /etc/sysconfig/tcedir/import/debinx/debinx_security
 fi
 
 if ls "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then 

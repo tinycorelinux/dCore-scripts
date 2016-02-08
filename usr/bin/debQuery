@@ -38,8 +38,8 @@ then
 	exit 1
 fi
 
-[ -s /tmp/debinx ] || debGetEnv "$2"
-read DEBINX < /tmp/debinx
+[ -s /etc/sysconfig/tcedir/import/debinx/debinx ] || debGetEnv "$2"
+read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 read MIRROR < /opt/debmirror
 
 query "$1"

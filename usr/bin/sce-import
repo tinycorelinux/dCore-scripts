@@ -137,7 +137,7 @@ shift `expr $OPTIND - 1`
 if [ ! "$NOLOCK" == "TRUE" ]; then
 	if [ -f /tmp/.scelock ]; then
 		LOCK=`cat /tmp/.scelock`
-		if /bb/ps | /bb/grep "$LOCK" | /bb/grep -v grep > /dev/null 2>&1; then
+		if /bb/ps | /bb/grep "^$LOCK " | /bb/grep -v grep > /dev/null 2>&1; then
 			echo "Another SCE utility is presently in use, exiting.."
 			exit 1
 		fi
@@ -259,7 +259,7 @@ if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	fi
 else
 	cd "$DEBINXDIR"
-	if [ ! -s /tmp/debinx ] || [ ! -f deb2sce.tar.gz ]; then
+	if [ ! -s /etc/sysconfig/tcedir/import/debinx/debinx ] || [ ! -f deb2sce.tar.gz ]; then
 		echo "${YELLOW}Warning: ${NORMAL}please run sce-import without the -p option to update your DEBINX data."
 		exit 1
 	fi
@@ -275,7 +275,7 @@ else
 	cd "$HERE"
 fi
 
-read DEBINX < /tmp/debinx
+read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 
 checklist() {
