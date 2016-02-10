@@ -30,18 +30,19 @@ abort_to_saved_dir(){
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-	echo
-	echo "${YELLOW}sce-load - load SCE(s) into RAM for use, typically located in /tce/sce/.${NORMAL}"
-	echo
+	echo " "
+	echo "${YELLOW}sce-load - load SCE(s) and any SCE(s) that it depends on into RAM for use,"
+	echo "           SCEs typically located in /etc/sysconfig/tcedir/sce/.${NORMAL}"
+	echo " "
 	echo "Usage:"
-	echo
+	echo " "
 	echo "${YELLOW}'"sce-load"'${NORMAL}            menu prompt, select SCE to load."
 	echo "${YELLOW}'"sce-load SCE"'${NORMAL}        directly load the named SCE."
 	echo "${YELLOW}'"sce-load SCE1 SCE2"'${NORMAL}  directly load multiple SCEs."
 	echo "${YELLOW}'"sce-load -b SCE"'${NORMAL}     internal use only, to load SCEs at boot time."
 	echo "${YELLOW}'"sce-load -d SCE"'${NORMAL}     write any debug information to var/log/sce.log."
 	echo "${YELLOW}'"sce-load -s SCE"'${NORMAL}     suppress loading outputs like ' *.sce: OK '."
-	echo
+	echo " "
 exit 1
 fi
 
@@ -58,17 +59,17 @@ choose(){
 	rm "$MOUNTED"
 
 	if [ ! -s "$TMP" ]; then
-		echo "Nothing found to load."
+		echo "Nothing found to load, exiting.."
 		exit 1
 	fi
-	select2 "dCore - Select SCE to load" "$TMP"
+	select2 "Select SCE to load." "$TMP"
 	TARGETAPP="$(cat  /tmp/select.ans)"
 	rm "$TMP"
 	if [ "$TARGETAPP" == "" ]; then
-		echo "No selection was made.  Exiting.."
+		echo "No selection made, exiting.."
 		exit 0
 	fi
-	[ "$SUPPRESS" ] || echo "Loading $TARGETAPP"
+	[ "$SUPPRESS" ] || echo "Loading "$TARGETAPP"..."
 
 }
 
@@ -83,7 +84,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-		        [ "$SUPPRESS" ] || echo ""$APPNAME" is already installed!"
+		        [ "$SUPPRESS" ] || echo ""$APPNAME" is already loaded!"
 			continue
 		fi
 	fi
@@ -91,7 +92,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-		        [ "$SUPPRESS" ] || echo ""$APPNAME" is already installed!"
+		        [ "$SUPPRESS" ] || echo ""$APPNAME" is already loaded!"
 			continue
 		fi
 	fi
@@ -100,7 +101,7 @@ processAPP(){
 	elif [ -f "$TCEDIR"/sce/"$TARGETAPP" ]; then
 		TARGETAPP="$TCEDIR"/sce/"$TARGETAPP"
 	else
-		echo "$TARGETAPP not found!"
+		echo "'"$TARGETAPP"' does not exist, exiting.."
 		abort_to_saved_dir
 	fi
 	#FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
@@ -332,7 +333,7 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		cd "$TARGETDIR"
 		md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
 		if [ "$?" != 0 ]; then
-			echo "Md5sum error on "$TARGETDIR"/"$THISSCE".  Exiting.."
+			echo "Md5sum error on "$TARGETDIR"/"$THISSCE", exiting.."
 			cd "$SAVED_DIR"
 		fi
 	fi

@@ -14,18 +14,21 @@ cd "$SCEDIR"
 
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-	echo
-	echo "${YELLOW}sce-remove - remove SCE(s) upon shutdown or reboot.${NORMAL}"
-	echo
+	echo " "
+	echo "${YELLOW}sce-remove - remove SCE(s) upon shutdown or reboot, removing an SCE that other"
+	echo "             SCE(s) depend on for shared dependencies will also flag these for"
+	echo "             removal, SCE(s) flagged for removal are listed in /tmp/.removesce.${NORMAL}"
+	echo " "
 	echo "Usage:"
-	echo
+	echo " "
 	echo "${YELLOW}'"sce-remove"'${NORMAL}          select SCE(s) for removal from list."
-	echo "${YELLOW}'"sce-remove SCE"'${NORMAL}      mark SCE and SCEs that depend on it for removal."
-	echo "${YELLOW}'"sce-remove -k"'${NORMAL}       select SCE(s) for removal from list, keep .lst and"
-        echo "                      .dep files, which are useful for future imports."
-	echo "${YELLOW}'"sce-remove -k SCE"'${NORMAL}   mark SCE and SCEs that depend on it for removal, keep"
-        echo "                      .lst and .dep files, which are useful for future imports."
-	echo
+	echo "${YELLOW}'"sce-remove SCE"'${NORMAL}      mark SCE and any SCE(s) that depend on it for removal."
+	echo "${YELLOW}'"sce-remove -k"'${NORMAL}       select SCE(s) for removal from list, keep .lst and .dep"
+        echo "                      files, which are useful for future imports."
+	echo "${YELLOW}'"sce-remove -k SCE"'${NORMAL}   mark SCE and any SCE(s) that depend on it for removal,"
+        echo "                      keep .lst and .dep files, which are useful for future"
+	echo "                      imports."
+	echo " "
 exit 1
 fi
 
@@ -52,7 +55,7 @@ if [ -z "$SCE" ]; then
 	ls *.sce | sed 's:.sce$::' | sort > /tmp/.scermlist
 	while true; do
 		[ ! -s /tmp/.scermlist ] && break
-		cat /tmp/.scermlist | select2 "Choose the sce(s) you want to remove on shutdown, press Enter with no selection to exit menu." "-"
+		cat /tmp/.scermlist | select2 "Choose SCE(s) to remove on shutdown, press Enter without selection to proceed." "-"
 		read ANS < /tmp/select.ans
 		if [ "$ANS" == "" ]; then
 			break
@@ -65,7 +68,7 @@ else
 	if [ -f "$SCE".sce ]; then
 		echo "$SCE" > /tmp/.removesce
 	else
-		echo ""$SCE".sce does not exist.  Exiting.."
+		echo "'"$SCE".sce' does not exist, exiting.."
 		exit 1
 	fi
 fi 
@@ -93,9 +96,5 @@ if [ -s /tmp/.removesce ]; then
 	echo "The above SCE(s) will be removed upon shutdown or reboot."
 else
 	echo " "
-	echo "No SCEs were chosen to be removed."
+	echo "No SCE(s) selected for removal, exiting.."
 fi
- 
-
-
-

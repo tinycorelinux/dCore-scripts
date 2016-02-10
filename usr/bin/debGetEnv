@@ -13,6 +13,7 @@ exit_tcnet() {
 
 zsyncDebianIndex()
 {
+        echo "Syncing Debian Index: "$DEBINX""
 	getMirror "$BUILD"
 	MIRROR="${MIRROR%/tcz}"
 	cd "$TCEDIR"/import/debinx
@@ -22,14 +23,13 @@ zsyncDebianIndex()
 	else
 		wget -O "$TCEDIR"/import/debinx/"$DEBINX" "$MIRROR"/"$DEBINX"
 	fi
-        echo
-        echo "Debian Index synced: "$DEBINX""
-        echo
+        echo " "
 	cd - > /dev/null
 }
 
 zsyncDebianSecurityIndex()
 {
+        echo "Syncing Debian Security Index: "$DEBINX_SECURITY""
 	getMirror "$BUILD"
 	MIRROR="${MIRROR%/tcz}"
 	cd "$TCEDIR"/import/debinx
@@ -39,13 +39,9 @@ zsyncDebianSecurityIndex()
 	else
 		wget -O "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" "$MIRROR"/"$DEBINX_SECURITY"
 	fi
-        echo
-        echo "Debian Security Index synced: "$DEBINX_SECURITY""
-        echo
+        echo " "
 	cd - > /dev/null
 }
-
-
 
 unset DEBINX MIRROR
 TCEDIR=/etc/sysconfig/tcedir
@@ -66,7 +62,11 @@ else
 	REPO=wheezy
 fi
 
-echo "$DISTRO"
+echo "Fetching updated DEBINX..."
+echo " "
+echo "Distro: "$DISTRO""
+echo " "
+
 BUILD="$1"
 [ -z "$BUILD" ] && BUILD=`getBuild`
 case $BUILD in
@@ -106,7 +106,7 @@ read MIRROR_SECURITY 2>/dev/null < /opt/securitymirror 2>/dev/null || MIRROR_SEC
 
 if [ -z "$DEBINX" ]
 then
-	echo "No Package Index Available"
+	echo "No Package Index Available."
 	exit 1
 else
 	echo "$DEBINX" > /etc/sysconfig/tcedir/import/debinx/debinx
@@ -114,7 +114,7 @@ fi
 
 if [ -z "$DEBINX_SECURITY" ]
 then
-	echo "No Security Package Index Available"
+	echo "No Security Package Index Available."
 else
 	echo "$DEBINX_SECURITY" > /etc/sysconfig/tcedir/import/debinx/debinx_security
 fi
@@ -162,7 +162,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 
 			else
 				echo " "
-				echo -n "WARNING:   Repo "$MIR"  "$DIST"  "$POOL" is unavailable."
+				echo -n "WARNING: Repo "$MIR"  "$DIST"  "$POOL" is unavailable."
 				exit 1
 				#echo " "
 				#sleep 5
@@ -204,7 +204,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				echo "Using the repo mirror "$MIR""
 			else
 				echo " "
-				echo -n "WARNING:   Repo "$MIR" "$DIST" "$POOL" is unavailable."
+				echo -n "WARNING: Repo "$MIR" "$DIST" "$POOL" is unavailable."
 				exit 1
 				#echo " "
 				#sleep 5
