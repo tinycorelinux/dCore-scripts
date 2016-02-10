@@ -115,7 +115,7 @@ echo "Checking for unneeded DEB files..."
 		E=`basename "$I" .sce`
 		debPurge "$E"
 	done
-	ls /etc/sysconfig/tcedir/import/debs/ | cut -f1 -d_ | sed 's:.tar.gz::' | sed 's:-data.tar.gz::' | sort | uniq > /tmp/.debpurgelist
+	ls /etc/sysconfig/tcedir/import/debs/ | cut -f1 -d_ | sed 's:.tar.gz::' | sed 's:-data::' | sort | uniq > /tmp/.debpurgelist
 	for I in `cat /tmp/.debpurgelist`; do 
 			grep "^$I$" /tmp/.deblist > /dev/null 2>&1 && sed -i "/^$I$/d" /tmp/.debpurgelist
 	done
