@@ -33,7 +33,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}'"sce-import -o PKG"'${NORMAL}      add resulting SCE to ondemand."
 	echo "${YELLOW}'"sce-import -p PKG"'${NORMAL}      preserve old DEBINX, no new fetch, better performance."
 	echo "${YELLOW}'"sce-import -r PKG"'${NORMAL}      use RAM, swap partition/file to unpack source DEBs."
-	echo "${YELLOW}'"sce-import -s PKG"'${NORMAL}      list sizes of packages to be fetched and installed."
+	echo "${YELLOW}'"sce-import -s PKG"'${NORMAL}      estimate package, HD and RAM space, warn as needed."
 	echo "${YELLOW}'"sce-import -u PKG"'${NORMAL}      (DEFAULT) update mode, sync new DEBINX files."
 	echo "${YELLOW}'"sce-import -v PKG"'${NORMAL}      view list of packages the imported SCE contains."
 	echo "${YELLOW}'"sce-import -z PKG"'${NORMAL}      ignore locale.nopurge, sce.purge, sceconfig files."
@@ -184,7 +184,6 @@ fi
 if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
 	echo " "
 	echo "$TARGET is a blocked package, exiting.."
-	echo " "
 	exit 0
 fi
 
@@ -255,12 +254,13 @@ echo " "
 if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	sudo debGetEnv "$2"
 	if [ "$?" != "0" ]; then
+		echo " "
 		echo "Error updating DEBINX files, exiting.."
 	fi
 else
 	cd "$DEBINXDIR"
 	if [ ! -s /etc/sysconfig/tcedir/import/debinx/debinx ] || [ ! -f deb2sce.tar.gz ]; then
-		echo "${YELLOW}Warning: ${NORMAL}please run sce-import without the -p option to update your DEBINX data."
+		echo "${YELLOW}Warning:${NORMAL} Please run sce-import without the -p option to update DEBINX data."
 		exit 1
 	fi
 	tar xvf deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
@@ -306,10 +306,11 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 			cat /tmp/.pkglisterror
 			echo " "
 			if [ ! -f /tmp/.importinteractive ]; then
-				echo "The above files in "$TARGETFILE" do not exist in dCore repos."
-				echo -n "Do you want to proceed anyway, enter (y)es or (n)o: "
+				echo "${YELLOW}Warning:${NORMAL} The above files in "$TARGETFILE" do not exist in dCore repos."
+				echo " "
+				echo -n "To proceed anyway press Enter, (n)o exits: "
 				read ans
-				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
 					:
 				else
 					exit 1
@@ -331,10 +332,11 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 			cat /tmp/.pkglisterror
 			echo " "
 			if [ ! -f /tmp/.importinteractive ]; then
-				echo "The above files in "$TARGETFILE" do not exist in dCore repos."
-				echo -n "Do you want to proceed anyway, enter (y)es or (n)o: "
+				echo "${YELLOW}Warning:${NORMAL} The above files in "$TARGETFILE" do not exist in dCore repos."
+				echo " "
+				echo -n "To proceed anyway press Enter, (n)o exits: "
 				read ans
-				if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
 					:
 				else
 					exit 1
@@ -344,9 +346,14 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 			fi
 		fi
 		sudo cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
+	elif [ ! "$1" ]; then
+		echo " "
+		echo "Please specify a target file when using the -l option, exiting.."
+		exit 0
 	else
-		echo "Neither a file named "$1" nor does "$TCEDIR"/sce/"$1".sce.lst exist."
-		echo "Exiting.."
+		echo " "
+		echo "Neither '"$1"' or "$TCEDIR"/sce/"$1".sce.lst files exist,"
+		echo "exiting.."
 		exit 0
 	fi
 fi
@@ -360,6 +367,7 @@ if [ "$DEPS" == "TRUE" ]; then
 	echo "Using the -d option."
 elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
 	touch /tmp/.importdep
+	echo " "
 	echo "Existing dep file found."
 fi
 
@@ -374,7 +382,8 @@ MNTDEV=`df "$REALDIR" | tail -n1 | cut -f1 -d" "`
 case "$MS_MNTS" in 
 			*"$MNTDEV"* )
 				if [ ! -f /tmp/.importram ]; then 
-					echo "WARNING: "$REALDIR" resides on a Windows filesystem."
+					echo " "
+					echo "${YELLOW}Warning:${NORMAL} "$REALDIR" resides on a Windows filesystem."
 					echo "Please try again with the -r flag to unpack files in RAM."
 					exit 1
 				fi	
@@ -407,24 +416,28 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	if [ -f "$TARGETFILE" ]; then
   		echo " "
   		if [ -f /tmp/.importinteractive ]; then
-  			echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
+  			echo -n "Creating "$TARGET".sce from package list "$TARGETFILE"."
   			mksce "$TARGET"
+			exit 0
   		else
-                        echo "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?"
-                        echo "Enter (n)o to import a standard "$TARGET" package if it exists,"
-                        echo "any key will use the existing package list."
-                        echo
-                        echo "WARNING: Entering (n)o will delete "$TARGETFILE" now."
+                        echo "Create "$TARGET".sce from package list "$TARGETFILE"?"
+			echo " "
+			echo "Press Enter to use this package list or enter (n)o to import a standard"
+			echo "'"$TARGET"' package if it exists, Ctrl-C aborts:"
+                        echo " "
+                        echo "${YELLOW}Warning:${NORMAL} Entering (n)o will delete "$TARGETFILE" now."
                         read ans                  
 	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  			sudo rm /tmp/.targetfile
 				mksce "$TARGET" 
 				sudo rm "$TARGETFILE"
+				exit 0
 			else
-				mksce "$TARGET" 
+				mksce "$TARGET"
+				exit 0
 			fi
 		fi
-	else 
+	else
 		echo "Please specify a target file when using the -l option, exiting.."
 		exit 1
 	fi  
@@ -432,21 +445,25 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 elif [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	echo " "
   	if [ -f /tmp/.importinteractive ]; then
-  		echo -n "Creating "$TARGET".sce from package list "$TARGETFILE""
+  		echo -n "Creating "$TARGET".sce from package list "$TARGETFILE"."
   		mksce "$TARGET"
+		exit 0
   	else
-	  	echo "Do you want to create "$TARGET".sce from package list "$TARGETFILE"?"
-		echo "Enter (n)o to import a standard "$TARGET" package if it exists,"
-                echo "any key will use the existing package list."
-                echo
-		echo "WARNING: Entering (n)o will delete "$TARGETFILE" now."
+	  	echo "Create "$TARGET".sce from package list "$TARGETFILE"?"
+		echo " "
+		echo "Press Enter to use this package list or enter (n)o to import a standard"
+		echo "'"$TARGET"' package if it exists, Ctrl-C aborts:"
+                echo " "
+		echo "${YELLOW}Warning:${NORMAL} Entering (n)o will delete "$TARGETFILE" now."
                 read ans                  
 	  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  		sudo rm /tmp/.targetfile
 			mksce "$TARGET" 
 			sudo rm "$TARGETFILE"
+			exit 0
 		else
-			mksce "$TARGET" 
+			mksce "$TARGET"
+			exit 0
 		fi
 	fi  
 # Below checks for package in the extra repos first, then the 
@@ -464,12 +481,12 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 		DEB=`sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d:`
 	fi
 	if [ -z "$DEB" ]; then
-		{ sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+		{ sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select package for "$1"" "-"
   		read DEB < /tmp/select.ans   
   		[ "$DEB" == "q" ] && exit 1
 	fi     
   else
-	{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+	{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select package for '"$TARGET"'." "-"
   	read DEB < /tmp/select.ans                                                                           
   	[ "$DEB" == "q" ] && exit 1     
   fi 
@@ -484,8 +501,10 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 # fi
   echo "Importing ${YELLOW}"$DEB"${NORMAL}."
   mksce "$DEB"
-fi  
-elif [ "$CHECKALL" != "TRUE" ]; then   
+  exit 0
+ fi
+
+elif [ "$CHECKALL" != "TRUE" ]; then  
  if sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
   if [ -f /tmp/.importinteractive ]; then
 	if sudo grep -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1; then
@@ -498,12 +517,12 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 		DEB=`sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d:`
 	fi
 	if [ -z "$DEB" ]; then
-		{ sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+		{ sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx*  | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select package for "$1"" "-"
   		read DEB < /tmp/select.ans                                                                           
   		[ "$DEB" == "q" ] && exit 1
 	fi     
   else
-	{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select Package for $1" "-"
+	{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq | select "Select package for '"$TARGET"'." "-"
   	read DEB < /tmp/select.ans                                                                           
   	[ "$DEB" == "q" ] && exit 1     
   fi
@@ -520,9 +539,9 @@ elif [ "$CHECKALL" != "TRUE" ]; then
   echo " "
   echo "Importing ${YELLOW}"$DEB"${NORMAL}."
   mksce "$DEB"
+  exit 0
+ fi
 fi
 
-echo " "
 echo "'"$TARGET"' is not available as a package, exiting.."
 exit 1
-fi

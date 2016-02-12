@@ -191,62 +191,71 @@ fi
 # The existence of /tmp/.importram means that unpacking will occur in memory.
 if [ -f /tmp/.importram ]; then
   echo " "
-  echo ""$DSIZEFINAL" MB of downloads required." 
-  echo ""$ISIZEFINAL" MB needed for unpacking archives - RAM will be used." 
-  echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
+#  echo ""$DSIZEFINAL" MB of downloads required." 
+#  echo ""$ISIZEFINAL" MB needed for unpacking archives - RAM will be used." 
+#  echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
+  echo "Downloads required:               "$DSIZEFINAL" MB" 
+  echo "Required RAM to unpack archives:  "$ISIZEFINAL" MB" 
+  echo "Compressed archives utilized:     "$ARCHSIZEFINAL" MB"
   echo " "
   if [ "$TCERAM" == "1" ]; then
 	echo " "
   	echo "`readlink /etc/sysconfig/tcedir` is located in RAM."
-  	echo ""$FULLSIZE" MB is a good estimate of RAM needed, "$RAM".00 MB is available." 
+  	echo ""$FULLSIZE" MB of RAM needed / "$RAM".00 MB available." 
   	echo " "
 	FULLSIZE=`echo "$FULLSIZE" | awk '{printf("%.0f\n", $1)}'`
   	if [ "$FULLSIZE" -gt "$RAM" ]; then
-		echo "WARNING: You do not have enough free RAM, you should not proceed." >> /tmp/.importfree
+		echo "${YELLOW}WARNING:${NORMAL} Not enough free RAM, recommend do not proceed." >> /tmp/.importfree
 		echo " " >> /tmp/.importfree
 	fi
 
   else
 	echo " "
-    	echo ""$HDNEEDED" MB is a good estimate of `readlink /etc/sysconfig/tcedir` space needed, "$HDFREE" MB is available."
-  	echo ""$ISIZEFINAL" MB is a good estimate of RAM needed, "$RAM".00 MB is available." 
+    	echo ""$HDNEEDED" MB of `readlink /etc/sysconfig/tcedir` space needed / "$HDFREE" MB available."
+  	echo ""$ISIZEFINAL" MB of RAM needed / "$RAM".00 MB available." 
   	echo " "
 	ISIZEFINAL=` echo "$ISIZEFINAL" | awk '{printf("%.0f\n", $1)}'`
 	HDNEEDED=`echo "$HDNEEDED" | awk '{printf("%.0f\n", $1)}'`
 	HDFREE=`echo "$HDFREE" | awk '{printf("%.0f\n", $1)}'`
   	if [ "$ISIZEFINAL" -gt "$RAM" ]; then
-		echo "WARNING: You do not have enough free RAM, you should not proceed." >> /tmp/.importfree
+		echo "${YELLOW}WARNING:${NORMAL} Not enough free RAM, recommend do not proceed." >> /tmp/.importfree
 	fi
 	if [ "$HDNEEDED" -gt "$HDFREE" ]; then
-		echo "WARNING: You do not have enough `readlink /etc/sysconfig/tcedir` space, you should not proceed." >> /tmp/.importfree
+		echo "${YELLOW}WARNING:${NORMAL} Not enough `readlink /etc/sysconfig/tcedir` space, recommend do not proceed." >> /tmp/.importfree
 	fi
   fi
 else
     if [ "$TCERAM" == "1" ]; then
 	echo " "
-	echo ""$DSIZEFINAL" MB of downloads required." 
-  	echo ""$ISIZEFINAL" MB needed for unpacking archives."
-  	echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
+	#echo ""$DSIZEFINAL" MB of downloads required." 
+  	#echo ""$ISIZEFINAL" MB needed for unpacking archives."
+  	#echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
+	echo "Downloads required:               "$DSIZEFINAL" MB" 
+	echo "Required RAM to unpack archives:  "$ISIZEFINAL" MB" 
+	echo "Compressed archives utilized:     "$ARCHSIZEFINAL" MB"
 	echo " "
   	echo "`readlink /etc/sysconfig/tcedir` is located in RAM."
-  	echo ""$FULLSIZE" MB is a good estimate of RAM needed, "$RAM".00 MB is available." 
+  	echo ""$FULLSIZE" MB of RAM needed / "$RAM".00 MB available." 
   	echo " "
 	FULLSIZE=`echo "$FULLSIZE" | awk '{printf("%.0f\n", $1)}'`
   	if [ "$FULLSIZE" -gt "$RAM" ]; then
-		echo "WARNING: You do not have enough free RAM, you should not proceed." >> /tmp/.importfree
+		echo "${YELLOW}WARNING:${NORMAL} Not enough free RAM, recommend do not proceed." >> /tmp/.importfree
 	fi
     else
   		echo " "
-  		echo ""$DSIZEFINAL" MB of downloads required." 
-  		echo ""$ISIZEFINAL" MB needed for unpacking archives."
-  		echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
+  		#echo ""$DSIZEFINAL" MB of downloads required." 
+  		#echo ""$ISIZEFINAL" MB needed for unpacking archives."
+  		#echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
+		echo "Downloads required:               "$DSIZEFINAL" MB" 
+		echo "Required RAM to unpack archives:  "$ISIZEFINAL" MB"
+		echo "Compressed archives utilized:     "$ARCHSIZEFINAL" MB"
 		echo " "
-  		echo ""$FULLSIZE" MB is a good estimate of `readlink /etc/sysconfig/tcedir` space needed, "$HDFREE" MB is available."
+  		echo ""$FULLSIZE" MB of `readlink /etc/sysconfig/tcedir` space needed / "$HDFREE" MB available."
     		echo " "
 	FULLSIZE=`echo "$FULLSIZE" | awk '{printf("%.0f\n", $1)}'`
 	HDFREE=`echo "$HDFREE" | awk '{printf("%.0f\n", $1)}'`
      	if [ "$FULLSIZE" -gt "$HDFREE" ]; then
-		echo "WARNING: You do not have enough `readlink /etc/sysconfig/tcedir` space, you should not proceed." >> /tmp/.importfree
+		echo "${YELLOW}WARNING:${NORMAL} Not enough `readlink /etc/sysconfig/tcedir` space, recommend do not proceed." >> /tmp/.importfree
     	fi
     fi
 fi            
@@ -256,7 +265,3 @@ fi
 [ -f /tmp/.importisize ] && sudo rm /tmp/.importisize
 [ -f /tmp/.importsizelist ] && sudo rm /tmp/.importsizelist
 [ -f /tmp/.oldsize ] && sudo rm /tmp/.oldsize
-
-
-
-

@@ -38,7 +38,7 @@ END {
 			if ( j <= NR ) printf "\t%2d. %s\n", j,  A[j]
 		}
 		printf "\nEnter selection ( 1 - %s ) or (q)uit", NR
-		if ( NR > 15 ) printf ", (n)ext, (p)revious: "
+		if ( NR > 15 ) printf ", (n)ext/Enter, (p)revious"
 		printf ": "
 		selection = read_console()
 		if (selection == "q") break

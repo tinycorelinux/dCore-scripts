@@ -50,7 +50,7 @@ fetchDeb() {
 		sudo /bb/wget -O "$DEBS"/"$THISDEB"  ${MIRROR}/${1}
 		if [ "$?" != 0 ]
 		then
-			echo "failed on download of $1"
+			echo "Failed on download of "$1"."
 			echo "$1" >> /tmp/import.log
 			selectDeb ${1}
 		fi
@@ -160,7 +160,7 @@ shift `expr $OPTIND - 1`
 
 if [ -z "$1" ]
 then
-	echo "you must specify a target."
+	echo "You must specify a target."
 	exit 1
 fi
 TARGET="$1"
@@ -183,7 +183,7 @@ read MIRROR_SECURITY < /opt/securitymirror
 echo "Using "$DISTRO" Mirror: $MIRROR"
 echo " "
 echo "Using "$DISTRO" Security Mirror: $MIRROR"
-echo
+echo " "
 unset META
 
 ## Remove unused debinx files in TCEDIR that will cause confusion if their /opt/debextra entries do not exist.
@@ -199,17 +199,17 @@ fi
 
 ## Determine which repo the package will come from.
 if [ -s /tmp/.targetfile ]; then
-	echo "$TARGET is from your own custom package list:"
+	echo "$TARGET is from your own custom package list."
 	echo "`readlink /tmp/.targetfile`"
 	META="$TARGET"
 
 elif sudo grep -q "^$TARGET:" "$DEBINXDIR"/PKGADDDEP && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a meta package of related "$DISTRO" ones."
-        echo
+        echo " "
 	META="$TARGET"
 elif sudo grep "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
 	echo "$TARGET is a dCore premade package."
-        echo
+        echo " "
 	META="$TARGET"
 elif sudo grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
 	EXTRAINX=`grep -l "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
@@ -218,16 +218,16 @@ elif sudo grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* > /dev/null
 	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
 	EXTRAPOOL=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $3}'`
 	echo "$TARGET is a "$DISTRO" `echo "$EXTRAREPO"` `echo "$EXTRAPOOL"` package from `echo "$EXTRAMIRROR"`."
-        echo
+        echo " "
 elif sudo grep -q "^Package: $TARGET$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
 	echo "$TARGET is a "$DISTRO" "$REPO" security update package from `cat /opt/securitymirror`."
-        echo
+        echo " "
 elif sudo grep -q "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a standard "$DISTRO" "$REPO" package."
-        echo
+        echo " "
 else
 	echo "$TARGET is not a standard "$DISTRO", dCore precompiled, or meta package, exiting.."
-        echo
+        echo " "
 	cleanup
 	exit 1
 fi
@@ -261,16 +261,14 @@ cd "$TARGET"
 ## Get the dependencies of the desired packages or list of packages.
 if [ -s /tmp/.targetfile ]; then
 	echo "Gathering dependency info..."
-	echo
+	echo " "
 	for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
-		debGetDeps "$I" > /dev/null 2>&1
-	done &
-	/usr/bin/rotdash $!
+		debGetDeps "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
+	done
 else
 	echo "Gathering dependency info..."
-	echo
-	debGetDeps "$TARGET" > /dev/null 2>&1 &
-	/usr/bin/rotdash $!
+	echo " "
+	debGetDeps "$TARGET" > /dev/null 2>&1 & /usr/bin/rotdash $!
 fi
 ##
 
@@ -278,15 +276,14 @@ fi
 if [ -s /tmp/.blocked ] && [ ! -f /tmp/.importinteractive ]; then
 	cat /tmp/.blocked
 	echo " "
-	echo "The above packages are blocked dependencies of $TARGET"
+	echo "The above packages are blocked dependencies of "$TARGET""
 	echo "and will not be included in the final SCE, which can cause problems,"
-	echo -n "proceed anyway enter (y)es or (n)o: "
+	echo -n "to proceed anyway press Enter, (n)o exits: "
 	read ans
 	echo " "
-	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+	if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
 		:
 	else
-		echo "Exiting.."
 		cleanup
 		exit 1
 	fi
@@ -296,7 +293,7 @@ fi
 ## Determine if 'Recommended' packages are desired.
 if [ -f /tmp/.recommends ]; then
 	echo "Gathering Recommended packages info..."
-	echo
+	echo " "
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
 			debGetRecommends "$I" > /dev/null 2>&1 &
@@ -308,8 +305,8 @@ if [ -f /tmp/.recommends ]; then
 	if [ -s /tmp/sce.recommends ]; then
 		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 		touch usr/local/sce/"$TARGET"/recommends
-		echo "Gathering dependency info on Recommended packages..."
-		echo
+		echo "Gathering Recommended packages dependency info..."
+		echo " "
 		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
 		done &
@@ -320,7 +317,7 @@ fi
 ## Determine if 'Suggested' packages are desired.
 if [ -f /tmp/.suggests ]; then
 	echo "Gathering Suggested packages info..."
-	echo
+	echo " "
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
 			debGetSuggests "$I" > /dev/null 2>&1 &
@@ -332,8 +329,8 @@ if [ -f /tmp/.suggests ]; then
 	if [ -s /tmp/sce.suggests ]; then
 		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 		touch usr/local/sce/"$TARGET"/suggests
-		echo "Gathering dependency info on Suggested packages..."
-		echo
+		echo "Gathering Suggested packages dependency info..."
+		echo " "
 		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
 		done &
@@ -346,10 +343,10 @@ fi
 if [ -f /tmp/.importdep ]; then
 	if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 		if [ ! -f /tmp/.importinteractive ]; then
-			echo "Use the existing "$TARGET".sce.dep file for dependencies?"
-			echo "WARNING: Answering no will delete "$TARGET".sce.dep now."
+			echo "Press Enter to use existing "$TARGET".sce.dep file for dependencies,"
+			echo "otherwise enter (n)o."
 			echo " "
-			echo -n "Enter (y)es or (n)o: "		
+			echo "${YELLOW}WARNING:${NORMAL} Answering no will delete "$TARGET".sce.dep now."
 			read ans
 			if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
 				sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
@@ -372,16 +369,17 @@ fi
 
 
 if [ -f /tmp/.sceconflict ]; then
-	echo "$TARGET already exists in the dep files of the SCEs below,"
-	echo "aborting to prevent circular dependency."
 	echo " "
+	echo ""$TARGET" already exists in the dep files of the SCE(s) below,"
+	echo "aborting to prevent circular dependency."
 	cat /tmp/.sceconflict
 	cleanup
 	exit 1
 fi
 
 if [ -f /tmp/.pkgexists ]; then
-	echo "$TARGET already exists in below dependency SCEs, aborting."
+	echo " "
+	echo ""$TARGET" already exists in below dependency SCEs, aborting."
 	echo " "
 	cat /tmp/.pkgexists
 	cleanup
@@ -391,26 +389,22 @@ fi
 
 ## Bring up list of SCEs that will profide package dependencies for the TARGET one.
 if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
-	echo
-	echo "The SCE(s) below from your SCE directory will be used"
-	echo "to provide dependencies for "$TARGET".sce."
-	echo
+	echo "The SCE(s) below will provide dependencies for "$TARGET".sce."
+	echo " "
 	for FILE in `cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep`; do
 		if [ -f /etc/sysconfig/tcedir/sce/"$FILE".sce ]; then
 			echo "$FILE"
 		fi
 	done
-	sleep 3
-	echo
-	echo
+	sleep 3 & /usr/bin/rotdash $!
+	echo " "
 fi
 ##
 
 ## Check free space function when specified.
 if [ -f /tmp/.importsize ]; then
-	echo "Determining HD and RAM space needed.."
-	debGetSize "$TARGET" &
-	/usr/bin/rotdash $!
+	echo "Estimating HD and RAM space needed..."
+	debGetSize "$TARGET" & /usr/bin/rotdash $!
 fi
 ##
 
@@ -418,13 +412,13 @@ fi
 if [ -s /tmp/.importfree ]; then
 	cat /tmp/.importfree
 	echo " "
-	echo "The above errors occured. Do you wish to continue importing"
-	echo -n ""$TARGET" despite the warnings, enter (y)es or (n)o: "
+	echo "Please review warning(s), to import "$TARGET" anyway"
+	echo -n "press Enter, (n)o exits: "
 	read ans
-	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+	if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
+		echo " "
 		:
 	else
-		echo "Exiting.."
 		cleanup
 		exit 1
 	fi
@@ -437,15 +431,17 @@ for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo 
 
 ## Function to provide a "less" list of packages that will be imported.
 if [ -f /tmp/.viewpkgs ]; then
-	echo "Do you want to review the list of packages that $TARGET.sce"
-	echo "will consist of? Enter (y)es or (n)o to view and (q)uit to exit"
-	echo -n "reading the package list: "
+	echo "Press Enter to review the packages "$TARGET".sce will consist of,"
+	echo -n "enter (n)o to skip review: "
 	read ans
-	if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
-		less /tmp/.pkglist
+	echo " "
+	if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
+		more /tmp/.pkglist
+		sleep 3
+		echo " "
 	fi
-	echo
 	echo  "Proceeding to create $TARGET.sce..."
+	echo " "
 fi
 ##
 
@@ -474,11 +470,12 @@ for DEBINFO in `ls -t /tmp/work`; do
 			cd "$DEBS"
 			if [ -f "${DEBINFO}".tar.gz ]; then
 				if [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` != `grep "^$DEBINFO": "$DEBINXDIR"/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then
-					echo "Fetching updated "${DEBINFO}".tar.gz.."
+					echo "Fetching updated "${DEBINFO}".tar.gz..."
 					rm "${DEBINFO}".tar.gz*
 					/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
 					if [ "$?" != 0 ]
 					then
+						echo " "
 						echo "Failed download of "${DEBINFO}".tar.gz, exiting.."
 						cleanup
 						exit 1
@@ -489,6 +486,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 				/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
 				if [ "$?" != 0 ]
 				then
+					echo " "
 					echo "Failed download of "${DEBINFO}".tar.gz, exiting.."
 					cleanup
 					exit 1
@@ -496,6 +494,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			fi
 
 			if ! grep "^$DEBINFO": "$DEBINXDIR"/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
+				echo " "
 				echo ""$DEBINFO" is missing from the prebuilt md5sum list, exiting.."
 				cleanup
 				exit 1
@@ -511,6 +510,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 					echo "${DEBINFO}".tar.gz  >> /tmp/import.log
 				fi  
 			else 
+				echo " "
 				echo "md5sum failed for "${DEBINFO}".tar.gz, exiting.."
 				cleanup
 				exit 1
@@ -529,7 +529,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
-					echo "Fetching updated "$THISDEB".."
+					echo "Fetching updated "$THISDEB"..."
 					fetchDeb "$FULLPATH"
 				fi
 			else
@@ -537,6 +537,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			fi
 			sudo debExtract "$DEBS"/"$THISDEB" "$TARGET"
 			if [ "$?" != "0" ]; then
+				echo " "
 				echo "Failure to extract "$THISDEB", exiting.."
 				cleanup
 				exit 1
@@ -554,7 +555,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
-					echo "Fetching updated "$THISDEB".."
+					echo "Fetching updated "$THISDEB"..."
 					fetchDeb "$FULLPATH"
 				fi
 			else
@@ -562,6 +563,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			fi
 			sudo debExtract "$DEBS"/"$THISDEB" "$TARGET"
 			if [ "$?" != "0" ]; then
+				echo " "
 				echo "Failure to extract "$THISDEB", exiting.."
 				cleanup
 				exit 1
@@ -581,7 +583,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
-					echo "Fetching updated "$THISDEB".."
+					echo "Fetching updated "$THISDEB"..."
 					fetchDeb "$FULLPATH"
 				fi
 			else
@@ -589,6 +591,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			fi
 			sudo debExtract "$DEBS"/"$THISDEB" "$TARGET"
 			if [ "$?" != "0" ]; then
+				echo " "
 				echo "Failure to extract "$THISDEB", exiting.."
 				cleanup
 				exit 1
