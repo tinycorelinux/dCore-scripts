@@ -72,7 +72,8 @@ getSuggests2() {
 
 if [ -z "$1" ]
 then
-	echo "you must specify a search target."
+	echo " "
+	echo "Must specify a search target, exiting.."
 	exit 1
 fi
 if ls -A /opt/debextra > /dev/null 2>&1; then

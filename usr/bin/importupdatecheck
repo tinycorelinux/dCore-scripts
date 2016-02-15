@@ -34,12 +34,14 @@ ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/*.deb2sce
 [ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
 
 exit_tcnet() {
-	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
+	echo " "
+	echo "Issue connecting to `cat /opt/tcemirror`, exiting.."
 	exit 1
 }
 
 
 if [ ! -f "$SCEDIR"/"$SCE".sce ] && [ ! -f "$SCEDIR"/update/"$SCE".sce ]; then
+  echo " "
   echo ""$SCE".sce does not exist, exiting.."
   exit 1
 fi
@@ -76,6 +78,7 @@ echo "$FILE" > /tmp/FILE
 
 ## Find if needed md5sum file inside SCE exists.
 if [ ! -f "$FILE" ]; then
+   echo " "
    echo ""$1" does not have the needed md5sum list, exiting.."
    if sudo busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
      sudo busybox umount /tmp/sceupdatetest
@@ -89,8 +92,7 @@ unset DEPLIST
 		
 [ -d /tmp/work ] && sudo rm -r /tmp/work
 
-echo "SCE:  "$SCE"" >> /tmp/updateavailable
-echo "  Available package updates:" >> /tmp/updateavailable
+echo "${YELLOW}"$SCE" updates:${NORMAL}" >> /tmp/updateavailable
 if [ -f "$DATADIR"/"$SCE".dep ]; then
 	DEP1=`md5sum "$DATADIR"/"$SCE".dep | cut -f1 -d" "`
 	if [ -f /etc/sysconfig/tcedir/sce/"$SCE".sce.dep ]; then
@@ -99,16 +101,16 @@ if [ -f "$DATADIR"/"$SCE".dep ]; then
 		DEP2="0"
 	fi
 	if [ "$DEP1" != "$DEP2" ]; then
-		echo "    "$SCE".sce.dep has been changed and needs to be re-imported." >> /tmp/updateavailable
-		echo " " >> /tmp/updateavailable
-		echo "     Dep file when imported:" >> /tmp/updateavailable
+		echo ""$SCE".sce.dep changed and needs to be re-imported." >> /tmp/updateavailable
+		#echo " " >> /tmp/updateavailable
+		echo "Dep file when imported:" >> /tmp/updateavailable
 		awk '{print "        " $0 }' "$DATADIR"/"$SCE".dep >> /tmp/updateavailable
-		echo " " >> /tmp/updateavailable	
+		#echo " " >> /tmp/updateavailable	
 		if [ -f /etc/sysconfig/tcedir/sce/"$SCE".sce.dep ]; then
-			echo "     Dep file now existing /etc/sysconfig/tcedir/sce/"$SCE".sce.dep:" >> /tmp/updateavailable
+			echo "Dep file now existing /etc/sysconfig/tcedir/sce/"$SCE".sce.dep:" >> /tmp/updateavailable
 			awk '{print "        " $0 }' /etc/sysconfig/tcedir/sce/"$SCE".sce.dep >> /tmp/updateavailable 
 		else
-			echo "     Dep file does not exist: /etc/sysconfig/tcedir/sce/"$SCE".sce.dep." >> /tmp/updateavailable
+			echo "Dep file does not exist: /etc/sysconfig/tcedir/sce/"$SCE".sce.dep." >> /tmp/updateavailable
 		fi
 		echo " " >> /tmp/updateavailable
 		echo "$1" >> /tmp/.sceupdatelist
@@ -124,16 +126,16 @@ if [ -f "$DATADIR"/"$SCE".lst ]; then
 		LST2="0"
 	fi
 	if [ "$LST1" != "$LST2" ]; then
-		echo "    "$SCE".sce.lst has been changed and needs to be re-imported." >> /tmp/updateavailable
-		echo " " >> /tmp/updateavailable
-		echo "     List file when imported:" >> /tmp/updateavailable
+		echo ""$SCE".sce.lst changed and needs to be re-imported." >> /tmp/updateavailable
+		#echo " " >> /tmp/updateavailable
+		echo "List file when imported:" >> /tmp/updateavailable
 		awk '{print "        " $0 }' "$DATADIR"/"$SCE".lst >> /tmp/updateavailable
-		echo " " >> /tmp/updateavailable	
+		#echo " " >> /tmp/updateavailable	
 		if [ -f /etc/sysconfig/tcedir/sce/"$SCE".sce.lst ]; then
-			echo "     List file now existing /etc/sysconfig/tcedir/sce/"$SCE".sce.lst:" >> /tmp/updateavailable
+			echo "List file now existing /etc/sysconfig/tcedir/sce/"$SCE".sce.lst:" >> /tmp/updateavailable
 			awk '{print "        " $0 }' /etc/sysconfig/tcedir/sce/"$SCE".sce.lst >> /tmp/updateavailable
 		else
-			echo "     List file does not exist: /etc/sysconfig/tcedir/sce/"$SCE".sce.lst." >> /tmp/updateavailable
+			echo "List file does not exist: /etc/sysconfig/tcedir/sce/"$SCE".sce.lst." >> /tmp/updateavailable
 		fi
 		echo " " >> /tmp/updateavailable
 		echo "$1" >> /tmp/.sceupdatelist
@@ -257,12 +259,12 @@ while read line; do
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			if ! grep "^$E-deb2sce:" "$FILEDATA" > /dev/null 2>&1; then
 				MD5SSOLD="0"
-				echo "    "$E"   New "$E".deb2sce startup script update available." >>  /tmp/updateavailable 
+				echo "New "$E".deb2sce startup script available." >>  /tmp/updateavailable 
 			fi
 			if [ "$MD5SSNEW" != "$MD5SSOLD" ]; then
 				if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates	
-					echo "    "$E"   Updated "$E".deb2sce startup script update available." >>  /tmp/updateavailable 
+					echo "Updated "$E".deb2sce startup script available." >>  /tmp/updateavailable 
 				fi
 			fi
 		elif grep "^$E-deb2sce:" "$FILEDATA" > /dev/null 2>&1; then
@@ -270,11 +272,11 @@ while read line; do
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			if ! grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 				MD5SSNEW="0"
-				echo "    "$E"   "$E".deb2sce startup script has been removed in the repo." >>  /tmp/updateavailable
+				echo ""$E".deb2sce startup script was removed in the repo." >>  /tmp/updateavailable
 			elif [ "$MD5SSNEW" != "$MD5SSOLD" ]; then
 				if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates 
-					echo "    "$E"   Updated "$E".deb2sce startup script update available." >>  /tmp/updateavailable
+					echo "Updated "$E".deb2sce startup script available." >>  /tmp/updateavailable
 				fi
 			fi
 		
@@ -293,7 +295,7 @@ while read line; do
 	        	if [ "$MD5DATANEW" != "$MD5DATAOLD" ]; then
 			 	#if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates
-			   		echo "    "$E"   Updated "$E"-data.tar.gz extra files update available." >>  /tmp/updateavailable 
+			   		echo "Updated "$E"-data.tar.gz extra files available." >>  /tmp/updateavailable 
 	        		#fi	
 			fi
 		
@@ -306,7 +308,7 @@ while read line; do
 	        	if [ "$MD5DATANEW" != "$MD5DATAOLD" ]; then
 			 	#if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates
-			   		echo "    "$E"   "$E"-data.tar.gz has been removed on the server." >>  /tmp/updateavailable 
+			   		echo ""$E"-data.tar.gz was removed on the server." >>  /tmp/updateavailable 
 	        		#fi	
 			fi
 		fi	
@@ -317,7 +319,7 @@ done < /tmp/sce.md5new
 if [ -s /tmp/.importnotneeded ]; then
 	for I in `cat /tmp/.importnotneeded | sort | uniq`; do 
 		A=`grep "^$I;" /tmp/.importpkgtype | cut -f1 -d";"`
-		echo "    "$I"       "$A"  ---  is no longer needed by "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
+		echo ""$I"  "$A" is no longer needed by "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
 	done
 	echo "$1" >> /tmp/.sceupdatelist
 fi 
@@ -325,7 +327,7 @@ fi
 if [ -s /tmp/.importmissing ]; then
 	for I in `cat /tmp/.importmissing | sort | uniq`; do 
 		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
-		echo "    "$I"       "$A"  ---  is missing in "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
+		echo ""$I"  "$A" is missing in "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
  	done  
 	echo "$1" >> /tmp/.sceupdatelist
 fi
@@ -333,7 +335,7 @@ fi
 if [ -s /tmp/.importupdates ]; then
 	for I in `cat /tmp/.importupdates | sort | uniq`; do 
 		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
-		echo "    "$I"       "$A" " >> /tmp/updateavailable
+		echo ""$I"  "$A" " >> /tmp/updateavailable
  	done  
 	echo "$1" >> /tmp/.sceupdatelist
 fi
@@ -343,7 +345,7 @@ if [ -s /tmp/ssupdates ]; then
 fi
 
 if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.importmissing ] && [ ! -s /tmp/.importnotneeded ]; then
-	echo "    None" >> /tmp/updateavailable
+	echo "None" >> /tmp/updateavailable
 	MD5SUMDEBINX=`md5sum "$TCEDIR"/import/debinx/NEWDEBINX | cut -f1 -d" "`
 	if [ -f "$SCEDIR"/update/"$SCE".sce ]; then
 		echo "$MD5SUMDEBINX" | sudo tee "$SCEDIR"/update/"$SCE".sce.debinx > /dev/null 2>&1

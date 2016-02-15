@@ -80,8 +80,7 @@ if [ -z "$1" ]; then
 fi
 
 if [ -n "$2" ]; then
-     echo
-     echo "Warning: only one SCE per sce-update session can be entered in command line."
+     echo "Only one SCE per sce-update session can be entered in command line."
      echo "Run 'sce-update' to check more than one SCE per session."
      exit 1
 fi
@@ -178,7 +177,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	elif [ ! "$NONINTERACTIVE" == "TRUE" ]; then
 		echo " "
 		echo "Press Enter to proceed with update check, (v)iew DEBINX diff, Ctrl-C aborts"
-		echo -n "(scroll DEBINX diff with spacebar and enter (q)uit to exit): "
+		echo -n "(to view DEBINX diff use spacebar and (q)uit): "
 		read ans
 		echo " "
 		if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
@@ -188,15 +187,9 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			more -s /tmp/debinx.diff
 			rm /tmp/debinx.diff
 			echo " "
-			echo -n "Press Enter to proceed with update check or (q)uit to exit: "
+			echo -n "Press Enter to proceed with update check, Ctrl-C aborts: "
 			read ans
 			echo " "
-			if [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
-				echo "Exiting.."
-				exit 0
-			else
-				:
-			fi
 		fi
 	fi
 
@@ -249,6 +242,8 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 				done
 			else
 				echo " "
+				echo "Update check completed."
+				echo " "
 				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
                                 echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
@@ -256,6 +251,10 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 				echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 					more -s /tmp/updateavailable
+					echo " "
+					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
+					read ans
+					echo " "
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do
 					if [ -f /tmp/"$I".recommended ]; then
@@ -276,13 +275,19 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			fi
 		else
 			echo " "
+			echo "Update check completed."
+			echo " "
 			cat  /tmp/.sceupdatelist | sort | uniq
 			echo " "
-                        echo -n "The above SCE(s) need updating, (v)iew updates, Ctrl-C aborts: "
+			echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
 				read ans
 				echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 					more -s /tmp/updateavailable
+					echo " "
+					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
+					read ans
+					echo " "
 				fi
 		fi
 	else
@@ -334,6 +339,8 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 				done
 			else
 				echo " "
+				echo "Update check completed."
+				echo " "
 				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
                                 echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
@@ -341,6 +348,10 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 				echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 					more -s /tmp/updateavailable
+					echo " "
+					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
+					read ans
+					echo " "
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do
 					if [ -f /tmp/"$I".recommended ]; then
@@ -361,12 +372,19 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 			fi
 		else
 			echo " "
+			echo "Update check completed."
+			echo " "
 			cat  /tmp/.sceupdatelist | sort | uniq
-			echo -n "The above SCE(s) need updating, (v)iew updates, Ctrl-C aborts: "
+			echo " "
+			echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
 			read ans
 			echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 					more -s /tmp/updateavailable
+					echo " "
+					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
+					read ans
+					echo " "
 				fi
 		fi
 	else
@@ -417,6 +435,8 @@ elif [ -f "$UPDATETARGET".sce ]; then
 				done
 			else
 				echo " "
+				echo "Update check completed."
+				echo " "
 				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
 				echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
@@ -424,6 +444,10 @@ elif [ -f "$UPDATETARGET".sce ]; then
 				echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 					more -s /tmp/updateavailable
+					echo " "
+					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
+					read ans
+					echo " "
 				fi
 				for I in `cat /tmp/.sceupdatelist`; do
 					if [ -f /tmp/"$I".recommended ]; then
@@ -444,14 +468,20 @@ elif [ -f "$UPDATETARGET".sce ]; then
 			fi
 		else
 			echo " "
+			echo "Update check completed."
+			echo " "
 			cat  /tmp/.sceupdatelist | sort | uniq
 			echo " "
-			echo -n "The above SCE(s) need updating, (v)iew updates, Ctrl-C aborts: "
-				read ans
-				echo " "
-				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-					more -s /tmp/updateavailable
-				fi
+			echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
+			read ans
+			echo " "
+			if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+			more -s /tmp/updateavailable
+			echo " "
+			echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
+			read ans
+			echo " "
+			fi
 		fi
 	else
 		echo " "
@@ -474,17 +504,16 @@ elif [ "$SELECT" == "TRUE" ]; then
 	##
 	echo " "
 	if [ ! -s /tmp/.sceupdatechoose ]; then
-		echo "No SCEs were chosen for update, exiting.."
+		echo " "
+		echo "No SCEs chosen for update check, exiting.."
 		exit 0
 	fi
 	cat /tmp/.sceupdatechoose | tr -d :
 	echo " "
-	#echo -n "Enter (y)es to update check above SCE(s), (n)o to exit: "
 	echo -n "Press Enter to update check above SCE(s), (q)uit to exit: "
 	read ANS
 	echo " "
 	if [ "$ANS" == "q" ] || [ "$ANS" == "Q" ]; then
-		echo "Exiting.."
 		cleanup
 		exit 0
 	else
@@ -542,6 +571,8 @@ elif [ "$SELECT" == "TRUE" ]; then
 					done
 				else
 					echo " "
+					echo "Update check completed."
+					echo " "
 					cat  /tmp/.sceupdatelist | sort | uniq
 					echo " "
 					echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
@@ -549,6 +580,10 @@ elif [ "$SELECT" == "TRUE" ]; then
 					echo " "
 					if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 						more -s /tmp/updateavailable
+						echo " "
+						echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
+						read ans
+						echo " "
 					fi
 					for I in `cat /tmp/.sceupdatelist`; do
 						if [ -f /tmp/"$I".recommended ]; then
@@ -569,13 +604,19 @@ elif [ "$SELECT" == "TRUE" ]; then
 				fi
 			else
 				echo " "
+				echo "Update check completed."
+				echo " "
 				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
-				echo -n "The above SCE(s) need updating, (v)iew updates, Ctrl-C aborts: "
+				echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
 					read ans
 					echo " "
 					if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 						more -s /tmp/updateavailable
+						echo " "
+						echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
+						read ans
+						echo " "
 					fi
 			fi
 		else
@@ -588,11 +629,10 @@ elif [ "$SELECT" == "TRUE" ]; then
 			exit 0
 		else
 			echo " "
-			echo "Do you want to review the list of packages that had updates available?"
-			echo -n "Enter (y)es or (n)o to view then (q)uit to exit reading the package list: "
+			echo -n "Press Enter to review packages that had updates available, (n)o to exit: "
 			read ans
 			echo " "
-			if [ "$ans" == "y" ] || [ "$ans" == "Y" ]; then
+			if [ "$ans" == "" ]; then
 				more -s /tmp/updateavailable
 			fi			
 			exit 0

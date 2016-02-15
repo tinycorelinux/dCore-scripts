@@ -204,7 +204,7 @@ if [ -s /tmp/.targetfile ]; then
 	META="$TARGET"
 
 elif sudo grep -q "^$TARGET:" "$DEBINXDIR"/PKGADDDEP && ! sudo grep "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1; then
-	echo "$TARGET is a meta package of related "$DISTRO" ones."
+	echo "$TARGET is a metapackage of related "$DISTRO" ones."
         echo " "
 	META="$TARGET"
 elif sudo grep "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
@@ -226,8 +226,7 @@ elif sudo grep -q "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
 	echo "$TARGET is a standard "$DISTRO" "$REPO" package."
         echo " "
 else
-	echo "$TARGET is not a standard "$DISTRO", dCore precompiled, or meta package, exiting.."
-        echo " "
+	echo ""$TARGET" is not a standard "$DISTRO", dCore or metapackage, exiting.."
 	cleanup
 	exit 1
 fi
