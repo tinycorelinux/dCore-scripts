@@ -83,10 +83,9 @@ process_sce() {
 	if [ -d "$TCEDIR"/sce/update ]; then
 		mv "$TCEDIR"/sce/update/* "$TCEDIR"/sce/ > /dev/null 2>&1
 	fi
-	while read S
-	do
-		su "$USER" -c "sce-load -b "$S""
-	done < "$SCELIST"
+	for I in `cat "$SCELIST"`; do
+		su "$USER" -c "sce-load -b "$I""
+	done 
 }
 process_CD() {
 	CD="/mnt/${DEV#/dev/}"
@@ -120,7 +119,7 @@ for i in `cat /proc/cmdline`; do
 	esac
 done
 
-TARGETLIST="sceboot.lst"
+[ -n "$TARGETLIST" ] || TARGETLIST="sceboot.lst"
 SCEDIR="$TCEDIR"/sce
 SCELIST="$TCEDIR"/"$TARGETLIST"
 
