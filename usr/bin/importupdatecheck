@@ -3,6 +3,7 @@
 
 . /etc/init.d/tc-functions
 useBusybox
+HERE=`pwd`
 TCEDIR=/etc/sysconfig/tcedir
 DEBINXDIR="$TCEDIR"/import/debinx
 SCE="$1"
@@ -32,6 +33,7 @@ ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/*.deb2sce
 [ -d /tmp/work ] && sudo rm -r /tmp/work
 [ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
 [ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
+[ -f /tmp/.updatemd5failed ] && sudo rm /tmp/.updatemd5failed
 
 exit_tcnet() {
 	echo " "
@@ -44,6 +46,20 @@ if [ ! -f "$SCEDIR"/"$SCE".sce ] && [ ! -f "$SCEDIR"/update/"$SCE".sce ]; then
   echo " "
   echo ""$SCE".sce does not exist, exiting.."
   exit 1
+fi
+echo "${YELLOW}"$SCE" updates:${NORMAL}" >> /tmp/updateavailable
+if [ -f "$SCEDIR"/"$SCE".sce.md5.txt ]; then
+	cd "$SCEDIR"
+	if md5sum -c "$SCE".sce.md5.txt > /dev/null 2>&1; then
+		cd "$HERE"
+	else
+		echo "$SCE" >> /tmp/.sceupdatelist
+		echo "$SCE did not pass the md5sum check, re-importing.." >> /tmp/updateavailable
+		cd "$HERE"
+	fi
+else
+	echo "$SCE" >> /tmp/.sceupdatelist
+	echo "$SCE does not have the needed $SCE.md5.txt file, re-importing.." >> /tmp/updateavailable
 fi
 
 if sudo busybox mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then
@@ -92,7 +108,7 @@ unset DEPLIST
 		
 [ -d /tmp/work ] && sudo rm -r /tmp/work
 
-echo "${YELLOW}"$SCE" updates:${NORMAL}" >> /tmp/updateavailable
+
 if [ -f "$DATADIR"/"$SCE".dep ]; then
 	DEP1=`md5sum "$DATADIR"/"$SCE".dep | cut -f1 -d" "`
 	if [ -f /etc/sysconfig/tcedir/sce/"$SCE".sce.dep ]; then
@@ -344,7 +360,7 @@ if [ -s /tmp/ssupdates ]; then
 	echo "$1" >> /tmp/.sceupdatelist
 fi
 
-if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.importmissing ] && [ ! -s /tmp/.importnotneeded ]; then
+if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.importmissing ] && [ ! -s /tmp/.importnotneeded ] && [ ! -s /tmp/.updatemd5failed ]; then
 	echo "None" >> /tmp/updateavailable
 	MD5SUMDEBINX=`md5sum "$TCEDIR"/import/debinx/NEWDEBINX | cut -f1 -d" "`
 	if [ -f "$SCEDIR"/update/"$SCE".sce ]; then
