@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/busybox ash
 # (c) Jason Williams 2013
 HERE=`pwd`
 . /etc/init.d/tc-functions

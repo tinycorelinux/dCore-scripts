@@ -1,4 +1,4 @@
-#!/bb/ash
+#!/bin/busybox ash
 # From concepts of deb2tcz by Jason Williams
 # Enhanced for Arm ports by Robert Shingledecker
 # postinst / TC customization script support by Brian Smith

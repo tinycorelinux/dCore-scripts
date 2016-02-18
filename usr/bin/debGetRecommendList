@@ -1,4 +1,4 @@
-#!/bb/ash
+#!/bin/busybox ash
 # (c) Robert Shingledecker 2012
 # getRecommends function 2016 Jason Williams
 

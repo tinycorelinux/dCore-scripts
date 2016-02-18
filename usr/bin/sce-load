@@ -1,4 +1,4 @@
-#!/bb/ash
+#!/bin/busybox ash
 # (c) Robert Shingledecker 2013
 # Contributions by Jason Williams
 . /etc/init.d/tc-functions

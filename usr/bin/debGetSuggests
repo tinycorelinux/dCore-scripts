@@ -1,4 +1,4 @@
-#!/bb/ash
+#!/bin/busybox ash
 # getDeps is based on concepts from tce-tree.sh - Copyright 2010 Brian Smith
 # Licensed under GPLv2 License
 # getDeps morphed from tree.sh by Robert Shingledecker - Nov 2012

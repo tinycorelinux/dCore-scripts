@@ -54,12 +54,14 @@ if [ -f "$SCEDIR"/"$SCE".sce.md5.txt ]; then
 		cd "$HERE"
 	else
 		echo "$SCE" >> /tmp/.sceupdatelist
-		echo "$SCE did not pass the md5sum check, re-importing.." >> /tmp/updateavailable
+		echo "$SCE" >>/tmp/.updatemd5failed
+		echo "$SCE did not pass the md5sum check, needs re-importing.." >> /tmp/updateavailable
 		cd "$HERE"
 	fi
 else
 	echo "$SCE" >> /tmp/.sceupdatelist
-	echo "$SCE does not have the needed $SCE.md5.txt file, re-importing.." >> /tmp/updateavailable
+	echo "$SCE" >>/tmp/.updatemd5failed
+	echo "$SCE does not have the needed $SCE.md5.txt file, needs re-importing.." >> /tmp/updateavailable
 fi
 
 if sudo busybox mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then

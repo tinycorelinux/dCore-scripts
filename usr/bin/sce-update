@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/busybox ash
 # (c) Jason Williams 2014
 # Tool to update SCE extensions in bulk.
 
@@ -279,16 +279,12 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			echo " "
 			cat  /tmp/.sceupdatelist | sort | uniq
 			echo " "
-			echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
-				read ans
-				echo " "
-				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-					more -s /tmp/updateavailable
-					echo " "
-					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
-					read ans
-					echo " "
-				fi
+			echo -n "Press Enter to view package updates, Ctrl-C aborts: "
+			read ans
+			if [ "$ans" == "" ]; then
+				more -s /tmp/updateavailable
+			fi
+			exit 0
 		fi
 	else
 		echo " "
@@ -376,16 +372,12 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 			echo " "
 			cat  /tmp/.sceupdatelist | sort | uniq
 			echo " "
-			echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
+			echo -n "Press Enter to view package updates, Ctrl-C aborts: "
 			read ans
-			echo " "
-				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-					more -s /tmp/updateavailable
-					echo " "
-					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
-					read ans
-					echo " "
-				fi
+			if [ "$ans" == "" ]; then
+				more -s /tmp/updateavailable
+			fi
+			exit 0
 		fi
 	else
 		echo " "
@@ -472,16 +464,12 @@ elif [ -f "$UPDATETARGET".sce ]; then
 			echo " "
 			cat  /tmp/.sceupdatelist | sort | uniq
 			echo " "
-			echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
+			echo -n "Press Enter to view package updates, Ctrl-C aborts: "
 			read ans
-			echo " "
-			if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-			more -s /tmp/updateavailable
-			echo " "
-			echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
-			read ans
-			echo " "
+			if [ "$ans" == "" ]; then
+				more -s /tmp/updateavailable
 			fi
+			exit 0
 		fi
 	else
 		echo " "
@@ -608,16 +596,12 @@ elif [ "$SELECT" == "TRUE" ]; then
 				echo " "
 				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
-				echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
-					read ans
-					echo " "
-					if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-						more -s /tmp/updateavailable
-						echo " "
-						echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
-						read ans
-						echo " "
-					fi
+				echo -n "Press Enter to view package updates, Ctrl-C aborts: "
+				read ans
+				if [ "$ans" == "" ]; then
+					more -s /tmp/updateavailable
+				fi
+				exit 0
 			fi
 		else
 			:
@@ -631,7 +615,6 @@ elif [ "$SELECT" == "TRUE" ]; then
 			echo " "
 			echo -n "Press Enter to review packages that had updates available, (n)o to exit: "
 			read ans
-			echo " "
 			if [ "$ans" == "" ]; then
 				more -s /tmp/updateavailable
 			fi			

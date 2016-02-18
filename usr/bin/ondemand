@@ -1,4 +1,4 @@
-#!/bb/ash
+#!/bin/busybox ash
 # (c) Robert Shingledecker 2009-2012
 . /etc/init.d/tc-functions
 useBusybox
