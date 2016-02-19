@@ -33,7 +33,7 @@ ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/*.deb2sce
 [ -d /tmp/work ] && sudo rm -r /tmp/work
 [ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
 [ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
-[ -f /tmp/.updatemd5failed ] && sudo rm /tmp/.updatemd5failed
+#[ -f /tmp/.updatemd5failed ] && sudo rm /tmp/.updatemd5failed
 
 exit_tcnet() {
 	echo " "
@@ -56,12 +56,16 @@ if [ -f "$SCEDIR"/"$SCE".sce.md5.txt ]; then
 		echo "$SCE" >> /tmp/.sceupdatelist
 		echo "$SCE" >>/tmp/.updatemd5failed
 		echo "$SCE did not pass the md5sum check, needs re-importing.." >> /tmp/updateavailable
+		echo " " >> /tmp/updateavailable
 		cd "$HERE"
+		exit 0
 	fi
 else
 	echo "$SCE" >> /tmp/.sceupdatelist
 	echo "$SCE" >>/tmp/.updatemd5failed
 	echo "$SCE does not have the needed $SCE.md5.txt file, needs re-importing.." >> /tmp/updateavailable
+	echo " " >> /tmp/updateavailable
+	exit 0
 fi
 
 if sudo busybox mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then
@@ -362,7 +366,7 @@ if [ -s /tmp/ssupdates ]; then
 	echo "$1" >> /tmp/.sceupdatelist
 fi
 
-if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.importmissing ] && [ ! -s /tmp/.importnotneeded ] && [ ! -s /tmp/.updatemd5failed ]; then
+if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.importmissing ] && [ ! -s /tmp/.importnotneeded ]; then
 	echo "None" >> /tmp/updateavailable
 	MD5SUMDEBINX=`md5sum "$TCEDIR"/import/debinx/NEWDEBINX | cut -f1 -d" "`
 	if [ -f "$SCEDIR"/update/"$SCE".sce ]; then
