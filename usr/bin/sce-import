@@ -487,7 +487,7 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 			LINES=`/bb/wc -l /tmp/.sceimportselect | cut -f1 -d" "`
 			if [ "$LINES" == "1" ]; then
 				DEB=`cat /tmp/.sceimportselect`
-				echo -n "Do you want to import ${YELLOW}$DEB${NORMAL}?:"
+				echo -n "Do you want to import ${YELLOW}$DEB${NORMAL}? (y/N):"
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
 					:
@@ -527,7 +527,7 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 			LINES=`/bb/wc -l /tmp/.sceimportselect | cut -f1 -d" "`
 			if [ "$LINES" == "1" ]; then
 				DEB=`cat /tmp/.sceimportselect`
-				echo -n "Do you want to import ${YELLOW}$DEB${NORMAL}?:"
+				echo -n "Do you want to import ${YELLOW}$DEB${NORMAL}? (y/N):"
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
 					:
