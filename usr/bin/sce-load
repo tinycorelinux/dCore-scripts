@@ -335,6 +335,7 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		if [ "$?" != 0 ]; then
 			echo "Md5sum error on "$TARGETDIR"/"$THISSCE", exiting.."
 			cd "$SAVED_DIR"
+			continue
 		fi
 	fi
 	if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then

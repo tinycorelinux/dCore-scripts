@@ -345,12 +345,21 @@ if [ -f /tmp/.importdep ]; then
 			echo "Press Enter to use existing "$TARGET".sce.dep file for dependencies,"
 			echo "otherwise enter (n)o."
 			echo " "
-			echo "${YELLOW}WARNING:${NORMAL} Answering no will delete "$TARGET".sce.dep now."
+			echo -n "${YELLOW}WARNING:${NORMAL} Answering no will delete "$TARGET".sce.dep now."
 			read ans
 			if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
-				sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
-				debGetSceDep "$TARGET" 
+				echo "Press Enter to create a new "$TARGET".sce.dep file from existing SCEs."
+				echo -n "otherwise enter (n)o."
+				read ANS
+				if [ "$ANS" == "n" ] || [ "$ANS" == "N" ]; then
+					sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
+				else
+					sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
+					debGetSceDep "$TARGET" 
+				fi
 			else
+				[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
+				cp /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep usr/local/sce/"$TARGET"/"$TARGET".dep
 				debGetSceDep "$TARGET" 
 			fi
 		else
@@ -359,11 +368,31 @@ if [ -f /tmp/.importdep ]; then
 	else
 		debGetSceDep "$TARGET" 
 	fi
-	## Copy .dep file to SCE for integrity check ability.
-	[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
-	cp /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep usr/local/sce/"$TARGET"/"$TARGET".dep
-	debGetSceDep "$TARGET" 
-	##
+elif [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
+	if [ ! -f /tmp/.importinteractive ]; then
+		echo "Press Enter to use existing "$TARGET".sce.dep file for dependencies,"
+		echo "otherwise enter (n)o."
+		echo " "
+		echo -n "${YELLOW}WARNING:${NORMAL} Answering no will delete "$TARGET".sce.dep now."
+		read ans
+		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
+			echo "Press Enter to create a new "$TARGET".sce.dep file from existing SCEs."
+			echo -n "otherwise enter (n)o."
+			read ANS
+			if [ "$ANS" == "n" ] || [ "$ANS" == "N" ]; then
+				sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
+			else
+				sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
+				debGetSceDep "$TARGET" 
+			fi
+		else
+			[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
+			cp /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep usr/local/sce/"$TARGET"/"$TARGET".dep
+			debGetSceDep "$TARGET" 
+		fi
+	else
+		debGetSceDep "$TARGET" 
+	fi
 fi
 
 
