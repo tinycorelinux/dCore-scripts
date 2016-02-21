@@ -25,6 +25,9 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}'"sce-import -c PKG"'${NORMAL}      search packages that contain desired package name."
 	echo "${YELLOW}'"sce-import -d PKG"'${NORMAL}      choose existing SCE(s) to provide dependencies for"
         echo "                         new SCE, may make new SCE significantly smaller."
+	echo "${YELLOW}'"sce-import -D PKG"'${NORMAL}      choose existing SCE(s) to provide dependencies for"
+	echo "                         new SCE, may make new SCE significantly smaller. This option ignores"
+	echo "                         the existing SCEs .dep file and is incompatible with the -d option."			       
         echo "${YELLOW}'"sce-import -k PKG"'${NORMAL}      keep /usr/share/doc and /man in SCE, see man-db."
 	echo "${YELLOW}'"sce-import -l LISTFILE"'${NORMAL} SCE mega-extension created from text file listing one"
         echo "                         PKG per line, eg. sce-import -l /tmp/my_apps contains"
@@ -62,35 +65,6 @@ exit_tcnet() {
 	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
 	exit 1
 }
-[ -d /tmp/work ] && sudo rm -f /tmp/work/* > /dev/null 2>&1
-[ -f /tmp/.viewpkgs ] && sudo rm /tmp/.viewpkgs
-[ -f /tmp/.importinteractive ] && sudo rm /tmp/.importinteractive
-[ -f /tmp/.keepdoc ] && sudo rm /tmp/.keepdoc
-[ -f /tmp/.importram ] && sudo rm /tmp/.importram
-[ -f /tmp/.importsize ] && sudo rm /tmp/.importsize
-[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
-[ -f /tmp/.depfile ] && sudo rm /tmp/.depfile
-[ -f /tmp/.pkgextrafiles ] && sudo rm /tmp/.pkgextrafiles
-[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans   
-[ -f /tmp/.targetfile ] && sudo rm /tmp/.targetfile
-[ -f /tmp/.extrarepodep ] && sudo rm /tmp/.extrarepodep
-[ -f /tmp/.importdep ] && sudo rm /tmp/.importdep
-[ -f /tmp/.importfree ] && sudo rm /tmp/.importfree
-[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
-[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
-[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
-#[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
-[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
-[ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
-[ -f /tmp/.blocked ] && sudo rm /tmp/.blocked
-[ -f /tmp/.pkglisterror ] && sudo rm /tmp/.pkglisterror
-[ -f /tmp/.pkgdeperror ] && sudo rm /tmp/.pkgdeperror
-[ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps
-[ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
-[ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
-[ -f /tmp/.recommends ] && sudo rm /tmp/.recommends
-[ -f /tmp/.suggests ] && sudo rm /tmp/.suggests
-[ -f /tmp/.scenoconfig ] && sudo rm /tmp/.scenoconfig
 
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
@@ -98,7 +72,7 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 
 unset FLAGS PACKAGELIST NOPGREP
-while getopts drsbolknupcvzRSN OPTION
+while getopts drsbolknupcvzRSND OPTION
 do
 	case ${OPTION} in
 		c) CHECKALL=TRUE ;;
@@ -107,6 +81,7 @@ do
 		n) NONINTERACTIVE=TRUE ;;
 		k) KEEPDOC=TRUE ;;
 		d) DEPS=TRUE ;;
+		D) NEWDEPS=TRUE ;;
 		r) RAM=TRUE ;;
 		s) SIZE=TRUE ;;
 		b) FLAGS="$FLAGS"b ; ONBOOT=TRUE ;;
@@ -137,7 +112,7 @@ shift `expr $OPTIND - 1`
 if [ ! "$NOLOCK" == "TRUE" ]; then
 	if [ -f /tmp/.scelock ]; then
 		LOCK=`cat /tmp/.scelock`
-		if /bb/ps | /bb/grep "^$LOCK " | /bb/grep -v grep > /dev/null 2>&1; then
+		if /bb/ps | /bb/grep " $LOCK " | /bb/grep -v grep > /dev/null 2>&1; then
 			echo "Another SCE utility is presently in use, exiting.."
 			exit 1
 		fi
@@ -148,6 +123,38 @@ fi
 
 [ "$FLAGS" ] && FLAGS="-$FLAGS"
 TARGET="$1"
+
+[ -d /tmp/work ] && sudo rm -f /tmp/work/* > /dev/null 2>&1
+[ -f /tmp/.viewpkgs ] && sudo rm /tmp/.viewpkgs
+[ -f /tmp/.importinteractive ] && sudo rm /tmp/.importinteractive
+[ -f /tmp/.keepdoc ] && sudo rm /tmp/.keepdoc
+[ -f /tmp/.importram ] && sudo rm /tmp/.importram
+[ -f /tmp/.importsize ] && sudo rm /tmp/.importsize
+[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
+[ -f /tmp/.depfile ] && sudo rm /tmp/.depfile
+[ -f /tmp/.pkgextrafiles ] && sudo rm /tmp/.pkgextrafiles
+[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans   
+[ -f /tmp/.targetfile ] && sudo rm /tmp/.targetfile
+[ -f /tmp/.extrarepodep ] && sudo rm /tmp/.extrarepodep
+[ -f /tmp/.importdep ] && sudo rm /tmp/.importdep
+[ -f /tmp/.newdep ] && sudo rm /tmp/.newdep
+[ -f /tmp/.importfree ] && sudo rm /tmp/.importfree
+[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
+[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
+[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
+#[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
+[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
+[ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
+[ -f /tmp/.blocked ] && sudo rm /tmp/.blocked
+[ -f /tmp/.pkglisterror ] && sudo rm /tmp/.pkglisterror
+[ -f /tmp/.pkgdeperror ] && sudo rm /tmp/.pkgdeperror
+[ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps
+[ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
+[ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
+[ -f /tmp/.recommends ] && sudo rm /tmp/.recommends
+[ -f /tmp/.suggests ] && sudo rm /tmp/.suggests
+[ -f /tmp/.scenoconfig ] && sudo rm /tmp/.scenoconfig
+
 
 # Strip .sce suffix of package and preceding directory 
 # and preceding directory if specified on command line.
@@ -247,6 +254,22 @@ if grep -i "^SUGGESTS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOC
 elif [ "$SUGGESTS" == "TRUE" ]; then
 	touch /tmp/.suggests
 	echo "Using the -S option."
+fi
+
+# Determine if the -D option or the existence of a dep file
+# is present and use dep file if found.
+if [ "$NEWDEPS" == "TRUE" ]; then
+	touch /tmp/.newdep
+	echo "Using the -D option."
+else
+	if [ "$DEPS" == "TRUE" ]; then
+		touch /tmp/.importdep
+		echo "Using the -d option."
+	elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
+		touch /tmp/.importdep
+		echo " "
+		echo "Existing dep file found."
+	fi
 fi
 
 echo " "
@@ -358,22 +381,6 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 		exit 0
 	fi
 fi
-
-
-
-# Determine if the -d option or the existence of a dep file
-# is present and use dep file if found.
-if [ "$DEPS" == "TRUE" ]; then
-	touch /tmp/.importdep
-	echo "Using the -d option."
-elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
-	touch /tmp/.importdep
-	echo " "
-	echo "Existing dep file found."
-fi
-
-
-
 
 # Check for MS Windows filesystem of TCEDIR, and only continue of RAM 
 # is being used for unpacking.
