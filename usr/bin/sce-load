@@ -101,7 +101,7 @@ processAPP(){
 	elif [ -f "$TCEDIR"/sce/"$TARGETAPP" ]; then
 		TARGETAPP="$TCEDIR"/sce/"$TARGETAPP"
 	else
-		echo "'"$TARGETAPP"' does not exist, exiting.."
+		echo "'"$TARGETAPP"' does not exist, not loading.."
 		abort_to_saved_dir
 	fi
 	#FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
@@ -329,15 +329,17 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	else
 		TARGETDIR="$TCEDIR"/sce/
 	fi
+
 	if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ] && ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
 		cd "$TARGETDIR"
 		md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
 		if [ "$?" != 0 ]; then
-			echo "Md5sum error on "$TARGETDIR"/"$THISSCE", exiting.."
-			cd "$SAVED_DIR"
+			echo "Md5sum error on "$TARGETDIR"/"$TARGETAPP", not loading.."
 			continue
 		fi
+		cd "$HERE"
 	fi
+
 	if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
 		DEPLIST=" $THISSCENAME "
 		for I in `cat "$TARGETDIR"/"$THISSCE".dep`; do 
@@ -347,6 +349,21 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		DEPLIST=" $THISSCENAME "
 	
 	fi
+
+	for I in `echo "$DEPLIST"`; do
+		TARGETAPP=`echo "$I" | tr -d ' '`
+		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ] && ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
+			cd "$TARGETDIR"
+			md5sum -c "$TARGETAPP".sce.md5.txt > /dev/null 2>&1
+			if [ "$?" != 0 ]; then
+				echo "${RED}Md5sum error on "$TARGETDIR""$TARGETAPP".sce, not loading the following:"
+				LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
+				echo "$LIST${NORMAL}"
+				exit 0
+			fi
+			cd "$HERE"
+		fi
+	done
 
 	for I in `echo "$DEPLIST"`; do
 		TARGETAPP=`echo "$I" | tr -d ' '`

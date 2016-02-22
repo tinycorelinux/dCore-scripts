@@ -72,7 +72,7 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 
 unset FLAGS PACKAGELIST NOPGREP
-while getopts drsbolknupcvzRSND OPTION
+while getopts drsbolknupcvzRSN OPTION
 do
 	case ${OPTION} in
 		c) CHECKALL=TRUE ;;
@@ -81,7 +81,6 @@ do
 		n) NONINTERACTIVE=TRUE ;;
 		k) KEEPDOC=TRUE ;;
 		d) DEPS=TRUE ;;
-		D) NEWDEPS=TRUE ;;
 		r) RAM=TRUE ;;
 		s) SIZE=TRUE ;;
 		b) FLAGS="$FLAGS"b ; ONBOOT=TRUE ;;
@@ -256,21 +255,17 @@ elif [ "$SUGGESTS" == "TRUE" ]; then
 	echo "Using the -S option."
 fi
 
-# Determine if the -D option or the existence of a dep file
+# Determine if the -d option or the existence of a dep file
 # is present and use dep file if found.
-if [ "$NEWDEPS" == "TRUE" ]; then
-	touch /tmp/.newdep
-	echo "Using the -D option."
-else
-	if [ "$DEPS" == "TRUE" ]; then
-		touch /tmp/.importdep
-		echo "Using the -d option."
-	elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
-		touch /tmp/.importdep
-		echo " "
-		echo "Existing dep file found."
-	fi
+if [ "$DEPS" == "TRUE" ]; then
+	touch /tmp/.importdep
+	echo "Using the -d option."
+elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
+	touch /tmp/.importdep
+	echo " "
+	echo "Existing dep file found."
 fi
+
 
 echo " "
 

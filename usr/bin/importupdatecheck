@@ -57,6 +57,7 @@ if [ -f "$SCEDIR"/"$SCE".sce.md5.txt ]; then
 		echo "$SCE" >>/tmp/.updatemd5failed
 		echo "$SCE did not pass the md5sum check, needs re-importing.." >> /tmp/updateavailable
 		echo " " >> /tmp/updateavailable
+		echo "$SCE" >> /tmp/.updatechecked
 		cd "$HERE"
 		exit 0
 	fi
@@ -65,6 +66,7 @@ else
 	echo "$SCE" >>/tmp/.updatemd5failed
 	echo "$SCE does not have the needed $SCE.md5.txt file, needs re-importing.." >> /tmp/updateavailable
 	echo " " >> /tmp/updateavailable
+	echo "$SCE" >> /tmp/.updatechecked
 	exit 0
 fi
 
