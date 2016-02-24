@@ -330,14 +330,23 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		TARGETDIR="$TCEDIR"/sce/
 	fi
 
-	if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ] && ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
-		cd "$TARGETDIR"
-		md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
-		if [ "$?" != 0 ]; then
-			echo "Md5sum error on "$TARGETDIR"/"$TARGETAPP", not loading.."
+	if [ "$TARGETDIR" == "." ]; then
+		TARGETDIR="`pwd`/"
+	fi
+
+	if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
+		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ]; then
+			cd "$TARGETDIR"
+			md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
+			if [ "$?" != 0 ]; then
+				echo "Md5sum error on "$TARGETDIR""$THISSCE", not loading.."
+				continue
+			fi
+			cd "$HERE"
+		else
+			echo "Missing md5sum file "$TARGETDIR""$THISSCE".md5.txt, not loading.."
 			continue
 		fi
-		cd "$HERE"
 	fi
 
 	if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
@@ -351,17 +360,23 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	fi
 
 	for I in `echo "$DEPLIST"`; do
-		TARGETAPP=`echo "$I" | tr -d ' '`
-		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ] && ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
-			cd "$TARGETDIR"
-			md5sum -c "$TARGETAPP".sce.md5.txt > /dev/null 2>&1
-			if [ "$?" != 0 ]; then
-				echo "${RED}Md5sum error on "$TARGETDIR""$TARGETAPP".sce, not loading the following:"
+		if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
+			if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ]; then
+				cd "$TARGETDIR"
+				md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
+				if [ "$?" != 0 ]; then
+					echo "${RED}Md5sum error on "$TARGETDIR""$TARGETAPP".sce, not loading the following:"
+					LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
+					echo "$LIST${NORMAL}"
+					exit 0
+				fi
+				cd "$HERE"
+			else
+				echo "${RED}Missing md5sum file "$TARGETDIR""$TARGETAPP".sce.txt, not loading the following:"
 				LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
 				echo "$LIST${NORMAL}"
 				exit 0
 			fi
-			cd "$HERE"
 		fi
 	done
 

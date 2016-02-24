@@ -1,0 +1,22 @@
+# Specify download directory so the  version -c  or  version -r  commands can retrive dCore updates.
+# The full dCore boot pathway should be specified below (contains the dCore-*.gz and vmlinuz-* files).
+# The version command will automatically back up the old dCore-*.gz and *.md5.txt files before
+# downloading the update. Reboot system to complete the update.
+#
+# If this file is modified, add an /opt/.filetool.lst entry to save changes:
+#      etc/sysconfig/boot_path
+#
+# ONLY ONE UNCOMMENTED LINE ALLOWED, NO SPACES OR EMPTY LINES
+#
+# ENTRY MUST START WITH A SLASH
+# 
+# ENTRY MUST CONTAIN /mnt/* IF DESTINATION IS NOT MOUNTED AFTER BOOT
+#
+# Note dCore uses the symlink 'tcedir' to point to the /tce directory. The dCore installer by default uses
+# /etc/sysconfig/tcedir/boot, on the actual system this may be something like /mnt/sdb4/tce/boot.
+#
+# Example entries:
+#/etc/sysconfig/tcedir/boot
+#/mnt/sdb4/tce/boot
+#
+/etc/sysconfig/tcedir/boot

@@ -1,116 +1,167 @@
 #!/bb/ash
 . /etc/init.d/tc-functions
-BUILD=`getBuild`
 
+BUILD=`getBuild`
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
 PORT="$(cat /usr/share/doc/tc/release.txt | cut -f1 -d:)"
 VERSION="$(cat /usr/share/doc/tc/release.txt | cut -f2 -d:)"
 RESULTS="$PORT:$VERSION"
+BOOTPATH="$(cat /etc/sysconfig/boot_path | grep -v '^#')" > /dev/null 2>&1
+MOUNTPOINT="$(cat /etc/sysconfig/boot_path | grep -v '^#' | cut -f3 -d/)" > /dev/null 2>&1
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-	echo
+	echo " "
 	echo "${YELLOW}version - confirm dCore version, check for release or release candidate (RC)"
-        echo "          updates, if dCore update available prompted to download, manually"
-        echo "          copy into desired boot directory, reboot to complete upgrade.${NORMAL}"
-	echo
+	echo "          updates, prompted to download an available update to the directory"
+	echo "          specified in /etc/sysconfig/boot_path. Review this file for details."
+	echo "          The partition will auto-mount if /mnt/* is included in the pathway"
+	echo "          and the entry exists in /etc/fstab. The existing dCore*.gz and"
+	echo "          *.md5.txt files are automatically backed up before the update"
+	echo "          is downloaded. Reboot system to complete the update.${NORMAL}"
+	echo " "
 	echo "Usage:"
-	echo
+	echo " "
 	echo "${YELLOW}'"version"'${NORMAL}     list running dCore name and version."
-	echo "${YELLOW}'"version -c"'${NORMAL}  check if running the latest stable release, if different"
-        echo "              version available prompted to download, wget latest"
-        echo "              stable release and md5.txt file to /tmp/release/."
-	echo "${YELLOW}'"version -r"'${NORMAL}  check if running the latest release candidate, if updated"
-        echo "              version available prompted to download, wget latest release"
-        echo "              candidate and md5.txt file to /tmp/release_candidate/."
+	echo "${YELLOW}'"version -c"'${NORMAL}  check if running the latest stable release, if different version"
+	echo "              available prompted to download, wget latest stable release and"
+	echo "              md5.txt file to directory specified in /etc/sysconfig/boot_path."
+	echo "${YELLOW}'"version -r"'${NORMAL}  check if running the latest release candidate, if an update is"
+	echo "              available prompted to download, wget latest release candidate and"
+	echo "              md5.txt file to directory specified in /etc/sysconfig/boot_path."
 	echo "${YELLOW}'"version -l"'${NORMAL}  list running dCore name and version."
 	echo "${YELLOW}'"version -s"'${NORMAL}  see dCore version only."
-	echo
+	echo " "
 exit 1
 fi
 
-
-
-
 while getopts rcls OPTION
 do
-  case ${OPTION} in
-    r) LATEST=`wget -q -O - $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".latest 2>/dev/null`
-       if [ "$?" == 0 ]; then
-       		RUNNING="${RESULTS##*:}"
-       		if [ "$LATEST" != "$RESULTS" ]; then
-       			echo "Warning:"
-       			echo "You are running:                    "$RESULTS""
-       			echo "The latest release candidate is:    $LATEST"
-                        echo " "
-                        echo -n "Press Enter to download latest release candidate, (q)uit to exit: "
-                        read TARGET
-                        if [ "$TARGET" == "Q" ] || [ "$TARGET" == "q" ]; then
-				exit
-                        else
-				rm -rf /tmp/release_candidate
-				mkdir -p /tmp/release_candidate
-                        	cd /tmp/release_candidate
-                        	echo " "
-                        	wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz.md5.txt
-                        	echo
-                        	wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz
-				echo " "
-                        	echo "Downloaded:   /tmp/release_candidate/"$PORT".gz.md5.txt"
-                        	echo "              /tmp/release_candidate/"$PORT".gz"
-                        	echo " "
-                        	echo "Manually copy /tmp/release_candidate/"$PORT".gz to boot directory,"
-                        	echo "recommend backing up old version, reboot to complete update."
- 	                fi                      
-                
-		else
-			echo "You are running "$RESULTS", the latest release candidate."
-       		fi
-       fi
-       exit
-       ;;
-     c) LATEST=`wget -q -O - $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".latest 2>/dev/null`
-       if [ "$?" == 0 ]; then
-       		RUNNING="${RESULTS##*:}"
-       		if [ "$LATEST" != "$RESULTS" ]; then
-       			echo "Warning:"
-       			echo "You are running:          "$RESULTS""
-       			echo "The latest release is:    $LATEST"
-                        echo " "
-			echo "Press Enter To download latest stable release, (q)uit to exit. To check for"
-                        echo -n "the latest release candidate instead, exit and run 'version -r': "
-                        read TARGET
-                        if [ "$TARGET" = "Q" ] || [ "$TARGET" = "q" ]; then
-				exit
-                        else
-				rm -rf /tmp/release
-                        	mkdir -p /tmp/release
-                        	cd /tmp/release
-                        	echo " "
-                        	wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz.md5.txt
-                        	echo " "
-                        	wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz
-				echo " "
-                        	echo "Downloaded:   /tmp/release/"$PORT".gz.md5.txt"
-                        	echo "              /tmp/release/"$PORT".gz"
-                        	echo " "
-                        	echo "Manually copy /tmp/release/"$PORT".gz to boot directory, recommend"
-                        	echo "backing up old version, reboot to complete update."
- 	                fi
-		else
-			echo "You are running "$RESULTS", the latest release."
-                fi
-       fi
-       exit
-       ;;
-    l) echo "$RESULTS"
-        exit
-        ;;
-    s) echo "${RESULTS##*:}"
-        exit
-        ;;
-    *) echo "Run  version --help  for usage information." ;;
-  esac
+	case ${OPTION} in
+		r) LATEST=`wget -q -O - $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".latest 2>/dev/null`
+			if [ "$?" == 0 ]; then
+				RUNNING="${RESULTS##*:}"
+				if [ "$LATEST" != "$RESULTS" ]; then
+					echo "Warning:"
+					echo "You are running:                    "$RESULTS""
+					echo "The latest release candidate is:    "$LATEST""
+					echo " "
+					if [ -f /tmp/dCoreUpdateDownloadedReboot! ]; then
+						echo "Update already downloaded to "$BOOTPATH","
+						echo "confirm correct boot path, reboot system to complete update."
+						exit 1
+					fi
+					echo "Preferred dCore*.gz download path from /etc/sysconfig/boot_path:"
+					if [ ! "$BOOTPATH" ]; then
+						echo "Not specified, create /etc/sysconfig/boot_path entry, exiting.."
+						exit 1
+					else
+						echo ""$BOOTPATH""
+					fi
+					echo " "
+					echo "Press Enter to download the most recent release candidate, existing dCore*.gz"
+					echo -n "and *.md5.txt files will automatically be backed up, (q)uit to exit. "
+					read TARGET
+					if [ "$TARGET" == "Q" ] || [ "$TARGET" == "q" ]; then
+						exit
+					fi				
+					mount /dev/"$MOUNTPOINT" > /dev/null 2>&1
+					sudo mkdir -p "$BOOTPATH"
+					cd "$BOOTPATH"
+					sudo mv ""$PORT".gz.md5.txt" ""$PORT".gz.md5.txt."$VERSION"" > /dev/null 2>&1
+					sudo mv ""$PORT".gz" ""$PORT".gz."$VERSION"" > /dev/null 2>&1
+					echo " "
+					sudo wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz.md5.txt
+					echo " "
+					sudo wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz
+					echo " "
+					if [ -f ""$BOOTPATH"/"$PORT".gz.md5.txt" ]; then
+						echo "Download success: "$BOOTPATH"/"$PORT".gz.md5.txt"
+						sudo touch /tmp/dCoreUpdateDownloadedReboot!
+					else
+						echo "Download error: "$BOOTPATH"/"$PORT".gz.md5.txt"
+					fi
+					if [ -f ""$BOOTPATH"/"$PORT".gz" ]; then
+						echo "Download success: "$BOOTPATH"/"$PORT".gz"
+						sudo touch /tmp/dCoreUpdateDownloadedReboot!
+					else
+						echo "Download error: "$BOOTPATH"/"$PORT".gz"
+					fi
+					echo " "
+					echo "Correct any download errors reported, otherwise confirm correct"
+					echo "boot path and reboot system to complete update."
+				else
+					echo "You are running "$RESULTS", the latest release candidate."
+				fi
+			fi
+			exit
+			;;
+		c) LATEST=`wget -q -O - $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".latest 2>/dev/null`
+			if [ "$?" == 0 ]; then
+				RUNNING="${RESULTS##*:}"
+				if [ "$LATEST" != "$RESULTS" ]; then
+					echo "Warning:"
+					echo "You are running:          "$RESULTS""
+					echo "The latest release is:    "$LATEST""
+					echo " "
+					if [ -f /tmp/dCoreUpdateDownloadedReboot! ]; then
+						echo "Update already downloaded to "$BOOTPATH","
+						echo "confirm correct boot path, reboot system to complete update."
+						exit 1
+					fi
+					echo "Preferred dCore*.gz download path from /etc/sysconfig/boot_path:"
+					if [ ! "$BOOTPATH" ]; then
+						echo "Not specified, create /etc/sysconfig/boot_path entry, exiting.."
+						exit 1
+					else
+						echo ""$BOOTPATH""
+					fi
+					echo " "
+					echo "Press Enter to download the most recent stable release, existing dCore*.gz"
+					echo -n "and *.md5.txt files will automatically be backed up, (q)uit to exit. "
+					read TARGET
+					if [ "$TARGET" = "Q" ] || [ "$TARGET" = "q" ]; then
+						exit
+					fi
+					mount /dev/"$MOUNTPOINT" > /dev/null 2>&1
+					sudo mkdir -p "$BOOTPATH"
+					cd "$BOOTPATH"
+					sudo mv ""$PORT".gz.md5.txt" ""$PORT".gz.md5.txt."$VERSION"" > /dev/null 2>&1
+					sudo mv ""$PORT".gz" ""$PORT".gz."$VERSION"" > /dev/null 2>&1
+					echo " "
+					sudo wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz.md5.txt
+					echo " "
+					sudo wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz
+					echo " "
+					if [ -f ""$BOOTPATH"/"$PORT".gz.md5.txt" ]; then
+						echo "Download success: "$BOOTPATH"/"$PORT".gz.md5.txt"
+					else
+						echo "Download error: "$BOOTPATH"/"$PORT".gz.md5.txt"
+					fi
+					if [ -f ""$BOOTPATH"/"$PORT".gz" ]; then
+						echo "Download success: "$BOOTPATH"/"$PORT".gz"
+						sudo touch /tmp/dCoreUpdateDownloadedReboot!
+					else
+						echo "Download error: "$BOOTPATH"/"$PORT".gz"
+					fi
+					echo " "
+					echo "Correct any download errors reported, otherwise confirm correct"
+					echo "boot path and reboot system to complete update."
+				else
+					echo "You are running "$RESULTS", the latest release."
+				fi
+			fi
+			exit
+			;;
+		l) echo "$RESULTS"
+			exit
+			;;
+		s) echo "${RESULTS##*:}"
+			exit
+			;;
+		*) echo "Run  version --help  for usage information."
+			;;
+	esac
 done
 echo "$RESULTS"
 exit
