@@ -147,7 +147,7 @@ fi
 
 getName() {
 > /tmp/"$1".pkglist
-sudo grep -B 1 -A 8 "^Package: $1$" "$DEBINX" |  grep -B8 "^$" > /tmp/"$1".pkglist
+sudo grep -B 1 -A 10 "^Package: $1$" "$DEBINX" |  grep -B10 "^$" > /tmp/"$1".pkglist
 DEBINX=/tmp/"$1".pkglist
 getName1 $1
 rm /tmp/"$1".pkglist

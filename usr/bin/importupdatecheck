@@ -64,7 +64,7 @@ if [ -f "$SCEDIR"/"$SCE".sce.md5.txt ]; then
 else
 	echo "$SCE" >> /tmp/.sceupdatelist
 	echo "$SCE" >>/tmp/.updatemd5failed
-	echo "$SCE does not have the needed $SCE.md5.txt file, needs re-importing.." >> /tmp/updateavailable
+	echo "$SCE has no $SCE.md5.txt file, needs re-importing.." >> /tmp/updateavailable
 	echo " " >> /tmp/updateavailable
 	echo "$SCE" >> /tmp/.updatechecked
 	exit 0
@@ -103,7 +103,7 @@ echo "$FILE" > /tmp/FILE
 ## Find if needed md5sum file inside SCE exists.
 if [ ! -f "$FILE" ]; then
    echo " "
-   echo ""$1" does not have the needed md5sum list, exiting.."
+   echo ""$1" has no md5sum list, exiting.."
    if sudo busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
      sudo busybox umount /tmp/sceupdatetest
    fi

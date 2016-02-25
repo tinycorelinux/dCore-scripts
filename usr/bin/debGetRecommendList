@@ -20,7 +20,7 @@ DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
 
 getRecommends1() {
 > /tmp/"$1".pkglist
-grep -B 1 -A 15 "^Package: $1$" "$DEBINX" |  grep -B15 "^$" > /tmp/"$1".pkglist
+grep -B 1 -A 10 "^Package: $1$" "$DEBINX" |  grep -B10 "^$" > /tmp/"$1".pkglist
 DEBINX=/tmp/"$1".pkglist
 getRecommends2 $1
 #grep "^Depends:" /tmp/"$1".pkglist | cut -f2 -d":" | tr -d ',' | tr -d '|'

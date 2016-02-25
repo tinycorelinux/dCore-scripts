@@ -10,26 +10,29 @@ BUILD=`getBuild`
 unset DEPLIST
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-        echo
-	echo "${YELLOW}sce-update - check and update all or individual SCE(s) and any dependencies,"
-	echo "             view DEBINX (Debian index) diff if desired, may use some"
-	echo "             option combinations.${NORMAL}"
-	echo
+        echo " "
+	echo "${YELLOW}sce-update - Check and update all or individual SCE(s) including any dependeny"
+	echo "             SCE(s), view DEBINX (Debian index) diff and available updates if"
+	echo "             desired, may use some option combinations.${NORMAL}"
+	echo " "
 	echo "Usage:"
-	echo
-	echo "${YELLOW}'"sce-update"'${NORMAL}         menu prompt, choose SCE(s) to check, update if required."
-       	echo "${YELLOW}'"sce-update SCE"'${NORMAL}     check specific SCE for update, update if required."
-	echo "${YELLOW}'"sce-update -a"'${NORMAL}      check all system SCEs for updates, view diff of old and"
-	echo "                     new DEBINX if desired, update SCEs if required."
-	echo "${YELLOW}'"sce-update -n SCE"'${NORMAL}  non-interactive mode, check specific SCE for updates,"
-	echo "                     update if required."
-	echo "${YELLOW}'"sce-update -c"'${NORMAL}      menu prompt, check selected SCE(s) for updates only,"
-        echo "                     no actual updates performed."
-	echo "${YELLOW}'"sce-update -r"'${NORMAL}      sce-import unpacks files in RAM during update."
-	echo "${YELLOW}'"sce-update -s"'${NORMAL}      sce-import estimates size/space during update."
-	echo "${YELLOW}'"sce-update -z"'${NORMAL}      ignore /etc/sysconfig/sceconfig, use only"
-        echo "                     current command line options."
-	echo
+	echo " "
+	echo "${YELLOW}"sce-update"${NORMAL}         Menu prompt, choose SCE(s) to check, update if required."
+       	echo "${YELLOW}"sce-update SCE"${NORMAL}     Check a specific SCE for update, update if required."
+	echo "${YELLOW}"sce-update -a"${NORMAL}      Check all system SCEs for updates, view old/new DEBINX diff"
+	echo "                   and available updates if desired, update SCEs if required."
+	echo "${YELLOW}"sce-update -n SCE"${NORMAL}  Non-interactive mode, check a specific SCE for updates,"
+	echo "                   update if required."
+	echo "${YELLOW}"sce-update -na"${NORMAL}     Non-interactive mode, check all SCEs for updates,"
+	echo "                   update if required."
+	echo "${YELLOW}"sce-update -c"${NORMAL}      Menu prompt, check selected SCE(s) for updates only,"
+        echo "                   no actual updates performed."
+	echo "${YELLOW}"sce-update -r"${NORMAL}      Unpack files in RAM during an SCE update re-import."
+	echo "${YELLOW}"sce-update -s"${NORMAL}      Estimate package, HD and RAM space during an SCE update"
+	echo "                   re-import, warn as needed."
+	echo "${YELLOW}"sce-update -z"${NORMAL}      Ignore /etc/sysconfig/sceconfig preferences, use only"
+        echo "                   current command line options."
+	echo " "
 	exit 0
 fi
 
@@ -57,8 +60,6 @@ do
 	esac
 done
 
-echo " "
-
 # Determine if non-interactive mode is being used.
 if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
 	NONINTERACTIVE=TRUE
@@ -81,7 +82,7 @@ fi
 
 if [ -n "$2" ]; then
      echo "Only one SCE per sce-update session can be entered in command line."
-     echo "Run 'sce-update' to check more than one SCE per session."
+     echo "Run 'sce-update' to check more than one SCE per session, exiting.."
      exit 1
 fi
 
@@ -171,25 +172,33 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	MDNEW=`md5sum NEWDEBINX | cut -f1 -d" "`
 	if [ "$MDOLD" == "$MDNEW" ]; then
 		echo " "
-		echo "Your entire SCE directory is up to date."
+		echo "The entire SCE directory is up to date."
 		sudo rm NEWDEBINX
 		exit 0
 	elif [ ! "$NONINTERACTIVE" == "TRUE" ]; then
 		echo " "
-		echo "Press Enter to proceed with update check, (v)iew DEBINX diff, Ctrl-C aborts"
-		echo -n "(to view DEBINX diff use spacebar and (q)uit): "
-		read ans
-		echo " "
-		if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-			echo "Obtaining diff of new and old package data..."
-			echo " "
-			diff "$DEBINXDIR"/OLDDEBINX "$DEBINXDIR"/NEWDEBINX > /tmp/debinx.diff & /usr/bin/rotdash $!
-			more -s /tmp/debinx.diff
-			rm /tmp/debinx.diff
-			echo " "
-			echo -n "Press Enter to proceed with update check, Ctrl-C aborts: "
+		if [ ! -f "$DEBINXDIR"/OLDDEBINX ]; then
+			echo "No "$DEBINXDIR"/OLDDEBINX available for comparison,"
+			echo -n "recommend press Enter to proceed with update check, Ctrl-C aborts: "
 			read ans
 			echo " "
+			:
+		else
+			echo "Press Enter to proceed with update check, (v)iew DEBINX diff, Ctrl-C aborts"
+			echo -n "(to view DEBINX diff use spacebar and (q)uit): "
+			read ans
+			echo " "
+			if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+				echo "Obtaining diff of new and old package data..."
+				echo " "
+				diff "$DEBINXDIR"/OLDDEBINX "$DEBINXDIR"/NEWDEBINX > /dev/null 2>&1 > /tmp/debinx.diff & /usr/bin/rotdash $!
+				more -s /tmp/debinx.diff
+				rm /tmp/debinx.diff
+				echo " "
+				echo -n "Press Enter to proceed with update check, Ctrl-C aborts: "
+				read ans
+				echo " "
+			fi
 		fi
 	fi
 
@@ -207,18 +216,18 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 			MDOLD=`cat update/"$I".sce.debinx`
 			if [ "$MDOLD" == "$MDNEW" ]; then
-				echo "         ${YELLOW}"$I"${NORMAL} is up to date."
+				echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
 				continue
 			fi
 		elif [ -f "$I".sce.debinx ] && [ -f "$I".sce.md5.txt ]; then
 			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 			MDOLD=`cat "$I".sce.debinx`
 			if [ "$MDOLD" == "$MDNEW" ]; then
-				echo "         ${YELLOW}"$I"${NORMAL} is up to date."
+				echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
 				continue
 			fi
 		fi
-		echo "         ${YELLOW}"$I"${NORMAL} update check..."
+		echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
 		importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
@@ -288,7 +297,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 		fi
 	else
 		echo " "
-		echo "No updates available for main or dependency SCEs."
+		echo "No updates available for main or any dependency SCEs."
 	fi
 	cd /etc/sysconfig/tcedir/import/debinx
 	sudo mv NEWDEBINX OLDDEBINX > /dev/null 2>&1
@@ -310,7 +319,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
 			:
 		else
-			echo "         ${YELLOW}"$I"${NORMAL} update check..."
+			echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
 			importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 		fi
 	done
@@ -402,7 +411,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
 			:
 		else
-			echo "         ${YELLOW}"$I"${NORMAL} update check..."
+			echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
 			importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 		fi
 	done
@@ -516,7 +525,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 					MDOLD=`cat "$SCEDIR"/update/"$UPDATETARGET".sce.debinx`
 					if [ "$MDOLD" == "$MDNEW" ]; then
-						echo "         ${YELLOW}"$UPDATETARGET"${NORMAL} is up to date."
+						echo "         ${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
 						echo "$UPDATETARGET" >> /tmp/.updatechecked
 						continue
 					fi
@@ -524,7 +533,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 					MDOLD=`cat "$UPDATETARGET".sce.debinx`
 					if [ "$MDOLD" == "$MDNEW" ]; then
-						echo "         ${YELLOW}"$UPDATETARGET"${NORMAL} is up to date."
+						echo "         ${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
 						echo "$UPDATETARGET" >> /tmp/.updatechecked
 						continue
 					fi
@@ -533,7 +542,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 				if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
 					:
 				else
-					echo "         ${YELLOW}"$I"${NORMAL} update check..."
+					echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
 					importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 				fi
 			done
@@ -596,11 +605,11 @@ elif [ "$SELECT" == "TRUE" ]; then
 				echo " "
 				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
-				echo -n "Press Enter to view package updates, Ctrl-C aborts: "
-				read ans
-				if [ "$ans" == "" ]; then
+				#echo -n "Press Enter to view package updates, Ctrl-C aborts: "
+				#read ans
+				#if [ "$ans" == "" ]; then
 					more -s /tmp/updateavailable
-				fi
+				#fi
 				exit 0
 			fi
 		else

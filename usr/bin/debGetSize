@@ -33,14 +33,14 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 getdsize_main() {
 > /tmp/"$1".pkgdsizelist
-grep -B 1 -A 8 "^Package: $1$" "$DEBINX" | grep -B8 "^$" > /tmp/"$1".pkgdsizelist
+grep -B 1 -A 10 "^Package: $1$" "$DEBINX" | grep -B10 "^$" > /tmp/"$1".pkgdsizelist
 grep "^Size:" /tmp/"$1".pkgdsizelist | cut -f2 -d":"
 rm /tmp/"$1".pkgdsizelist
 }
 
 getisize_main() {
 > /tmp/"$1".pkgisizelist
-grep -B 1 -A 8 "^Package: $1$" "$DEBINX" | grep -B8 "^$" > /tmp/"$1".pkgisizelist
+grep -B 1 -A 10 "^Package: $1$" "$DEBINX" | grep -B10 "^$" > /tmp/"$1".pkgisizelist
 grep "^Installed-Size:" /tmp/"$1".pkgisizelist | cut -f2 -d":"
 rm /tmp/"$1".pkgisizelist
 }

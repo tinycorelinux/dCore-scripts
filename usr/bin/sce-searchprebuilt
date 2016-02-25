@@ -10,15 +10,15 @@ BUILD=`getBuild`
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
         echo
-	echo "${YELLOW}sce-searchprebuilt - search dCore repository for pre-built SCE(s), including"
+	echo "${YELLOW}sce-searchprebuilt - Search dCore repository for pre-built SCEs, including"
         echo "                     firmware, kernel modules, select lightweight and dCore"
         echo "                     specific software, custom prepared Debian and Ubuntu"
         echo "                     packages to work with dCore.${NORMAL}"
         echo
 	echo "Usage:"
         echo
-	echo "${YELLOW}'"sce-searchprebuilt"'${NORMAL}  search dCore repository for pre-built SCE(s), use"
-        echo "                      sce-import command to install desired extensions."
+	echo "${YELLOW}"sce-searchprebuilt"${NORMAL}  Search dCore repository for pre-built SCE(s), use"
+        echo "                    sce-import command to install desired extensions."
         echo
 exit 1
 fi

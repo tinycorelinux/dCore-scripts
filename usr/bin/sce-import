@@ -16,32 +16,29 @@ BUILD=`getBuild`
 HERE=`pwd`
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
-	echo "${YELLOW}sce-import - search, convert, install DEB and pre-built packages as local SCEs,"
+	echo "${YELLOW}sce-import - Search, convert, install DEB and pre-built packages as local SCEs,"
         echo "             use simple name (nano not nano_*_i386.deb), may use option combos,"
         echo "             also see /etc/sysconfig/sceconfig, locale.nopurge and sce.purge.${NORMAL}"
-	echo "${YELLOW}'"sce-import"'${NORMAL}             prompt, enter starting characters of package sought."
-	echo "${YELLOW}'"sce-import PKG"'${NORMAL}         search packages that start with desired package name."
-	echo "${YELLOW}'"sce-import -b PKG"'${NORMAL}      add resulting SCE to sceboot.lst."
-	echo "${YELLOW}'"sce-import -c PKG"'${NORMAL}      search packages that contain desired package name."
-	echo "${YELLOW}'"sce-import -d PKG"'${NORMAL}      choose existing SCE(s) to provide dependencies for"
-        echo "                         new SCE, may make new SCE significantly smaller."
-	echo "${YELLOW}'"sce-import -D PKG"'${NORMAL}      choose existing SCE(s) to provide dependencies for"
-	echo "                         new SCE, may make new SCE significantly smaller. This option ignores"
-	echo "                         the existing SCEs .dep file and is incompatible with the -d option."			       
-        echo "${YELLOW}'"sce-import -k PKG"'${NORMAL}      keep /usr/share/doc and /man in SCE, see man-db."
-	echo "${YELLOW}'"sce-import -l LISTFILE"'${NORMAL} SCE mega-extension created from text file listing one"
-        echo "                         PKG per line, eg. sce-import -l /tmp/my_apps contains"
-        echo "                         emelfm & nano, which can now share common dependencies."
-	echo "${YELLOW}'"sce-import -n PKG"'${NORMAL}      non-interactive mode if exact PKG name exists."
-	echo "${YELLOW}'"sce-import -o PKG"'${NORMAL}      add resulting SCE to ondemand."
-	echo "${YELLOW}'"sce-import -p PKG"'${NORMAL}      preserve old DEBINX, no new fetch, better performance."
-	echo "${YELLOW}'"sce-import -r PKG"'${NORMAL}      use RAM, swap partition/file to unpack source DEBs."
-	echo "${YELLOW}'"sce-import -s PKG"'${NORMAL}      estimate package, HD and RAM space, warn as needed."
-	echo "${YELLOW}'"sce-import -u PKG"'${NORMAL}      (DEFAULT) update mode, sync new DEBINX files."
-	echo "${YELLOW}'"sce-import -v PKG"'${NORMAL}      view list of packages the imported SCE contains."
-	echo "${YELLOW}'"sce-import -z PKG"'${NORMAL}      ignore locale.nopurge, sce.purge, sceconfig files."
-	echo "${YELLOW}'"sce-import -R PKG"'${NORMAL}      include recommended Debian packages, warning large SCE."
-	echo "${YELLOW}'"sce-import -S PKG"'${NORMAL}      include suggested Debian packages, warning large SCE."
+	echo "${YELLOW}"sce-import"${NORMAL}             Prompt, enter starting characters of package sought."
+	echo "${YELLOW}"sce-import PKG"${NORMAL}         Search packages that start with desired package name."
+	echo "${YELLOW}"sce-import -b PKG"${NORMAL}      Add resulting SCE to sceboot.lst."
+	echo "${YELLOW}"sce-import -c PKG"${NORMAL}      Search packages that contain desired package name."
+	echo "${YELLOW}"sce-import -d PKG"${NORMAL}      Choose existing SCE(s) to provide dependencies for"
+        echo "                       new SCE, may make new SCE significantly smaller."
+        echo "${YELLOW}"sce-import -k PKG"${NORMAL}      Keep /usr/share/doc and /man in SCE, see man-db."
+	echo "${YELLOW}"sce-import -l LISTFILE"${NORMAL} SCE mega-extension created from text file listing one"
+        echo "                       PKG per line, eg. sce-import -l /tmp/my_apps contains"
+        echo "                       emelfm & nano, which can now share common dependencies."
+	echo "${YELLOW}"sce-import -n PKG"${NORMAL}      Non-interactive exact name import, no combos like -nd."
+	echo "${YELLOW}"sce-import -o PKG"${NORMAL}      Add imported SCE to ondemand via /tce/ondemand script."
+	echo "${YELLOW}"sce-import -p PKG"${NORMAL}      Preserve old DEBINX, no new fetch, better performance."
+	echo "${YELLOW}"sce-import -r PKG"${NORMAL}      Use RAM, swap partition/file to unpack source DEBs."
+	echo "${YELLOW}"sce-import -s PKG"${NORMAL}      Estimate package, HD and RAM space, warn as needed."
+	echo "${YELLOW}"sce-import -u PKG"${NORMAL}      (DEFAULT) update mode, sync new DEBINX files."
+	echo "${YELLOW}"sce-import -v PKG"${NORMAL}      View list of packages the imported SCE contains."
+	echo "${YELLOW}"sce-import -z PKG"${NORMAL}      Ignore locale.nopurge, sce.purge, sceconfig files."
+	echo "${YELLOW}"sce-import -R PKG"${NORMAL}      Include recommended Debian packages, warning large SCE."
+	echo "${YELLOW}"sce-import -S PKG"${NORMAL}      Include suggested Debian packages, warning large SCE."
 exit 1
 fi
 
@@ -62,7 +59,7 @@ mksce() {
 }
 
 exit_tcnet() {
-	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
+	echo "Issue connecting to `cat /opt/tcemirror`, exiting.."
 	exit 1
 }
 
@@ -263,7 +260,7 @@ if [ "$DEPS" == "TRUE" ]; then
 elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
 	touch /tmp/.importdep
 	echo " "
-	echo "Existing dep file found."
+	echo "Existing dependency file found."
 fi
 
 
@@ -326,7 +323,7 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 			if [ ! -f /tmp/.importinteractive ]; then
 				echo "${YELLOW}Warning:${NORMAL} The above files in "$TARGETFILE" do not exist in dCore repos."
 				echo " "
-				echo -n "To proceed anyway press Enter, (n)o exits: "
+				echo -n "Press Enter to proceed anyway, (q)uit to exit: "
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
 					:
@@ -353,7 +350,7 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 			if [ ! -f /tmp/.importinteractive ]; then
 				echo "${YELLOW}Warning:${NORMAL} The above files in "$TARGETFILE" do not exist in dCore repos."
 				echo " "
-				echo -n "To proceed anyway press Enter, (n)o exits: "
+				echo -n "Press Enter to proceed anyway, (q)uit exits: "
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
 					:
@@ -387,7 +384,7 @@ case "$MS_MNTS" in
 				if [ ! -f /tmp/.importram ]; then 
 					echo " "
 					echo "${YELLOW}Warning:${NORMAL} "$REALDIR" resides on a Windows filesystem."
-					echo "Please try again with the -r flag to unpack files in RAM."
+					echo "Please try again with the -r flag to unpack files in RAM, exiting.."
 					exit 1
 				fi	
 			;;
@@ -396,9 +393,11 @@ esac
 
 # When no package is specified on command line, ask for one.
 if [ -z "$TARGET" ] && [ "$CHECKALL" == "TRUE" ]; then
+	echo " "
 	echo -n "Enter search characters contained in package sought: "
 	read TARGET
 elif [ -z "$TARGET" ]; then
+	echo " "
 	echo -n "Enter starting characters of package sought: "
 	read TARGET
 fi
@@ -489,12 +488,14 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 			LINES=`/bb/wc -l /tmp/.sceimportselect | cut -f1 -d" "`
 			if [ "$LINES" == "1" ]; then
 				DEB=`cat /tmp/.sceimportselect`
-				echo -n "Do you want to import ${YELLOW}$DEB${NORMAL}? (y/N):"
+				echo " "
+				#echo -n "Do you want to import ${YELLOW}$DEB${NORMAL}? (y/N):"
+				echo -n "Press Enter to import ${YELLOW}$DEB${NORMAL}, (q)uit to exit: "
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
 					:
 				else
-					echo "Exiting, no action taken."
+					echo "No action taken, exiting.."
 					exit 0
 				fi
 			else
@@ -529,18 +530,18 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 			LINES=`/bb/wc -l /tmp/.sceimportselect | cut -f1 -d" "`
 			if [ "$LINES" == "1" ]; then
 				DEB=`cat /tmp/.sceimportselect`
-				echo -n "Do you want to import ${YELLOW}$DEB${NORMAL}? (y/N):"
+				echo -n "Press Enter to import ${YELLOW}$DEB${NORMAL}, (q)uit exits: "
 				read ans
 				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
 					:
 				else
-					echo "Exiting, no action taken."
+					echo "No action taken, exiting.."
 					exit 0
 				fi
 			else
 				cat /tmp/.sceimportselect | select "Select package for '"$TARGET"'." "-"
 				read DEB < /tmp/select.ans                                                                           
-  				[ "$DEB" == "q" ] || [ "$DEB" == "" ] && exit 1  
+  				[ "$DEB" == "q" ] || [ "$DEB" == "" ] && exit 1
 			fi
         
 		fi

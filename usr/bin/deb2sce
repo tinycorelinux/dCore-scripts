@@ -75,7 +75,7 @@ selectDeb() {
 ## Functions to get the md5sum of the Debian .deb from the appropriate Packages list.
 getMd5sum() {
 > /tmp/"$1".pkglist
-grep -B 1 -A 15 "^Package: $1$" "$DEBINX" |  grep -B15 "^$" > /tmp/"$1".pkglist
+grep -B 1 -A 10 "^Package: $1$" "$DEBINX" |  grep -B10 "^$" > /tmp/"$1".pkglist
 DEBINX=/tmp/"$1".pkglist
 getMd5sum1 $1
 rm /tmp/"$1".pkglist

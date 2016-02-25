@@ -79,7 +79,7 @@ unset PKGEXISTS
 				exit 1
 			fi
 			if [ ! -f "$DIR1"/usr/local/sce/"$I"/"$I".md5sum ]; then
-				echo ""$I" does not have the needed md5sum file, please re-import it."
+				echo ""$I" has no md5sum file, please re-import it."
 				sudo umount "$DIR1" > /dev/null 2>&1
 		  		rmdir "$DIR1"
 				exit 1
@@ -96,7 +96,7 @@ unset PKGEXISTS
 			DIR1=/tmp/tcloop/"$I"
 			# yes n | cp -ai "$DIR1"/* "$OUTDIR"/ 2>/dev/null
 			if [ ! -f "$DIR1"/usr/local/sce/"$I"/"$I".md5sum ]; then
-				echo ""$I" does not have the needed md5sum file, please re-import it."
+				echo ""$I" has no md5sum file, please re-import it."
 				exit 1
 			fi
 			if grep "^$1:" "$DIR1"/usr/local/sce/"$I"/"$I".md5sum > /dev/null 2>&1; then
@@ -113,7 +113,7 @@ unset PKGEXISTS
 				exit 1
 			fi
 			if [ ! -f "$DIR1"/usr/local/sce/"$I"/"$I".md5sum ]; then
-				echo ""$I" does not have the needed md5sum file, please re-import it."
+				echo ""$I" has no md5sum file, please re-import it."
 				sudo umount "$DIR1" > /dev/null 2>&1
 		  		rmdir "$DIR1"
 				exit 1
