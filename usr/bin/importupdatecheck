@@ -47,28 +47,8 @@ if [ ! -f "$SCEDIR"/"$SCE".sce ] && [ ! -f "$SCEDIR"/update/"$SCE".sce ]; then
   echo ""$SCE".sce does not exist, exiting.."
   exit 1
 fi
+
 echo "${YELLOW}"$SCE" updates:${NORMAL}" >> /tmp/updateavailable
-if [ -f "$SCEDIR"/"$SCE".sce.md5.txt ]; then
-	cd "$SCEDIR"
-	if md5sum -c "$SCE".sce.md5.txt > /dev/null 2>&1; then
-		cd "$HERE"
-	else
-		echo "$SCE" >> /tmp/.sceupdatelist
-		echo "$SCE" >>/tmp/.updatemd5failed
-		echo "$SCE did not pass the md5sum check, needs re-importing.." >> /tmp/updateavailable
-		echo " " >> /tmp/updateavailable
-		echo "$SCE" >> /tmp/.updatechecked
-		cd "$HERE"
-		exit 0
-	fi
-else
-	echo "$SCE" >> /tmp/.sceupdatelist
-	echo "$SCE" >>/tmp/.updatemd5failed
-	echo "$SCE has no $SCE.md5.txt file, needs re-importing.." >> /tmp/updateavailable
-	echo " " >> /tmp/updateavailable
-	echo "$SCE" >> /tmp/.updatechecked
-	exit 0
-fi
 
 if sudo busybox mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then
  sudo busybox umount /tmp/sceupdatetest
@@ -102,13 +82,37 @@ echo "$FILE" > /tmp/FILE
 
 ## Find if needed md5sum file inside SCE exists.
 if [ ! -f "$FILE" ]; then
-   echo " "
-   echo ""$1" has no md5sum list, exiting.."
-   if sudo busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
-     sudo busybox umount /tmp/sceupdatetest
-   fi
-   [ -d /tmp/sceupdatetest ] && sudo rmdir /tmp/sceupdatetest
-   exit 1
+	echo ""$1" has no built in md5sum list, not updating.." >> /tmp/updateavailable
+	echo 
+	if sudo busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
+		sudo busybox umount /tmp/sceupdatetest
+	fi
+	[ -d /tmp/sceupdatetest ] && sudo rmdir /tmp/sceupdatetest
+	exit 0
+fi
+##
+
+## Make sure md5.txt exists and passes check
+if [ -f "$SCEDIR"/"$SCE".sce.md5.txt ]; then
+	cd "$SCEDIR"
+	if md5sum -c "$SCE".sce.md5.txt > /dev/null 2>&1; then
+		cd "$HERE"
+	else
+		echo "$SCE" >> /tmp/.sceupdatelist
+		echo "$SCE" >>/tmp/.updatemd5failed
+		echo "$SCE did not pass the md5sum check, needs re-importing.." >> /tmp/updateavailable
+		echo " " >> /tmp/updateavailable
+		echo "$SCE" >> /tmp/.updatechecked
+		cd "$HERE"
+		exit 0
+	fi
+else
+	echo "$SCE" >> /tmp/.sceupdatelist
+	echo "$SCE" >>/tmp/.updatemd5failed
+	echo "$SCE has no $SCE.md5.txt file, needs re-importing.." >> /tmp/updateavailable
+	echo " " >> /tmp/updateavailable
+	echo "$SCE" >> /tmp/.updatechecked
+	exit 0
 fi
 ##
 

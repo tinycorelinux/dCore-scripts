@@ -1,4 +1,4 @@
-#!/bb/ash
+#!/bin/busybox ash
 . /etc/init.d/tc-functions
 
 BUILD=`getBuild`
@@ -12,7 +12,7 @@ MOUNTPOINT="$(cat /etc/sysconfig/boot_path | grep -v '^#' | cut -f3 -d/)" > /dev
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo " "
-	echo "${YELLOW}version - confirm dCore version, check for release or release candidate (RC)"
+	echo "${YELLOW}version - Confirm dCore version, check for release or release candidate (RC)"
 	echo "          updates, prompted to download an available update to the directory"
 	echo "          specified in /etc/sysconfig/boot_path. Review this file for details."
 	echo "          The partition will auto-mount if /mnt/* is included in the pathway"
@@ -22,15 +22,15 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo " "
 	echo "Usage:"
 	echo " "
-	echo "${YELLOW}'"version"'${NORMAL}     list running dCore name and version."
-	echo "${YELLOW}'"version -c"'${NORMAL}  check if running the latest stable release, if different version"
-	echo "              available prompted to download, wget latest stable release and"
-	echo "              md5.txt file to directory specified in /etc/sysconfig/boot_path."
-	echo "${YELLOW}'"version -r"'${NORMAL}  check if running the latest release candidate, if an update is"
-	echo "              available prompted to download, wget latest release candidate and"
-	echo "              md5.txt file to directory specified in /etc/sysconfig/boot_path."
-	echo "${YELLOW}'"version -l"'${NORMAL}  list running dCore name and version."
-	echo "${YELLOW}'"version -s"'${NORMAL}  see dCore version only."
+	echo "${YELLOW}"version"${NORMAL}     List running dCore name and version."
+	echo "${YELLOW}"version -c"${NORMAL}  Check if running the latest stable release, if different version"
+	echo "            available prompted to download, wget latest stable release and"
+	echo "            md5.txt file to directory specified in /etc/sysconfig/boot_path."
+	echo "${YELLOW}"version -r"${NORMAL}  Check if running the latest release candidate, if an update is"
+	echo "            available prompted to download, wget latest release candidate and"
+	echo "            md5.txt file to directory specified in /etc/sysconfig/boot_path."
+	echo "${YELLOW}"version -l"${NORMAL}  List running dCore name and version."
+	echo "${YELLOW}"version -s"${NORMAL}  See dCore version only."
 	echo " "
 exit 1
 fi
@@ -79,17 +79,20 @@ do
 						echo "Download success: "$BOOTPATH"/"$PORT".gz.md5.txt"
 						sudo touch /tmp/dCoreUpdateDownloadedReboot!
 					else
-						echo "Download error: "$BOOTPATH"/"$PORT".gz.md5.txt"
+						echo "Download error:   "$BOOTPATH"/"$PORT".gz.md5.txt"
 					fi
 					if [ -f ""$BOOTPATH"/"$PORT".gz" ]; then
 						echo "Download success: "$BOOTPATH"/"$PORT".gz"
 						sudo touch /tmp/dCoreUpdateDownloadedReboot!
 					else
-						echo "Download error: "$BOOTPATH"/"$PORT".gz"
+						echo "Download error:   "$BOOTPATH"/"$PORT".gz"
 					fi
+					MD5REPORTED=`cat "$BOOTPATH"/"$PORT".gz.md5.txt | awk '{print $1}'`
+					MD5SUM=`md5sum "$BOOTPATH"/"$PORT".gz | awk '{print $1}'`
+					echo "Reported md5sum:  "$MD5REPORTED""
+					echo "Actual md5sum:    "$MD5SUM""				
 					echo " "
-					echo "Correct any download errors reported, otherwise confirm correct"
-					echo "boot path and reboot system to complete update."
+					echo "Correct any errors, confirm boot path, reboot to complete update."
 				else
 					echo "You are running "$RESULTS", the latest release candidate."
 				fi
@@ -136,17 +139,20 @@ do
 					if [ -f ""$BOOTPATH"/"$PORT".gz.md5.txt" ]; then
 						echo "Download success: "$BOOTPATH"/"$PORT".gz.md5.txt"
 					else
-						echo "Download error: "$BOOTPATH"/"$PORT".gz.md5.txt"
+						echo "Download error:   "$BOOTPATH"/"$PORT".gz.md5.txt"
 					fi
 					if [ -f ""$BOOTPATH"/"$PORT".gz" ]; then
 						echo "Download success: "$BOOTPATH"/"$PORT".gz"
 						sudo touch /tmp/dCoreUpdateDownloadedReboot!
 					else
-						echo "Download error: "$BOOTPATH"/"$PORT".gz"
+						echo "Download error:   "$BOOTPATH"/"$PORT".gz"
 					fi
+					MD5REPORTED=`cat "$BOOTPATH"/"$PORT".gz.md5.txt | awk '{print $1}'`
+					MD5SUM=`md5sum "$BOOTPATH"/"$PORT".gz | awk '{print $1}'`
+					echo "Reported md5sum:  "$MD5REPORTED""
+					echo "Actual md5sum:    "$MD5SUM""				
 					echo " "
-					echo "Correct any download errors reported, otherwise confirm correct"
-					echo "boot path and reboot system to complete update."
+					echo "Correct any errors, confirm boot path, reboot to complete update."
 				else
 					echo "You are running "$RESULTS", the latest release."
 				fi
@@ -165,3 +171,4 @@ do
 done
 echo "$RESULTS"
 exit
+
