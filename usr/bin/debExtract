@@ -110,8 +110,8 @@ if [ -f "$CFG"/postinst ]; then
 	chmod 775 "$PKG/usr/local/tce.installed/${BASENAME}"
 	chown -R root.staff "$PKG/usr/local/tce.installed/"
 fi
+rm -r cfg
 
-#	cd pkg
 
 echo "Merging ${YELLOW}"$BASENAME"${NORMAL}"
 #find . -depth | cpio -pmd "$PKG" 2>&1 > /dev/null
