@@ -255,7 +255,7 @@ install(){
 		yes "$FORCE" | sudo cp -ai /tmp/tcloop/"$APPNAME"/etc / 2>/dev/null
 		yes "$FORCE" | sudo cp -ai /tmp/tcloop/"$APPNAME"/var / 2>/dev/null
 		## Determine if kernel modules exist in SCE
-		[ ! -z "`sudo find /tmp/tcloop/"$APPNAME" -type f -name *.ko.gz`" ] && MODULES=TRUE
+		[ ! -z "`sudo find /tmp/tcloop/"$APPNAME" -type f -name *.ko*`" ] && MODULES=TRUE
 		## Determine if gdk-pixbuf-loaders have new types and update if needed
 		LOADERS_DIR=/tmp/tcloop/"$APPNAME"/usr/lib/i386-linux-gnu/gdk-pixbuf-2.0/2.10.0/loaders
 		LOADERS_DIR_OLD=/tmp/tcloop/"$APPNAME"/usr/lib/gdk-pixbuf-2.0/2.10.0/loaders
