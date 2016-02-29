@@ -147,8 +147,8 @@ update_system() {
 		[ "$MODULES" ] && sudo touch /etc/sysconfig/newmodules
 	else
 		if [ "$MODULES" ]; then
-			sudo depmod -a 2>/dev/null
-			sudo /sbin/udevadm trigger
+			sudo depmod -a > /dev/null 2>&1
+			sudo /sbin/udevadm trigger > /dev/null 2>&1
 		fi
 	fi
 	if [ -s /tmp/ss$$.lst ]; then
@@ -164,7 +164,7 @@ update_system() {
 					  sudo echo "$APP:" | sudo tee -a /var/log/sce.log > /dev/null 2>&1
 					  sudo $SS 2>&1 | sudo tee -a /var/log/sce.log > /dev/null 2>&1
 					else
-					  sudo $SS >> /dev/null 2>&1 
+					  sudo $SS > /dev/null 2>&1 
 					  echo "$APP:" >> /tmp/.installed
 					fi
 					
