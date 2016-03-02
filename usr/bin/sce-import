@@ -271,12 +271,27 @@ if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	if [ "$?" != "0" ]; then
 		echo " "
 		echo "Error updating DEBINX files, exiting.."
+		exit 1
 	fi
 else
 	cd "$DEBINXDIR"
 	if [ ! -s /etc/sysconfig/tcedir/import/debinx/debinx ] || [ ! -f deb2sce.tar.gz ]; then
 		echo "${YELLOW}Warning:${NORMAL} Please run sce-import without the -p option to update DEBINX data."
 		exit 1
+	
+	else
+		DEBINX=`cat /etc/sysconfig/tcedir/import/debinx/debinx`
+		if [ ! -f "$DEBINX" ]; then
+			echo "${YELLOW}Warning:${NORMAL} Please run sce-import without the -p option to update DEBINX data."
+			exit 1
+		fi
+	fi
+	if [ -s /etc/sysconfig/tcedir/import/debinx/debinx_security ]; then
+		DEBINX_SECURITY=`cat /etc/sysconfig/tcedir/import/debinx/debinx_security`
+		if [ ! -f "$DEBINX_SECURITY" ]; then
+			echo "${YELLOW}Warning:${NORMAL} Please run sce-import without the -p option to update DEBINX data."
+			exit 1
+		fi
 	fi
 	tar xvf deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
 	[ -f PKGEXCLUDELIST ] || tar xvf deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
