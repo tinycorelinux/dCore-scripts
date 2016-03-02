@@ -75,6 +75,7 @@ choose(){
 
 processAPP(){
 	APPNAME=${TARGETAPP%%.sce}
+	PROCESSED=" "$PROCESSED" "$APPNAME" "
 	if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
 	APPNAME="${APPNAME/-KERNEL/-${KERNELVER}}"
 	TARGETAPP="${TARGETAPP/-KERNEL.sce/-${KERNELVER}.sce}"
@@ -84,7 +85,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-		        [ "$SUPPRESS" ] || echo ""$APPNAME" is already loaded!"
+		        [ "$SUPPRESS" ] || echo "${YELLOW}"$APPNAME"${NORMAL} is already loaded!"
 			continue
 		fi
 	fi
@@ -92,7 +93,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-		        [ "$SUPPRESS" ] || echo ""$APPNAME" is already loaded!"
+		        [ "$SUPPRESS" ] || echo "${YELLOW}"$APPNAME"${NORMAL} is already loaded!"
 			continue
 		fi
 	fi
@@ -101,7 +102,7 @@ processAPP(){
 	elif [ -f "$TCEDIR"/sce/"$TARGETAPP" ]; then
 		TARGETAPP="$TCEDIR"/sce/"$TARGETAPP"
 	else
-		echo "'"$TARGETAPP"' does not exist, not loading.."
+		echo "${YELLOW}'"$TARGETAPP"'${NORMAL} does not exist, not loading.."
 		abort_to_saved_dir
 	fi
 	#FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
@@ -296,12 +297,21 @@ install(){
 
 # Main
 TCEDIR=/etc/sysconfig/tcedir
+SCEDIR="$TCEDIR"/sce
 [ -d "$TCEDIR" ] || exit 1
 if [ -z "$1" ] && [ -z "$BOOTING" ]; then
 	choose
 fi
 [ -f /etc/sysconfig/showapps ] && SHOWAPPS=TRUE && SUPPRESS=TRUE
 TCEINSTALLED=/usr/local/tce.installed
+
+for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
+	APPNAME=`basename "$TARGETAPP" .sce`
+	if [ ! -f "$SCEDIR"/"$APPNAME".sce ]; then	
+		echo ""$SCEDIR"/"$APPNAME".sce does not exist, exiting.."
+		exit 1
+	fi
+done
 
 getDeps() {
 DEPLIST=" $1 $DEPLIST "
@@ -318,11 +328,13 @@ if [ -f "$TARGETDIR"/"$1".sce.dep ]; then
 fi
 }
 
-
-
 for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	THISSCENAME=${TARGETAPP%%.sce}
-	if [ ${TARGETAPP} == ${THISSCENAME} ]; then THISSCE=${TARGETAPP}.sce; fi
+	if [ ${TARGETAPP} == ${THISSCENAME} ]; then
+		THISSCE=${TARGETAPP}.sce
+	else
+		THISSCE=${TARGETAPP}
+	fi
 	
 	if [ -f "$THISSCE" ]; then
 		TARGETDIR=`dirname "$THISSCE"`
@@ -361,26 +373,40 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 
 	for I in `echo "$DEPLIST"`; do
 		if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
-			if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ]; then
+			if [ -f "$TARGETDIR"/"$I".sce ]; then
+				:
+			else
+				echo "${RED}Missing "$TARGETDIR""$I".sce,"
+				echo "not loading the following:"
+				## Strip leading and trailing white space below with sed
+				LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
+				echo "${YELLOW}$LIST${NORMAL}"
+				exit 0
+			fi
+			if [ -f "$TARGETDIR"/"$I".sce.md5.txt ]; then
 				cd "$TARGETDIR"
-				md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
+				md5sum -c "$I".sce.md5.txt > /dev/null 2>&1
 				if [ "$?" != 0 ]; then
-					echo "${RED}Md5sum error on "$TARGETDIR""$TARGETAPP".sce, not loading the following:"
+					echo "${RED}Md5sum error on "$TARGETDIR""$I".sce,"
+					echo "not loading the following:"
 					LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
-					echo "$LIST${NORMAL}"
+					echo "${YELLOW}$LIST${NORMAL}"
 					exit 0
 				fi
 				cd "$HERE"
 			else
-				echo "${RED}Missing md5sum file "$TARGETDIR""$TARGETAPP".sce.txt, not loading the following:"
+				echo "${RED}Missing md5sum file "$TARGETDIR""$I".sce.txt,"
+				echo "not loading the following:"
+				## Strip leading and trailing white space below with sed
 				LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
-				echo "$LIST${NORMAL}"
+				echo "${YELLOW}$LIST${NORMAL}"
 				exit 0
 			fi
 		fi
 	done
 
 	for I in `echo "$DEPLIST"`; do
+		echo "$PROCESSED" | grep " $I " > /dev/null 2>&1 && continue
 		TARGETAPP=`echo "$I" | tr -d ' '`
 		#APPNAME=${TARGETAPP%%.sce}
 		#if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
