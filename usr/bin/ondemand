@@ -26,19 +26,23 @@ selectList() {
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo
-	echo "${YELLOW}sce-ondemand - manage ondemand SCE(s), scripts created in /tce/ondemand.${NORMAL}"
-	echo
+	echo "${YELLOW}sce-ondemand - Manage ondemand SCE(s).${NORMAL} Adding an SCE to ondemand creates a"
+	echo "               script in /tce/ondemand and updates the Window Manager's"
+	echo "               ondemand menu, which provides a convenient way to load"
+	echo "               less frequently used SCE(s) after boot."
+	echo " "
 	echo "Usage:"
-	echo
-	echo "${YELLOW}'"sce-ondemand SCE"'${NORMAL}      add SCE to ondemand, update menus."
-	echo "${YELLOW}'"sce-ondemand -c"'${NORMAL}       display SCE(s) currently in ondemand."
-	echo "${YELLOW}'"sce-ondemand -e SCE"'${NORMAL}   load and execute any SCE, do not add to ondemand."
-	echo "${YELLOW}'"sce-ondemand -l"'${NORMAL}       list available SCE(s) to add to ondemand, those"
-        echo "                        not yet in sceboot.lst or ondemand."
-	echo "${YELLOW}'"sce-ondemand -r SCE"'${NORMAL}   remove SCE from ondemand, update menus."
+	echo " "
+	echo "${YELLOW}"sce-ondemand SCE"${NORMAL}      Add SCE to ondemand, update menus."
+	echo "${YELLOW}"sce-ondemand -c"${NORMAL}       Display current ondemand SCE(s)."
+	echo "${YELLOW}"sce-ondemand -e SCE"${NORMAL}   Load and execute any SCE, do not add to ondemand."
+	echo "${YELLOW}"sce-ondemand -l"${NORMAL}       List available SCE(s) to add to ondemand, those"
+        echo "                      not yet in sceboot.lst or ondemand."
+	echo "${YELLOW}"sce-ondemand -r SCE"${NORMAL}   Remove SCE from ondemand, update menus."
 	echo
 exit 1
 fi
+
 
 TCUSER=`cat /etc/sysconfig/tcuser`
 TCEDIR=/etc/sysconfig/tcedir

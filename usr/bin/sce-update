@@ -11,7 +11,7 @@ unset DEPLIST
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
         echo " "
-	echo "${YELLOW}sce-update - Check and update all or individual SCE(s) including any dependeny"
+	echo "${YELLOW}sce-update - Check and update all or individual SCE(s) including any dependency"
 	echo "             SCE(s), view DEBINX (Debian index) diff and available updates if"
 	echo "             desired, may use some option combinations.${NORMAL}"
 	echo " "
@@ -35,6 +35,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo " "
 	exit 0
 fi
+
 
 if [ -f /tmp/.scelock ]; then
 	LOCK=`cat /tmp/.scelock`

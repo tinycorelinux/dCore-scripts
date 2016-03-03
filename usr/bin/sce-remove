@@ -15,22 +15,23 @@ cd "$SCEDIR"
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo " "
-	echo "${YELLOW}sce-remove - remove SCE(s) upon shutdown or reboot, removing an SCE that other"
+	echo "${YELLOW}sce-remove - Remove SCE(s) upon shutdown or reboot${NORMAL}. Removing an SCE that other"
 	echo "             SCE(s) depend on for shared dependencies will also flag these for"
-	echo "             removal, SCE(s) flagged for removal are listed in /tmp/.removesce.${NORMAL}"
+	echo "             removal. SCE(s) flagged for removal are listed in /tmp/.removesce"
+	echo "             prior to reboot."
 	echo " "
 	echo "Usage:"
 	echo " "
-	echo "${YELLOW}'"sce-remove"'${NORMAL}          select SCE(s) for removal from list."
-	echo "${YELLOW}'"sce-remove SCE"'${NORMAL}      mark SCE and any SCE(s) that depend on it for removal."
-	echo "${YELLOW}'"sce-remove -k"'${NORMAL}       select SCE(s) for removal from list, keep .lst and .dep"
-        echo "                      files, which are useful for future imports."
-	echo "${YELLOW}'"sce-remove -k SCE"'${NORMAL}   mark SCE and any SCE(s) that depend on it for removal,"
-        echo "                      keep .lst and .dep files, which are useful for future"
-	echo "                      imports."
+	echo "${YELLOW}"sce-remove"${NORMAL}          Select SCE(s) for removal from list."
+	echo "${YELLOW}"sce-remove SCE"${NORMAL}      Mark SCE and any SCE(s) that depend on it for removal."
+	echo "${YELLOW}"sce-remove -k"${NORMAL}       Select SCE(s) for removal from list, keep .lst and .dep"
+        echo "                    files, useful for future re-imports."
+	echo "${YELLOW}"sce-remove -k SCE"${NORMAL}   Mark SCE and any SCE(s) that depend on it for removal,"
+        echo "                    keep .lst and .dep files, useful for future re-imports."
 	echo " "
 exit 1
 fi
+
 
 while getopts k OPTION
 do
