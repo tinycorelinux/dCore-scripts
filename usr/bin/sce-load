@@ -181,7 +181,7 @@ update_system() {
 				sudo /usr/local/tce.installed/"$APPNAME" >> /dev/null 2>&1 
 			fi
 		   FREEDESKTOP="/tmp/tcloop/"$APPNAME"/usr/share/applications"
-		   if [ "$(ls -A $FREEDESKTOP 2>/dev/null)" ]; then
+		   if [ "$(ls -A "$FREEDESKTOP"/*.desktop > /dev/null 2>&1)" ]; then
 		    	for F in $(ls "$FREEDESKTOP"/*.desktop | grep -v "tinycore-"| grep -Ev '(~[1-9][1-9]*)'.desktop); do
 		     		if ! grep "OnlyShowIn" "$F" > /dev/null 2>&1 && ! grep "NoDisplay=true" "$F" > /dev/null 2>&1; then
 		       			EXTNAME="${F%.desktop}"
@@ -192,7 +192,7 @@ update_system() {
 		   fi
 		   
 		   FREEDESKTOP="/tmp/tcloop/"$APPNAME"/usr/local/share/applications"
-		   if [ "$(ls -A $FREEDESKTOP 2>/dev/null)" ]; then
+		   if [ "$(ls -A "$FREEDESKTOP"/*.desktop > /dev/null 2>&1)" ]; then
 		    	for F in $(ls "$FREEDESKTOP"/*.desktop | grep -v "tinycore-"| grep -Ev '(~[1-9][1-9]*)'.desktop); do
 		     		if ! grep "OnlyShowIn" "$F" > /dev/null 2>&1 && ! grep "NoDisplay=true" "$F" > /dev/null 2>&1; then
 		       				EXTNAME="${F%.desktop}"
