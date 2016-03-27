@@ -26,6 +26,7 @@ abort(){
 
 abort_to_saved_dir(){
 	cd "$SAVED_DIR"
+	[ -d /tmp/tcloop/"$APPNAME" ] && sudo rmdir /tmp/tcloop/"$APPNAME"
 	exit 1
 }
 
