@@ -11,6 +11,11 @@ BOOTPATH="$(cat /etc/sysconfig/boot_path | grep -v '^#' | grep BOOTPATH | cut -f
 MOUNTPOINT="$(cat /etc/sysconfig/boot_path | grep -v '^#' | grep BOOTPATH | cut -f3 -d/)" > /dev/null 2>&1
 MAXBACKUPS="$(cat /etc/sysconfig/boot_path | grep -v '^#' | grep MAXBACKUPS | cut -f2 -d=)" > /dev/null 2>&1
 
+exit_tcnet() {
+	echo "Issue connecting to `cat /opt/tcemirror`, exiting.."
+	exit 1
+}
+
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo " "
 	echo "${YELLOW}version - Confirm dCore version, check for release or release candidate (RC)"
@@ -111,6 +116,9 @@ do
 				else
 					echo "You are running "$RESULTS", the latest release candidate."
 				fi
+			
+			else
+				exit_tcnet
 			fi
 			exit
 			;;
@@ -183,6 +191,8 @@ do
 				else
 					echo "You are running "$RESULTS", the latest release."
 				fi
+			else
+				exit_tcnet
 			fi
 			exit
 			;;
