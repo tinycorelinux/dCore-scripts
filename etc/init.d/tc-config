@@ -17,6 +17,7 @@ KERNEL="$(uname -r)"
 addUser(){
 	echo "${GREEN}Adding user ${YELLOW} $USER ${NORMAL}"
 	/bb/adduser -s /bb/sh -G staff -D "$USER"
+	/bb/addgroup -g 1000 "$USER"
 	echo "$USER":tcuser | /bb/chpasswd -m
 	echo -e "$USER\tALL=NOPASSWD: ALL" >> /etc/sudoers
 }
@@ -593,6 +594,9 @@ if [ "$CHECKFS" == "1" ]; then
 
 fi
 
+[ -f /etc/udev/rules.d/60-persistent-storage.rules ] && rm /etc/udev/rules.d/60-persistent-storage.rules
+/sbin/udevadm trigger  2>&1 >/dev/null &&
+
 MSSG="${BLUE}Loading extensions...${NORMAL}"
 if [ -n "$SHOWAPPS" ]; then
 	touch /etc/sysconfig/showapps
@@ -671,9 +675,6 @@ fi
 /sbin/loadcpufreq 2>/dev/null &
 
 /opt/bootsync.sh
-
-[ -f /etc/udev/rules.d/60-persistent-storage.rules ] && rm /etc/udev/rules.d/60-persistent-storage.rules
-/sbin/udevadm trigger  2>&1 >/dev/null &&
 
 /bb/addgroup "$USER" cdrom
 /bb/addgroup "$USER" tty
