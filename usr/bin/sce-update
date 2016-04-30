@@ -304,25 +304,36 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	sudo mv NEWDEBINX OLDDEBINX > /dev/null 2>&1
 	##
 elif [ -f update/"$UPDATETARGET".sce ]; then
-	if [ -f update/"$UPDATETARGET".sce.debinx ] && [ -f update/"$UPDATETARGET".sce.md5.txt ]; then
-		MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
-		MDOLD=`cat update/"$UPDATETARGET".sce.debinx`
-		if [ "$MDOLD" == "$MDNEW" ]; then
-			echo "         ${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
-			exit 0
-		fi
-	fi
+	#if [ -f update/"$UPDATETARGET".sce.debinx ] && [ -f update/"$UPDATETARGET".sce.md5.txt ]; then
+	#	MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+	#	MDOLD=`cat update/"$UPDATETARGET".sce.debinx`
+	#	if [ "$MDOLD" == "$MDNEW" ]; then
+	#		echo "         ${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
+	#		exit 0
+	#	fi
+	#fi
 	cd update/
 	echo "Searching for available updates for "$UPDATETARGET".sce."
 	unset DEPLIST
 	getDeps "$UPDATETARGET"
 	for I in `echo "$DEPLIST"`; do
-		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
-			:
-		else
-			echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
-			importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
+		if [ -f update/"$I".sce.debinx ] && [ -f update/"$I".sce.md5.txt ]; then
+			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+			MDOLD=`cat update/"$I".sce.debinx`
+			if [ "$MDOLD" == "$MDNEW" ]; then
+				echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
+				continue
+			fi
+		elif [ -f "$I".sce.debinx ] && [ -f "$I".sce.md5.txt ]; then
+			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+			MDOLD=`cat "$I".sce.debinx`
+			if [ "$MDOLD" == "$MDNEW" ]; then
+				echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
+				continue
+			fi
 		fi
+		echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
+		importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
@@ -395,26 +406,37 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 	fi
 	cd ..
 elif [ -f "$UPDATETARGET".sce ]; then
-	if [ -f "$UPDATETARGET".sce.debinx ] && [ -f "$UPDATETARGET".sce.md5.txt ]; then
-		MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
-		MDOLD=`cat "$UPDATETARGET".sce.debinx`
-		if [ "$MDOLD" == "$MDNEW" ]; then
-			echo " "
-			echo "${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
-			exit 0
-		fi
-	fi
+	#if [ -f "$UPDATETARGET".sce.debinx ] && [ -f "$UPDATETARGET".sce.md5.txt ]; then
+	#	MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+	#	MDOLD=`cat "$UPDATETARGET".sce.debinx`
+	#	if [ "$MDOLD" == "$MDNEW" ]; then
+	#		echo " "
+	#		echo "${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
+	#		exit 0
+	#	fi
+	#fi
 	echo " "
 	echo "Searching for available updates for ${YELLOW}"$UPDATETARGET".sce${NORMAL}."
 	unset DEPLIST
 	getDeps "$UPDATETARGET"
 	for I in `echo "$DEPLIST"`; do
-		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
-			:
-		else
-			echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
-			importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
+		if [ -f update/"$I".sce.debinx ] && [ -f update/"$I".sce.md5.txt ]; then
+			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+			MDOLD=`cat update/"$I".sce.debinx`
+			if [ "$MDOLD" == "$MDNEW" ]; then
+				echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
+				continue
+			fi
+		elif [ -f "$I".sce.debinx ] && [ -f "$I".sce.md5.txt ]; then
+			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+			MDOLD=`cat "$I".sce.debinx`
+			if [ "$MDOLD" == "$MDNEW" ]; then
+				echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
+				continue
+			fi
 		fi
+		echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
+		importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
 		if [ "$CHECKONLY" != "TRUE" ]; then
@@ -522,30 +544,23 @@ elif [ "$SELECT" == "TRUE" ]; then
 			getDeps "$D"
 			for I in `echo "$DEPLIST"`; do
 				UPDATETARGET="$I"
-				if [ -f "$SCEDIR"/update/"$UPDATETARGET".sce.debinx ] && [ -f "$SCEDIR"/update/"$UPDATETARGET".sce.md5.txt ]; then
+				if [ -f update/"$I".sce.debinx ] && [ -f update/"$I".sce.md5.txt ]; then
 					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
-					MDOLD=`cat "$SCEDIR"/update/"$UPDATETARGET".sce.debinx`
+					MDOLD=`cat update/"$I".sce.debinx`
 					if [ "$MDOLD" == "$MDNEW" ]; then
-						echo "         ${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
-						echo "$UPDATETARGET" >> /tmp/.updatechecked
-						continue
+						echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
+							continue
 					fi
-				elif [ -f "$UPDATETARGET".sce.debinx ] && [ -f "$UPDATETARGET".sce.md5.txt ]; then 
+				elif [ -f "$I".sce.debinx ] && [ -f "$I".sce.md5.txt ]; then
 					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
-					MDOLD=`cat "$UPDATETARGET".sce.debinx`
+					MDOLD=`cat "$I".sce.debinx`
 					if [ "$MDOLD" == "$MDNEW" ]; then
-						echo "         ${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
-						echo "$UPDATETARGET" >> /tmp/.updatechecked
+						echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
 						continue
 					fi
 				fi
-				
-				if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
-					:
-				else
-					echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
-					importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
-				fi
+				echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
+				importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 			done
 		done
 		if [ -s /tmp/.sceupdatelist ]; then
