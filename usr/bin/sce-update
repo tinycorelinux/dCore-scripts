@@ -67,7 +67,7 @@ if grep -i "^NONINTERACTIVE=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [
 fi
 
 shift `expr $OPTIND - 1`
-UPDATETARGET="$1"
+UPDATETARGET=`basename "$1" .sce`
 OPTIONS=""
 if [ "$RAM" == "TRUE" ]; then
 	OPTIONS=""$OPTIONS"r"
