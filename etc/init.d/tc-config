@@ -16,8 +16,13 @@ KERNEL="$(uname -r)"
 
 addUser(){
 	echo "${GREEN}Adding user ${YELLOW} $USER ${NORMAL}"
-	/bb/adduser -s /bb/sh -G staff -D "$USER"
-	/bb/addgroup -g 1000 "$USER"
+	if [ -n "$UID" ]; then
+		UID="$UID"
+	else
+		UID=1000
+	fi
+	/bb/adduser -u "$UID" -s /bb/ash -G staff -D "$USER"
+	/bb/addgroup -g "$UID" "$USER"
 	echo "$USER":tcuser | /bb/chpasswd -m
 	echo -e "$USER\tALL=NOPASSWD: ALL" >> /etc/sudoers
 }
@@ -61,6 +66,7 @@ for i in `cat /proc/cmdline`; do
 				rsyslog=* ) RSYSLOG=${i#*=}; SYSLOG=1 ;;
 				blacklist* ) BLACKLIST="$BLACKLIST ${i#*=}" ;;
 				iso* ) ISOFILE=${i#*=} ;;
+				uid* ) UID=${i#*=} ;;
 			esac
 		;;
 		*)
@@ -303,6 +309,7 @@ if [ -n "$USER" ]; then
 	if ! grep "$USER" /etc/passwd >/dev/null; then addUser; fi
 else
 	USER="tc"
+	addUser
 fi
 echo "$USER" > /etc/sysconfig/tcuser
 mkdir -p /home/"$USER"
