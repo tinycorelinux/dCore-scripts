@@ -23,7 +23,8 @@ addUser(){
 	fi
 	/bb/adduser -u "$UID" -s /bb/ash -G staff -D "$USER"
 	/bb/addgroup -g "$UID" "$USER"
-	echo "$USER":tcuser | /bb/chpasswd -m
+	/bb/passwd -d "$USER"
+	#echo "$USER":tcuser | /bb/chpasswd -m
 	echo -e "$USER\tALL=NOPASSWD: ALL" >> /etc/sudoers
 }
 
