@@ -303,6 +303,7 @@ if [ -n "$USER" ]; then
 else
 	USER="tc"
 fi
+chown root:root /etc/sudoers
 echo "$USER" > /etc/sysconfig/tcuser
 mkdir -p /home/"$USER"
 
