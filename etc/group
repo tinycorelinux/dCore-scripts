@@ -44,7 +44,7 @@ bluetooth:x:115:
 pulse:x:116:
 Debian-gdm:x:119:
 nogroup:x:65534:
-messagebus:x:1000:messagebus
-utempter:x:1001:
-libuuid:x:1002:libuuid
+utempter:x:1002:
+libuuid:x:1003:libuuid
+messagebus:x:1004:messagebus
 debian-transmission:x:1005:debian-transmission
