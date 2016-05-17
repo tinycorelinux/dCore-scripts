@@ -21,7 +21,7 @@ zsyncDebianIndex()
 	then
 		rm -f "$DEBINX".zs-old
 	else
-		wget -O "$TCEDIR"/import/debinx/"$DEBINX" "$MIRROR"/"$DEBINX"
+		wget -O "$TCEDIR"/import/debinx/"$DEBINX" "$MIRROR"/"$DEBINX" || exit_tcnet
 	fi
         echo " "
 	cd - > /dev/null
@@ -37,7 +37,7 @@ zsyncDebianSecurityIndex()
 	then
 		rm -f "$DEBINX_SECURITY".zs-old
 	else
-		wget -O "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" "$MIRROR"/"$DEBINX_SECURITY"
+		wget -O "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" "$MIRROR"/"$DEBINX_SECURITY" || exit_tcnet
 	fi
         echo " "
 	cd - > /dev/null
