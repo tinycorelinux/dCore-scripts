@@ -304,6 +304,9 @@ else
 	USER="tc"
 fi
 chown root:root /etc/sudoers
+chown -R root:staff /etc/sysconfig
+chown -R root:staff /tmp
+chmod 1777 /tmp
 echo "$USER" > /etc/sysconfig/tcuser
 mkdir -p /home/"$USER"
 

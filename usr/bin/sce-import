@@ -5,7 +5,7 @@
 
 useBusybox
 
-sudo chown "$TCUSER":staff /tmp
+sudo chown root:staff /tmp
 sudo chmod 1777 /tmp
 TCUSER=`cat /etc/sysconfig/tcuser`
 TCEDIR=`readlink /etc/sysconfig/tcedir`
