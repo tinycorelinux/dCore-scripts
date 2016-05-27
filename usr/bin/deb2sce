@@ -480,7 +480,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			if [ -f "${DEBINFO}".tar.gz ]; then
 				if [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` != `grep "^$DEBINFO": "$DEBINXDIR"/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then
 					echo "Fetching updated "${DEBINFO}".tar.gz..."
-					rm "${DEBINFO}".tar.gz*
+					rm "${DEBINFO}".tar.gz* > /dev/null 2>&1
 					/bb/wget -O "${DEBINFO}".tar.gz "$PREBUILTMIRROR"/"${DEBINFO}".tar.gz 
 					if [ "$?" != 0 ]
 					then

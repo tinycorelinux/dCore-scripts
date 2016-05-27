@@ -74,7 +74,7 @@ if grep "^$BASENAME"-data: PKGDATAFILEMD5SUMLIST >/dev/null; then
 
 	if [ `md5sum "$DEBS"/"$BASENAME"-data.tar.gz | cut -f1 -d" "` != `grep "^$BASENAME"-data: PKGDATAFILEMD5SUMLIST | cut -f2 -d" "` ]; then
 		echo "Fetching updated "$BASENAME"-data.tar.gz..."
-		rm "$BASENAME"-data.tar.gz*
+		rm "$BASENAME"-data.tar.gz*  > /dev/null 2>&1
 		wget -O "$DEBS"/"$BASENAME"-data.tar.gz "$IMPORTMIRROR"/"$BASENAME"-data.tar.gz || exit 1
 	fi
 
