@@ -56,7 +56,9 @@ choose(){
 	mount | awk '$3 ~ /tcloop/{print substr($3,13)}' > "$MOUNTED"
 
 	cat "$SCE" "$MOUNTED" "$MOUNTED" | sort | uniq -u > "$TMP"
-
+	for I in `cat "$TMP"`; do 
+		grep "^$I:" /tmp/.debinstalled > /dev/null 2>&1 && sed -i "/^$I$/d" "$TMP"
+	done
 	rm "$SCE"
 	rm "$MOUNTED"
 
