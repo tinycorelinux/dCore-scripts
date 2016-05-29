@@ -343,7 +343,7 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	fi
 
 	if [ ! -f "$TARGETDIR""$THISSCE" ]; then
-		echo "${YELLOW}"$TARGETDIR""$THISSCE"${NORMAL} does not exist, exiting.."
+		echo "${YELLOW}"$TARGETDIR""$THISSCE"${NORMAL} does not exist, not loading.."
 		exit 1
 	fi
 
