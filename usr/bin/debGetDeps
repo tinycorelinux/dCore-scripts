@@ -27,7 +27,7 @@ getDeps()
 	touch /tmp/work/"$PKG"
 	if grep "^Package: $PKG$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
 		DEPLIST=`debGetPkgList $PKG 2>/dev/null`
-		[ -s "$DEBINXDIR"/PKGEXTRAREPODEP ] &&  DEPLIST="$DEPLIST `grep "^$PKG:" "$DEBINXDIR"/PKGEXTRAREPODEP | cut -f2 -d:`"
+		[ -s "$DEBINXDIR"/PKGADDDEP ] &&  DEPLIST="$DEPLIST `grep "^$PKG:" "$DEBINXDIR"/PKGADDDEP | cut -f2 -d:`"
 	elif grep "^$PKG:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
 		DEPLIST="$DEPLIST `grep "^$PKG:" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f2 -d:`"
 	else
