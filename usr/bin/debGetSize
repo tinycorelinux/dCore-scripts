@@ -68,10 +68,10 @@ getdsize_extra() {
 				if ( f[1] == "Size" )
 					print f[2] 
 			}
-		
+		exit 0
 		}
 		
-	} ' < "$DEBINX1"
+	} ' < "$DEBINX1" 
 }
 
 getisize_extra() {
@@ -100,13 +100,14 @@ getisize_extra() {
 		
 		}
 		
-	} ' < "$DEBINX1"
+	} ' < "$DEBINX1" | tail -n 1
 }
 
 
 
 
 for I in `ls /tmp/work`; do 
+pgrep sce-import > /dev/null 2>&1 || exit 0
 grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 && continue
 
 if ! ps a | grep "/usr/bin/deb2sce" | grep -v grep > /dev/null 2>&1; then

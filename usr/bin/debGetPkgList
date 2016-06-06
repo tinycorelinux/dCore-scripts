@@ -60,8 +60,7 @@ getDeps2() {
 						     
 			
 		}
-
-
+		exit 0
 		}
 		
 	} ' < "$DEBINX"

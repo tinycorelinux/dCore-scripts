@@ -102,11 +102,12 @@ getMd5sum1() {
 					}
 				
 				if ( f[1] == "MD5sum" )
-					print f[2] 
+					print f[2]
+					
 			}
-		
-		}
-		
+		exit 0
+		} 
+
 	} ' < "$DEBINX"
 }
 ##
@@ -535,6 +536,10 @@ for DEBINFO in `ls -t /tmp/work`; do
 			MD5NEW=$(getMd5sum1 "$DEBINFO")
 			if [ -f "$DEBS"/"$THISDEB" ]; then
 				MD5OLD=$(/bb/md5sum "$DEBS"/"$THISDEB" | cut -f1 -d" ")
+				##test
+				echo "$MD5NEW"
+				echo "$MD5OLD"
+				##TEST
 				if [ "$MD5NEW" != "$MD5OLD" ]; then
 					rm "$DEBS"/"$THISDEB"
 					echo "Fetching updated "$THISDEB"..."
