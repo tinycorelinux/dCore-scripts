@@ -4,6 +4,7 @@
 
 . /etc/init.d/tc-functions
 checknotroot
+TCEDIR=/etc/sysconfig/tcedir
 SCEDIR="/etc/sysconfig/tcedir/sce"
 DEBINXDIR="/etc/sysconfig/tcedir/import/debinx"
 BUILD=`getBuild`
@@ -32,6 +33,8 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "                   re-import, warn as needed."
 	echo "${YELLOW}"sce-update -z"${NORMAL}      Ignore /etc/sysconfig/sceconfig preferences, use only"
         echo "                   current command line options."
+	echo "${YELLOW}"sce-update -b"${NORMAL}      Check SCE entries in your sceboot.lst and any"
+	echo "                   applicable SCE dependencies."
 	echo " "
 	exit 0
 fi
@@ -47,7 +50,7 @@ fi
 
 echo "$$" > /tmp/.scelock
 
-while getopts canrsz OPTION
+while getopts canrszb OPTION
 do
 	case ${OPTION} in
 		r) RAM=TRUE ;;
@@ -56,6 +59,7 @@ do
 		a) UPDATEALL=TRUE ;;
 		s) SIZE=TRUE ;;
 		z) NOCONFIG=TRUE ;;
+		b) SCEBOOTLIST=TRUE ;;
                 *) echo "Run  sce-update --help  for usage information."
                    exit 1 ;;
 	esac
@@ -77,8 +81,20 @@ if [ "$SIZE" == "TRUE" ]; then
 	OPTIONS=""$OPTIONS"s"
 fi
 
-if [ -z "$1" ]; then
+if [ -z "$1" ] && [ "$SCEBOOTLIST" != "TRUE" ]; then
 	SELECT=TRUE
+fi
+
+if [ "$SCEBOOTLIST" == "TRUE" ]; then
+	if [ -n "$1" ]; then
+		echo "The -b option is not to be used with a specified SCE, exiting.."
+		exit 1
+	fi
+fi
+
+if [ "$SCEBOOTLIST" == "TRUE" ] && [ "$UPDATEALL" == "TRUE" ]; then
+	echo "The -a and -b options cannot be used together, exiting.."
+	exit 1
 fi
 
 if [ -n "$2" ]; then
@@ -303,6 +319,109 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	cd /etc/sysconfig/tcedir/import/debinx
 	sudo mv NEWDEBINX OLDDEBINX > /dev/null 2>&1
 	##
+elif [ "$SCEBOOTLIST" == "TRUE" ]; then
+	echo " "
+	if [ -n "$1" ]; then
+		echo "The -b option is not to be used with a specified SCE, exiting.."
+		exit 1
+	fi	
+	for i in `cat /proc/cmdline`; do
+		case $i in
+			lst=*) TARGETLIST=${i#*=} ;;
+		esac
+	done
+	[ -n "$TARGETLIST" ] || TARGETLIST="sceboot.lst"
+	for I in `cat "$TCEDIR"/"$TARGETLIST"`; do
+		getDeps "$I"
+	done
+	for I in `echo "$DEPLIST"`; do
+		if [ -f update/"$I".sce.debinx ] && [ -f update/"$I".sce.md5.txt ]; then
+			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+			MDOLD=`cat update/"$I".sce.debinx`
+			if [ "$MDOLD" == "$MDNEW" ]; then
+				echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
+				continue
+			fi
+		elif [ -f "$I".sce.debinx ] && [ -f "$I".sce.md5.txt ]; then
+			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+			MDOLD=`cat "$I".sce.debinx`
+			if [ "$MDOLD" == "$MDNEW" ]; then
+				echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
+				continue
+			fi
+		fi
+		echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
+		importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
+	done
+	if [ -s /tmp/.sceupdatelist ]; then
+		if [ "$CHECKONLY" != "TRUE" ]; then
+			if [ "$NONINTERACTIVE" == "TRUE" ]; then
+				for I in `cat /tmp/.sceupdatelist`; do
+					if [ -f /tmp/"$I".recommended ]; then
+						OPTIONS="$OPTIONS"R
+					fi
+					if [ -f /tmp/"$I".suggested ]; then
+						OPTIONS="$OPTIONS"S
+					fi
+					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+						sce-import -"$OPTIONS"Nnp "$I"
+						#if [ "$?" != "0" ]; then
+						#	echo "Error in updating "$I", exiting.."
+						#	exit 1
+						#fi
+					fi
+					echo "$I" >> /tmp/importupdated
+				done
+			else
+				echo " "
+				echo "Update check completed."
+				echo " "
+				cat  /tmp/.sceupdatelist | sort | uniq
+				echo " "
+                                echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
+				read ans
+				echo " "
+				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+					more -s /tmp/updateavailable
+					echo " "
+					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
+					read ans
+					echo " "
+				fi
+				for I in `cat /tmp/.sceupdatelist`; do
+					if [ -f /tmp/"$I".recommended ]; then
+						OPTIONS="$OPTIONS"R
+					fi
+					if [ -f /tmp/"$I".suggested ]; then
+						OPTIONS="$OPTIONS"S
+					fi
+					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+						sce-import -"$OPTIONS"Nnp "$I"
+						#if [ "$?" != "0" ]; then
+						#	echo "Error in updating "$I", exiting.."
+						#	exit 1
+						#fi
+					fi
+					echo "$I" >> /tmp/importupdated
+				done
+			fi
+		else
+			echo " "
+			echo "Update check completed."
+			echo " "
+			cat  /tmp/.sceupdatelist | sort | uniq
+			echo " "
+			echo -n "Press Enter to view package updates, Ctrl-C aborts: "
+			read ans
+			if [ "$ans" == "" ]; then
+				more -s /tmp/updateavailable
+			fi
+			exit 0
+		fi
+	else
+		echo " "
+		echo "No updates available for main or any dependency SCEs."
+	fi
 elif [ -f update/"$UPDATETARGET".sce ]; then
 	#if [ -f update/"$UPDATETARGET".sce.debinx ] && [ -f update/"$UPDATETARGET".sce.md5.txt ]; then
 	#	MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
