@@ -174,15 +174,18 @@ fi
 ## Use list file in SCE dir and get deps of those packages.
 if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
 	for I in `cat "$TCEDIR"/sce/"$SCE".sce.lst`; do 
+		pgrep sce-update > /dev/null 2>&1 || exit 0
 		sudo debGetDeps "$I" > /dev/null 2>&1
 	done
 	for I in `cat "$FILE" | cut -f1 -d:`; do
-		 sudo debGetDeps "$I" > /dev/null 2>&1
+		pgrep sce-update > /dev/null 2>&1 || exit 0
+		sudo debGetDeps "$I" > /dev/null 2>&1
 	done
 		
 else
 	sudo debGetDeps "$SCE" > /dev/null 2>&1
 		for I in `cat "$FILE" | cut -f1 -d:`; do
+			pgrep sce-update > /dev/null 2>&1 || exit 0
 			sudo debGetDeps "$I" > /dev/null 2>&1
 		done
 fi
@@ -260,6 +263,7 @@ fi
 #done
 
 while read line; do 
+	pgrep sce-update > /dev/null 2>&1 || exit 0
 	E=`echo $line | cut -f1 -d:`
         if grep "^$E$" "$DATADIR"/*.debs > /dev/null 2>&1; then
 			continue

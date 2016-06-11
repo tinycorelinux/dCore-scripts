@@ -43,3 +43,7 @@ VIEWPKGS=FALSE
 PRESERVEDEBINXMODE=FALSE
 
 # UPDATEDEBINXMODE is default and not needed to be specified here.
+
+# Use NICE=19 for the most cpu friendly use of sce-import and sce-update.  
+# Use NICE=0 to give sce-import and sce-update high system priority.
+NICE=
