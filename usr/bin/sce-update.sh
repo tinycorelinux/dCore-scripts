@@ -35,9 +35,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
         echo "                   current command line options."
 	echo "${YELLOW}"sce-update -b"${NORMAL}      Check SCE entries in your sceboot.lst and any"
 	echo "                   applicable SCE dependencies."
-	echo "${YELLOW}"sce-update -f"${NORMAL}      This flags an SCE for update on the first found package"
-	echo "                   or startup script needing and update and moves to the next SCE"
-	echo "                   for quicker performance"
 	echo " "
 	exit 0
 fi
@@ -53,7 +50,7 @@ fi
 
 echo "$$" > /tmp/.scelock
 
-while getopts canrszbf OPTION
+while getopts canrszb OPTION
 do
 	case ${OPTION} in
 		r) RAM=TRUE ;;
@@ -63,7 +60,6 @@ do
 		s) SIZE=TRUE ;;
 		z) NOCONFIG=TRUE ;;
 		b) SCEBOOTLIST=TRUE ;;
-		f) FASTCHECK=TRUE ;;
                 *) echo "Run  sce-update --help  for usage information."
                    exit 1 ;;
 	esac
@@ -87,11 +83,6 @@ fi
 
 if [ -z "$1" ] && [ "$SCEBOOTLIST" != "TRUE" ]; then
 	SELECT=TRUE
-fi
-
-[ -f /tmp/.updatefastcheck ] && sudo rm /tmp/.updatefastcheck
-if [ "$FASTCHECK" == "TRUE" ]; then
-	touch /tmp/.updatefastcheck
 fi
 
 if [ "$SCEBOOTLIST" == "TRUE" ]; then
@@ -126,7 +117,6 @@ fi
 
 cleanup() {
 	sudo chown -R "$TCUSER":staff "$SCEDIR" 
-	[ -f /tmp/.updatefastcheck ] && sudo rm /tmp/.updatefastcheck
 	[ -f /tmp/.sceupdatechoose ] && sudo rm /tmp/.sceupdatechoose
 	[ -f /tmp/.scelistchoose ] && sudo rm /tmp/.scelistchoose
 	[ -f /tmp/.sceupdateall ] && sudo rm /tmp/.sceupdateall
