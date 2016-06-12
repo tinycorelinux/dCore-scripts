@@ -18,8 +18,8 @@ if [ -n "$NICE" ]; then
 		echo "Using nice level "$NICE"."
 	fi
 	echo " "
-	/bb/nice -n"$NICE" sce-update.sh "$@"
+	exec /bb/nice -n"$NICE" sce-update.sh "$@"
 else
-	sce-update.sh "$@"
+	exec sce-update.sh "$@"
 fi
 

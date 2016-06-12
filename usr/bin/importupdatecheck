@@ -282,33 +282,27 @@ while read line; do
 	##
 	NAME="$E"
 		## Get updated or deleted startup script or data files info.
-		if ! grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-deb2sce:" "$FILEDATA"; then
-			continue
-		fi
-	
-		if grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
+		if grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-deb2sce:" "$FILEDATA"; then
+			echo ""$E"  New "$E".deb2sce starup script available." >>  /tmp/updateavailable
+		elif grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 			MD5SSNEW=`grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
-			if ! grep "^$E-deb2sce:" "$FILEDATA" > /dev/null 2>&1; then
-				MD5SSOLD="0"
-				echo "New "$E".deb2sce startup script available." >>  /tmp/updateavailable 
-			fi
 			if [ "$MD5SSNEW" != "$MD5SSOLD" ]; then
 				if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates	
-					echo "Updated "$E".deb2sce startup script available." >>  /tmp/updateavailable 
+					echo ""$E"  Updated "$E".deb2sce starup script available." >>  /tmp/updateavailable 
 				fi
 			fi
-		elif grep "^$E-deb2sce:" "$FILEDATA" > /dev/null 2>&1; then
+		elif grep "^$E-deb2sce:" "$FILEDATA" && ! grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 			MD5SSNEW=`grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			if ! grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 				MD5SSNEW="0"
-				echo ""$E".deb2sce startup script was removed in the repo." >>  /tmp/updateavailable
+				echo ""$E"  "$E".deb2sce startup script was removed in the repo." >>  /tmp/updateavailable
 			elif [ "$MD5SSNEW" != "$MD5SSOLD" ]; then
 				if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates 
-					echo "Updated "$E".deb2sce startup script available." >>  /tmp/updateavailable
+					echo ""$E"  Updated "$E".deb2sce startup script available." >>  /tmp/updateavailable
 				fi
 			fi
 		
@@ -325,10 +319,10 @@ while read line; do
 				MD5DATAOLD="0"
 			fi
 	        	if [ "$MD5DATANEW" != "$MD5DATAOLD" ]; then
-			 	#if ! grep "^$E$" /tmp/ssupdates; then
+			 	if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates
-			   		echo "Updated "$E"-data.tar.gz extra files available." >>  /tmp/updateavailable 
-	        		#fi	
+			   		echo ""$E"  New "$E"-data.tar.gz extra files available." >>  /tmp/updateavailable 
+	        		fi	
 			fi
 		
 		elif grep "^$E-data:" "$FILEDATA" > /dev/null 2>&1; then
@@ -340,7 +334,7 @@ while read line; do
 	        	if [ "$MD5DATANEW" != "$MD5DATAOLD" ]; then
 			 	#if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates
-			   		echo ""$E"-data.tar.gz was removed on the server." >>  /tmp/updateavailable 
+			   		echo ""$E"  "$E"-data.tar.gz was removed on the server." >>  /tmp/updateavailable 
 	        		#fi	
 			fi
 		fi	
@@ -365,9 +359,11 @@ if [ -s /tmp/.importmissing ]; then
 fi
 
 if [ -s /tmp/.importupdates ]; then
-	for I in `cat /tmp/.importupdates | sort | uniq`; do 
-		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
-		echo ""$I"  "$A" " >> /tmp/updateavailable
+	for I in `cat /tmp/.importupdates | sort | uniq`; do
+		if grep "^$I;" /tmp/.importpkgtype > /dev/null 2>&1; then
+			A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
+			echo ""$I"  "$A" " >> /tmp/updateavailable
+		fi
  	done  
 	echo "$1" >> /tmp/.sceupdatelist
 fi

@@ -17,8 +17,8 @@ if [ -n "$NICE" ]; then
 	else 
 		echo "Using nice level "$NICE"."
 	fi
-	/bb/nice -n"$NICE" sce-import.sh "$@"
+	exec /bb/nice -n"$NICE" sce-import.sh "$@"
 else
-	sce-import.sh "$@"
+	exec sce-import.sh "$@"
 fi
 
