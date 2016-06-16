@@ -284,6 +284,7 @@ while read line; do
 		## Get updated or deleted startup script or data files info.
 		if grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-deb2sce:" "$FILEDATA"; then
 			echo ""$E"  New "$E".deb2sce starup script available." >>  /tmp/updateavailable
+			echo "$E" >> /tmp/ssupdates
 		elif grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 			MD5SSNEW=`grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
