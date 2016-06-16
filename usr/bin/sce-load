@@ -13,6 +13,17 @@ SAVED_DIR=`pwd`
 HERE=`pwd`
 #ONBOOTNAME="$(getbootparam lst 2>/dev/null)"
 
+if [ -f /tmp/.sceloadlock ]; then
+	LOCK=`cat /tmp/.sceloadlock`
+	if /bb/ps | /bb/grep "$LOCK " | grep "sce-load" > /dev/null 2>&1; then
+		echo "Another sce-load session is presently in use, exiting.."
+		exit 1
+	fi
+fi
+
+echo "$$" > /tmp/.sceloadlock
+
+
 [ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
 
 [ -n "$ONBOOTNAME" ] || ONBOOTNAME="onboot.lst"

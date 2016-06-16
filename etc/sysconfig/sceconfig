@@ -46,4 +46,4 @@ PRESERVEDEBINXMODE=FALSE
 
 # Use NICE=19 for the most cpu friendly use of sce-import and sce-update.  
 # Use NICE=0 to give sce-import and sce-update high system priority.
-NICE=
+NICE=19
