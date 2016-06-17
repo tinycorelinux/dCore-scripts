@@ -1,21 +1,48 @@
 #!/bin/sh
 
+while getopts b OPTION
+do
+	case ${OPTION} in
+		b) BOOTING=TRUE ;;
+		*) abort ;;
+	esac
+done
+
 SCRIPT="sce-load"
 NICE=`grep "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
 if [ -n "$NICE" ]; then
-	echo " "
 	if ! [ "$NICE" -eq "$NICE" ] > /dev/null 2>&1; then
-		echo "Nice value must be a number between 0 and 19 in sceconfig."
-		echo "Example: NICE=19 for the most cpu friendly use of "$SCRIPT""
-		exit 1
+		if [ "$BOOTING" != "TRUE" ]; then
+			echo " "
+			echo "Nice value must be a number between 0 and 19 in sceconfig."
+			echo "Example: NICE=19 for the most cpu friendly use of "$SCRIPT""
+			exit 1
+		else
+			exec sce-load.sh "$@"
+		fi
 	elif [ "$NICE" -gt 19 ]; then
 		NICE=19
-		echo "Using nice level 19, 19 is the highest possible nice value."
+		if [ "$BOOTING" != "TRUE" ]; then
+			echo " "
+			echo "Using nice level 19, 19 is the highest possible nice value."
+		else
+			exec sce-load.sh "$@"
+		fi
 	elif [ 0 -gt "$NICE" ]; then
 		NICE=0
-		echo "Using nice level "$NICE", only root can use negative nice values."
+		if [ "$BOOTING" != "TRUE" ]; then
+			echo " "
+			echo "Using nice level "$NICE", only root can use negative nice values."
+		else
+			exec sce-load.sh "$@"	
+		fi
 	else 
-		echo "Using nice level "$NICE"."
+		if [ "$BOOTING" != "TRUE" ]; then
+			echo " "
+			echo "Using nice level "$NICE"."
+		else
+			exec sce-load.sh "$@"
+		fi
 	fi
 	exec /bb/nice -n"$NICE" sce-load.sh "$@"
 else
