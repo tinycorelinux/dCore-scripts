@@ -306,6 +306,9 @@ fi
 chown root:root /etc/sudoers
 chown -R root:staff /etc/sysconfig
 chown -R root:staff /tmp
+chown -R root:staff /opt
+chmod 775 /opt/debextra
+chmod 775 /opt
 chmod 1777 /tmp
 echo "$USER" > /etc/sysconfig/tcuser
 mkdir -p /home/"$USER"
