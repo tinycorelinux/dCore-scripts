@@ -156,6 +156,7 @@ TARGET="$1"
 # and preceding directory if specified on command line.
 TARGET=`basename "$TARGET"`
 TARGET=${TARGET%%.sce}
+TARGET=${TARGET%%.sce.lst}
 
 echo " "
 
@@ -325,7 +326,7 @@ checklist() {
 
 
 # Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
-if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
+if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 	if [ -f "$1" ] && [ "$PACKAGELIST" == "TRUE" ]; then
 		TARGETFILE=`readlink -f "$1"`
 		for I in `cat "$TARGETFILE"`; do
@@ -350,11 +351,11 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 			fi
 		fi
 		sudo cp $TARGETFILE /tmp/.targetfile
-		TARGET=`basename $1 .sce.lst`
-	elif [ -s "$TCEDIR"/sce/"$1".sce.lst ]; then
+		#TARGET=`basename $1 .sce.lst`
+	elif [ -s "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 		echo " "
 		echo "Existing list file found."
-		TARGETFILE=""$TCEDIR"/sce/"$1".sce.lst"
+		TARGETFILE=""$TCEDIR"/sce/"$TARGET".sce.lst"
 		for I in `cat "$TARGETFILE"`; do
 			checklist "$I"
 		done
@@ -376,7 +377,7 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 				echo "The above files in "$TARGETFILE" do not exist in dCore repos."
 			fi
 		fi
-		sudo cp "$TCEDIR"/sce/"$1".sce.lst /tmp/.targetfile
+		sudo cp "$TCEDIR"/sce/"$TARGET".sce.lst /tmp/.targetfile
 	elif [ ! "$1" ]; then
 		echo " "
 		echo "Please specify a target file when using the -l option, exiting.."
@@ -430,16 +431,16 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	if [ -f "$TARGETFILE" ]; then
   		echo " "
   		if [ -f /tmp/.importinteractive ]; then
-  			echo -n "Creating "$TARGET".sce from "$TARGETFILE"."
+  			echo "Creating "$TARGET".sce from "$TARGETFILE"."
   			mksce "$TARGET"
 			exit 0
   		else
                         echo "Create "$TARGET".sce from "$TARGETFILE"?"
 			echo " "
-			echo "Press Enter to use this package list or enter (n)o to import a standard"
+			echo "Press Enter to use this package list or enter '(n)o' to import a standard"
 			echo "'"$TARGET"' package if it exists, Ctrl-C aborts."
                         echo " "
-                        echo "${YELLOW}Warning:${NORMAL} Entering (n)o will delete "$TARGETFILE"."
+                        echo -n "${YELLOW}Warning:${NORMAL} Entering '(n)o' will delete "$TARGETFILE"."
                         read ans                  
 	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  			sudo rm /tmp/.targetfile
@@ -456,7 +457,7 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 		exit 1
 	fi  
 # Below is where an existing .lst file is found in sce dir.
-elif [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
+elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 	echo " "
   	if [ -f /tmp/.importinteractive ]; then
   		echo -n "Creating "$TARGET".sce from "$TARGETFILE"."
