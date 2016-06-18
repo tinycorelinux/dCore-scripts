@@ -1,0 +1,21 @@
+# ~/.ashrc: Executed by SHells.
+#
+. /etc/init.d/tc-functions
+
+# Alias definitions.
+#
+alias df='df -h'
+alias du='du -h'
+
+alias ls='ls -p'
+alias ll='ls -l'
+alias la='ls -la'
+
+# Avoid errors... use -f to skip confirmation.
+alias cp='cp -i'
+alias mv='mv -i'
+alias rm='rm -i'
+
+# Quick access to tcedir and scedir
+alias tce='cd /etc/sysconfig/tcedir'
+alias sce='cd /etc/sysconfig/tcedir/sce'
