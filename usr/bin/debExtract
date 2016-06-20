@@ -45,7 +45,9 @@ ar p "$FILE" "$CONFIG_TAR" > "$PKGDIR"/"$CONFIG_TAR" || exit 1
 tar xf "$PKGDIR"/"$DATA_TAR" -C "$PKG" || exit 1
 tar xf "$PKGDIR"/"$CONFIG_TAR" -C "$CFG" || exit 1
 
-if [ ! -f /tmp/.keepdoc ] && ! grep "^$BASENAME$" "$DEBINXDIR"/KEEPDOC > /dev/null 2>&1; then
+if [ -f /tmp/.keepdoc ] || grep "^$BASENAME$" "$DEBINXDIR"/KEEPDOC > /dev/null 2>&1; then
+	:
+else
 	[ -d "$PKG"/usr/share/doc ] && rm -r "$PKG"/usr/share/doc
 	[ -d "$PKG"/usr/share/man ] && rm -r "$PKG"/usr/share/man
 fi
