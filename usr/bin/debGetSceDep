@@ -23,6 +23,7 @@ else
 	## Select menu for choosing dependency sce's
 	ls *.sce | sed 's:.sce$::' | sort > /tmp/.scelist
 	while true; do 
+		[ -s /tmp/.scelist ] || break
 		#cat /tmp/.scelist | select2 "You can choose more than one, press Enter to proceed." "-"
 		cat /tmp/.scelist | select2 "Choose existing SCE(s) that will provide dependencies for "$1"." "-"
 		read ANS < /tmp/select.ans
