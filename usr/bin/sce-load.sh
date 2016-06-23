@@ -23,7 +23,6 @@ fi
 
 echo "$$" > /tmp/.sceloadlock
 
-
 [ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
 
 [ -n "$ONBOOTNAME" ] || ONBOOTNAME="onboot.lst"
@@ -37,27 +36,25 @@ abort(){
 
 abort_to_saved_dir(){
 	cd "$SAVED_DIR"
-	[ -d /tmp/tcloop/"$APPNAME" ] && sudo rmdir /tmp/tcloop/"$APPNAME"
 	exit 1
 }
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo " "
-	echo "${YELLOW}sce-load - Load SCE(s) and any SCE(s) that it depends on into RAM for use,"
+	echo "${YELLOW}sce-load - load SCE(s) and any SCE(s) that it depends on into RAM for use,"
 	echo "           SCEs typically located in /etc/sysconfig/tcedir/sce/.${NORMAL}"
 	echo " "
 	echo "Usage:"
 	echo " "
-	echo "${YELLOW}"sce-load"${NORMAL}             Menu prompt, select SCE to load."
-	echo "${YELLOW}"sce-load SCE"${NORMAL}         Directly load the named SCE."
-	echo "${YELLOW}"sce-load SCE1 SCE2"${NORMAL}   Directly load multiple SCEs."
-	echo "${YELLOW}"sce-load -b SCE"${NORMAL}      Internal use only, to load SCEs at boot time."
-	echo "${YELLOW}"sce-load -d SCE"${NORMAL}      Write any debug information to var/log/sce.log."
-	echo "${YELLOW}"sce-load -s SCE"${NORMAL}      Suppress loading outputs like ' *.sce: OK '."
+	echo "${YELLOW}'"sce-load"'${NORMAL}            menu prompt, select SCE to load."
+	echo "${YELLOW}'"sce-load SCE"'${NORMAL}        directly load the named SCE."
+	echo "${YELLOW}'"sce-load SCE1 SCE2"'${NORMAL}  directly load multiple SCEs."
+	echo "${YELLOW}'"sce-load -b SCE"'${NORMAL}     internal use only, to load SCEs at boot time."
+	echo "${YELLOW}'"sce-load -d SCE"'${NORMAL}     write any debug information to var/log/sce.log."
+	echo "${YELLOW}'"sce-load -s SCE"'${NORMAL}     suppress loading outputs like ' *.sce: OK '."
 	echo " "
 exit 1
 fi
-
 
 choose(){
 	TMP=/tmp/select.$$
@@ -67,9 +64,7 @@ choose(){
 	mount | awk '$3 ~ /tcloop/{print substr($3,13)}' > "$MOUNTED"
 
 	cat "$SCE" "$MOUNTED" "$MOUNTED" | sort | uniq -u > "$TMP"
-	for I in `cat "$TMP"`; do 
-		grep "^$I:" /tmp/.debinstalled > /dev/null 2>&1 && sed -i "/^$I$/d" "$TMP"
-	done
+
 	rm "$SCE"
 	rm "$MOUNTED"
 
@@ -99,7 +94,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-		        [ "$SUPPRESS" ] || echo "${YELLOW}"$APPNAME"${NORMAL} is already loaded!"
+		        [ "$SUPPRESS" ] || echo ""$APPNAME" is already loaded!"
 			continue
 		fi
 	fi
@@ -195,7 +190,7 @@ update_system() {
 				sudo /usr/local/tce.installed/"$APPNAME" >> /dev/null 2>&1 
 			fi
 		   FREEDESKTOP="/tmp/tcloop/"$APPNAME"/usr/share/applications"
-		   if [ "$(ls -A "$FREEDESKTOP"/*.desktop > /dev/null 2>&1)" ]; then
+		   if [ "$(ls -A $FREEDESKTOP 2>/dev/null)" ]; then
 		    	for F in $(ls "$FREEDESKTOP"/*.desktop | grep -v "tinycore-"| grep -Ev '(~[1-9][1-9]*)'.desktop); do
 		     		if ! grep "OnlyShowIn" "$F" > /dev/null 2>&1 && ! grep "NoDisplay=true" "$F" > /dev/null 2>&1; then
 		       			EXTNAME="${F%.desktop}"
@@ -206,7 +201,7 @@ update_system() {
 		   fi
 		   
 		   FREEDESKTOP="/tmp/tcloop/"$APPNAME"/usr/local/share/applications"
-		   if [ "$(ls -A "$FREEDESKTOP"/*.desktop > /dev/null 2>&1)" ]; then
+		   if [ "$(ls -A $FREEDESKTOP 2>/dev/null)" ]; then
 		    	for F in $(ls "$FREEDESKTOP"/*.desktop | grep -v "tinycore-"| grep -Ev '(~[1-9][1-9]*)'.desktop); do
 		     		if ! grep "OnlyShowIn" "$F" > /dev/null 2>&1 && ! grep "NoDisplay=true" "$F" > /dev/null 2>&1; then
 		       				EXTNAME="${F%.desktop}"
@@ -336,13 +331,9 @@ fi
 
 
 for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
-	TARGETAPP="${TARGETAPP/-KERNEL/-${KERNELVER}}"
 	THISSCENAME=${TARGETAPP%%.sce}
-	if [ ${TARGETAPP} == ${THISSCENAME} ]; then
-		THISSCE=${TARGETAPP}.sce
-	else
-		THISSCE=${TARGETAPP}
-	fi
+	if [ ${TARGETAPP} == ${THISSCENAME} ]; then THISSCE=${TARGETAPP}.sce; fi
+	
 	if [ -f "$THISSCE" ]; then
 		TARGETDIR=`dirname "$THISSCE"`
 	else
@@ -351,11 +342,6 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 
 	if [ "$TARGETDIR" == "." ]; then
 		TARGETDIR="`pwd`/"
-	fi
-
-	if [ ! -f "$TARGETDIR""$THISSCE" ]; then
-		echo "${YELLOW}"$TARGETDIR""$THISSCE"${NORMAL} does not exist, not loading.."
-		exit 1
 	fi
 
 	if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
@@ -384,29 +370,19 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	fi
 
 	for I in `echo "$DEPLIST"`; do
-		if [ -f "$TARGETDIR"/"$I".sce ]; then
-			:
-		else
-			echo "${YELLOW}"$TARGETDIR""$I".sce${NORMAL} does not exist,"
-			echo "not loading the following:"
-			## Strip leading and trailing white space.
-			LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
-			echo "${YELLOW}$LIST${NORMAL}"
-			exit 1
-		fi
 		if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
-			if [ -f "$TARGETDIR""$I".sce.md5.txt ]; then
+			if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ]; then
 				cd "$TARGETDIR"
-				md5sum -c "$I".sce.md5.txt > /dev/null 2>&1
+				md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
 				if [ "$?" != 0 ]; then
-					echo "${RED}Md5sum error on "$TARGETDIR""$I".sce, not loading the following:"
+					echo "${RED}Md5sum error on "$TARGETDIR""$TARGETAPP".sce, not loading the following:"
 					LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
 					echo "$LIST${NORMAL}"
 					exit 0
 				fi
 				cd "$HERE"
 			else
-				echo "${RED}Missing md5sum file "$TARGETDIR""$I".sce.md5.txt, not loading the following:"
+				echo "${RED}Missing md5sum file "$TARGETDIR""$TARGETAPP".sce.txt, not loading the following:"
 				LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
 				echo "$LIST${NORMAL}"
 				exit 0
