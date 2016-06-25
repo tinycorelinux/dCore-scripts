@@ -141,19 +141,22 @@ if [ "$BOOTING" != "TRUE" ]; then
 	NICE=`grep "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
 	if [ -n "$NICE" ]; then
 		echo " "
-		if ! [ "$NICE" -eq "$NICE" ] > /dev/null 2>&1; then
-			echo "Nice value must be a number between 0 and 19 in sceconfig."
-			echo "Example: NICE=19 for the most cpu friendly use of sce-update."
-			exit 1
-		elif [ "$NICE" -gt 19 ]; then
+		if [ "$NICE" -gt 19 ]; then
 			NICE=19
-			echo "Using nice level 19, 19 is the highest possible nice value."
+			if [ "$SUPPRESS" != "TRUE" ]; then
+				echo "Using nice level 19, 19 is the highest possible nice value."
+			fi
 		elif [ 0 -gt "$NICE" ]; then
 			NICE=0
-			echo "Using nice level "$NICE", only root can use negative nice values."
+			if [ "$SUPPRESS" != "TRUE" ]; then
+				echo "Using nice level "$NICE", only root can use negative nice values."
+			fi
 		else 
-			echo "Using nice level "$NICE"."
+			if [ "$SUPPRESS" != "TRUE" ]; then
+				echo "Using nice level "$NICE"."
+			fi
 		fi
+		echo " "
 		/bb/renice -n "$NICE" -p $$
 	fi
 fi
