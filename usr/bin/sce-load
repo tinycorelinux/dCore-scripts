@@ -13,22 +13,11 @@ SAVED_DIR=`pwd`
 HERE=`pwd`
 #ONBOOTNAME="$(getbootparam lst 2>/dev/null)"
 
-if [ -f /tmp/.sceloadlock ]; then
-	LOCK=`cat /tmp/.sceloadlock`
-	if /bb/ps | /bb/grep "$LOCK " | grep "sce-load" > /dev/null 2>&1; then
-		echo "Another sce-load session is presently in use, exiting.."
-		exit 1
-	fi
-fi
-
-echo "$$" > /tmp/.sceloadlock
-
-
 [ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
 
 [ -n "$ONBOOTNAME" ] || ONBOOTNAME="onboot.lst"
 
-[ -f /tmp/.installed ] || touch /tmp/.installed
+[ -f /tmp/.installed ] || sudo touch /tmp/.installed
 
 abort(){
         echo "Run  sce-load --help  for usage information".
@@ -58,6 +47,15 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 exit 1
 fi
 
+if [ -f /tmp/.sceloadlock ]; then
+	LOCK=`cat /tmp/.sceloadlock`
+	if /bb/ps | /bb/grep "$LOCK " | grep "sce-load" > /dev/null 2>&1; then
+		echo "Another sce-load session is presently in use, exiting.."
+		exit 1
+	fi
+fi
+
+echo "$$" > /tmp/.sceloadlock
 
 choose(){
 	TMP=/tmp/select.$$
@@ -111,7 +109,7 @@ processAPP(){
 			continue
 		fi
 	fi
-	if [ -f "$TARGETAPP" ]; then
+	if [ -f "$TARGETDIR"/"$TARGETAPP" ]; then
 		:
 	elif [ -f "$TCEDIR"/sce/"$TARGETAPP" ]; then
 		TARGETAPP="$TCEDIR"/sce/"$TARGETAPP"
@@ -122,7 +120,7 @@ processAPP(){
 	#FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
 	EXTENSION=`basename "$TARGETAPP"`
 	install "$TARGETAPP"
-	[ "$SUPPRESS" ] || echo "$TARGETAPP: OK"
+	[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "$TARGETDIR"/"$TARGETAPP: OK"
 }
 
 while getopts bdsf OPTION
@@ -143,18 +141,12 @@ if [ "$BOOTING" != "TRUE" ]; then
 		echo " "
 		if [ "$NICE" -gt 19 ]; then
 			NICE=19
-			if [ "$SUPPRESS" != "TRUE" ]; then
-				echo "Using nice level 19, 19 is the highest possible nice value."
-			fi
+			[ "$SUPPRESS" ] || echo "Using nice level 19, 19 is the highest possible nice value."
 		elif [ 0 -gt "$NICE" ]; then
 			NICE=0
-			if [ "$SUPPRESS" != "TRUE" ]; then
-				echo "Using nice level "$NICE", only root can use negative nice values."
-			fi
+			[ "$SUPPRESS" ] || echo "Using nice level "$NICE", only root can use negative nice values."
 		else 
-			if [ "$SUPPRESS" != "TRUE" ]; then
-				echo "Using nice level "$NICE"."
-			fi
+			[ "$SUPPRESS" ] || echo "Using nice level "$NICE"."
 		fi
 		echo " "
 		/bb/renice -n "$NICE" -p $$
@@ -177,7 +169,7 @@ startupscript_check() {
 			fi
 		done
 	else
-		touch "$TCEINSTALLED"/${APPNAME}
+		sudo touch "$TCEINSTALLED"/${APPNAME}
 	fi
 }
 
@@ -269,7 +261,7 @@ install(){
 
 	[ -d /tmp/tcloop/"$APPNAME" ] || sudo mkdir -p /tmp/tcloop/"$APPNAME"
 	awk -v appname="/tmp/tcloop/$APPNAME" ' { if ( $2 == appname )  exit 1 }' /etc/mtab
-	[ "$?" == 1 ] || sudo mount "$THISAPP" /tmp/tcloop/"$APPNAME" -t squashfs -o loop,ro,bs=4096 2>&1
+	[ "$?" == 1 ] || sudo mount "$TARGETDIR"/"$APPNAME".sce /tmp/tcloop/"$APPNAME" -t squashfs -o loop,ro,bs=4096 2>&1
 	[ "$?" == 0 ] || abort_to_saved_dir
 	[ -z "`ls /tmp/tcloop/${APPNAME}`" ] && EMPTYEXT=1
 	[ "`sudo find /tmp/tcloop/${APPNAME} -mindepth 1 -maxdepth 2 | wc -l`" -le 1 ] && EMPTYEXT=1
@@ -362,44 +354,44 @@ fi
 for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	TARGETAPP="${TARGETAPP/-KERNEL/-${KERNELVER}}"
 	THISSCENAME=${TARGETAPP%%.sce}
+	THISSCENAME=`basename "$THISSCENAME"`
 	if [ ${TARGETAPP} == ${THISSCENAME} ]; then
 		THISSCE=${TARGETAPP}.sce
 	else
 		THISSCE=${TARGETAPP}
 	fi
-	if [ -f "$THISSCE" ]; then
-		TARGETDIR=`dirname "$THISSCE"`
+	if [ -f "$TARGETAPP" ] || [ -f "$TCEDIR"/"$TARGETAPP" ]; then
+		TARGETDIR=`dirname "$TARGETAPP"`
 	else
-		TARGETDIR="$TCEDIR"/sce/
+		TARGETDIR="$TCEDIR"/sce
 	fi
 
 	if [ "$TARGETDIR" == "." ]; then
-		TARGETDIR="`pwd`/"
+		TARGETDIR="`pwd`"
 	fi
-
-	if [ ! -f "$TARGETDIR""$THISSCE" ]; then
-		echo "${YELLOW}"$TARGETDIR""$THISSCE"${NORMAL} does not exist, not loading.."
+	if [ ! -f "$TARGETDIR"/"$THISSCENAME".sce ]; then
+		echo "${YELLOW}"$TARGETDIR"/"$THISSCENAME".sce${NORMAL} does not exist, not loading.."
 		exit 1
 	fi
 
 	if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
-		if [ -f "$TARGETDIR"/"$THISSCE".md5.txt ]; then
+		if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
 			cd "$TARGETDIR"
-			md5sum -c "$THISSCE".md5.txt > /dev/null 2>&1
+			md5sum -c "$THISSCENAME".sce.md5.txt > /dev/null 2>&1
 			if [ "$?" != 0 ]; then
-				echo "Md5sum error on "$TARGETDIR""$THISSCE", not loading.."
+				echo "Md5sum error on "$TARGETDIR"/"$THISSCENAME".sce, not loading.."
 				continue
 			fi
 			cd "$HERE"
 		else
-			echo "Missing md5sum file "$TARGETDIR""$THISSCE".md5.txt, not loading.."
+			echo "Missing md5sum file "$TARGETDIR"/"$THISSCENAME".sce.md5.txt, not loading.."
 			continue
 		fi
 	fi
 
-	if [ -f "$TARGETDIR"/"$THISSCE".dep ]; then
+	if [ -f "$THISSCE".dep ]; then
 		DEPLIST=" $THISSCENAME "
-		for I in `cat "$TARGETDIR"/"$THISSCE".dep`; do 
+		for I in `cat "$TARGETDIR"/"$THISSCENAME".dep`; do 
 			getDeps "$I"
 		done
 	else
@@ -411,7 +403,7 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		if [ -f "$TARGETDIR"/"$I".sce ]; then
 			:
 		else
-			echo "${YELLOW}"$TARGETDIR""$I".sce${NORMAL} does not exist,"
+			echo "${YELLOW}"$TARGETDIR"/"$I".sce${NORMAL} does not exist,"
 			echo "not loading the following:"
 			## Strip leading and trailing white space.
 			LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
@@ -419,18 +411,18 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 			exit 1
 		fi
 		if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
-			if [ -f "$TARGETDIR""$I".sce.md5.txt ]; then
+			if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
 				cd "$TARGETDIR"
-				md5sum -c "$I".sce.md5.txt > /dev/null 2>&1
+				md5sum -c "$THISSCENAME".sce.md5.txt > /dev/null 2>&1
 				if [ "$?" != 0 ]; then
-					echo "${RED}Md5sum error on "$TARGETDIR""$I".sce, not loading the following:"
+					echo "${RED}Md5sum error on "$TARGETDIR"/"$THISSCENAME".sce, not loading the following:"
 					LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
 					echo "$LIST${NORMAL}"
 					exit 0
 				fi
 				cd "$HERE"
 			else
-				echo "${RED}Missing md5sum file "$TARGETDIR""$I".sce.md5.txt, not loading the following:"
+				echo "${RED}Missing md5sum file "$TARGETDIR"/"$THISSCENAME".sce.md5.txt, not loading the following:"
 				LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
 				echo "$LIST${NORMAL}"
 				exit 0
