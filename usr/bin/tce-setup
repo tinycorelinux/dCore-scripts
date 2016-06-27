@@ -87,6 +87,18 @@ process_sce() {
 		su "$USER" -c "sce-load -b "$I""
 	done 
 }
+
+process() {
+	[ -f "$1" ] && applist=$(awk -v ORS=" " '{gsub(/#.*/, ""); if ($1~/\w/) print $1;}' "$1")
+	for I in `echo "$applist"`; do 
+		su "$USER" -c "sce-load -b "$LOADFROM"/"$I".sce"
+		if [ -s /tmp/aberr ]; then
+			echo "occured while loading:  $applist" >> /tmp/aberr
+			exit 1
+		fi
+	done
+}
+
 process_CD() {
 	CD="/mnt/${DEV#/dev/}"
 	mount "$CD" 2>/dev/null
@@ -95,10 +107,7 @@ process_CD() {
 			LOADFROM="$CD"/cde/sce
 			CDELIST="$CD"/cde/"$TARGETLIST"
 			if [ -s "$CDELIST" ]; then
-				for FILE in `cat "$CDELIST`; do
-					FILE="$LOADFROM/$FILE.sce"
-					su "$USER" -c "sce-load -b "$FILE""
-				done
+				process "$CDELIST"
 				echo "$LOADFROM" > /etc/sysconfig/cde
 			fi
 		else
@@ -143,7 +152,8 @@ else
 fi
 
 # Finally check for CD Extensions if requested
-if [ "$CDE" -a -s /etc/sysconfig/cdroms ]; then
+if [ "$CDE" ]; then
+	[ ! -s /etc/sysconfig/cdroms ] && udevadm settle --timeout 5
 	for DEV in `cat /etc/sysconfig/cdroms`; do
 		process_CD
 	done 
