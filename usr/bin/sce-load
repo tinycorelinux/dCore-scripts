@@ -389,9 +389,9 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		fi
 	fi
 
-	if [ -f "$THISSCE".dep ]; then
+	if [ -f "$TARGETDIR"/"$THISSCENAME".sce.dep ]; then
 		DEPLIST=" $THISSCENAME "
-		for I in `cat "$TARGETDIR"/"$THISSCENAME".dep`; do 
+		for I in `cat "$TARGETDIR"/"$THISSCENAME".sce.dep`; do 
 			getDeps "$I"
 		done
 	else
