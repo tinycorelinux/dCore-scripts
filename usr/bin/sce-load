@@ -120,7 +120,7 @@ processAPP(){
 	#FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
 	EXTENSION=`basename "$TARGETAPP"`
 	install "$TARGETAPP"
-	[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "$TARGETDIR"/"$TARGETAPP: OK"
+	[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "$TARGETDIR"/"${YELLOW}$THISSCENAME${NORMAL}.sce: OK"
 }
 
 while getopts bdsf OPTION
