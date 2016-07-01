@@ -8,7 +8,7 @@ TCEDIR=/etc/sysconfig/tcedir
 SCEDIR="/etc/sysconfig/tcedir/sce"
 DEBINXDIR="/etc/sysconfig/tcedir/import/debinx"
 BUILD=`getBuild`
-unset DEPLIST
+unset DEPLIST SCEBOOTLIST
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
         echo " "
@@ -438,6 +438,142 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 		echo " "
 		echo "No updates available for main or any dependency SCEs."
 	fi
+elif [ "$SELECT" == "TRUE" ]; then
+	ls *.sce | sed 's:.sce$::' | sort > /tmp/.scelistchoose
+	while true; do
+		[ ! -s /tmp/.scelistchoose ] && break
+		cat /tmp/.scelistchoose | select2 "Choose SCE(s) to update check, press Enter with no selection to proceed." "-"
+		read ANS < /tmp/select.ans
+		if [ "$ANS" == "" ]; then
+			break
+		fi
+		grep "^$ANS$" /tmp/.sceupdatechoose > /dev/null 2>&1 || echo "$ANS" >> /tmp/.sceupdatechoose
+		sed -i "/^$ANS$/d" /tmp/.scelistchoose
+	done
+	##
+	echo " "
+	if [ ! -s /tmp/.sceupdatechoose ]; then
+		echo " "
+		echo "No SCEs chosen for update check, exiting.."
+		exit 0
+	fi
+	cat /tmp/.sceupdatechoose | tr -d :
+	echo " "
+	echo -n "Press Enter to update check above SCE(s), (q)uit to exit: "
+	read ANS
+	echo " "
+	if [ "$ANS" == "q" ] || [ "$ANS" == "Q" ]; then
+		cleanup
+		exit 0
+	else
+		## Update selected SCEs
+		for D in `cat /tmp/.sceupdatechoose | tr -d :`; do
+			echo "Checking ${YELLOW}"$D".sce${NORMAL}..."
+			unset DEPLIST
+			getDeps "$D"
+			for I in `echo "$DEPLIST"`; do
+				UPDATETARGET="$I"
+				if [ -f update/"$I".sce.debinx ] && [ -f update/"$I".sce.md5.txt ]; then
+					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+					MDOLD=`cat update/"$I".sce.debinx`
+					if [ "$MDOLD" == "$MDNEW" ]; then
+						echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
+							continue
+					fi
+				elif [ -f "$I".sce.debinx ] && [ -f "$I".sce.md5.txt ]; then
+					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
+					MDOLD=`cat "$I".sce.debinx`
+					if [ "$MDOLD" == "$MDNEW" ]; then
+						echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
+						continue
+					fi
+				fi
+				echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
+				importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
+			done
+		done
+		if [ -s /tmp/.sceupdatelist ]; then
+			if [ "$CHECKONLY" != "TRUE" ]; then
+				if [ "$NONINTERACTIVE" == "TRUE" ]; then
+					for I in `cat /tmp/.sceupdatelist`; do
+						if [ -f /tmp/"$I".recommended ]; then
+							OPTIONS="$OPTIONS"R
+						fi
+						if [ -f /tmp/"$I".suggested ]; then
+							OPTIONS="$OPTIONS"S
+						fi
+						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+							sce-import -"$OPTIONS"Nnp "$I"
+							#if [ "$?" != "0" ]; then
+							#	echo "Error in updating "$I", exiting.."
+							#	exit 1
+							#fi
+						fi
+						echo "$I" >> /tmp/importupdated
+					done
+				else
+					echo " "
+					echo "Update check completed."
+					echo " "
+					cat  /tmp/.sceupdatelist | sort | uniq
+					echo " "
+					echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
+					read ans
+					echo " "
+					if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+						more -s /tmp/updateavailable
+						echo " "
+						echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
+						read ans
+						echo " "
+					fi
+					for I in `cat /tmp/.sceupdatelist`; do
+						if [ -f /tmp/"$I".recommended ]; then
+							OPTIONS="$OPTIONS"R
+						fi
+						if [ -f /tmp/"$I".suggested ]; then
+							OPTIONS="$OPTIONS"S
+						fi
+						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
+							sce-import -"$OPTIONS"Nnp "$I"
+							#if [ "$?" != "0" ]; then
+							#	echo "Error in updating "$I", exiting.."
+							#	exit 1
+							#fi
+						fi
+						echo "$I" >> /tmp/importupdated
+					done
+				fi
+			else
+				echo " "
+				echo "Update check completed."
+				echo " "
+				cat  /tmp/.sceupdatelist | sort | uniq
+				echo " "
+				#echo -n "Press Enter to view package updates, Ctrl-C aborts: "
+				#read ans
+				#if [ "$ans" == "" ]; then
+					more -s /tmp/updateavailable
+				#fi
+				exit 0
+			fi
+		else
+			:
+		fi
+			unset DEPLIST
+		if [ ! -s /tmp/.sceupdatelist ]; then
+			echo " "
+			echo "No updates available for chosen SCE(s) at this time."
+		else
+			echo " "
+			echo -n "Press Enter to review packages that had updates available, (n)o to exit: "
+			read ans
+			if [ "$ans" == "" ]; then
+				more -s /tmp/updateavailable
+			fi			
+		fi
+	fi
+
 elif [ -f update/"$UPDATETARGET".sce ]; then
 	#if [ -f update/"$UPDATETARGET".sce.debinx ] && [ -f update/"$UPDATETARGET".sce.md5.txt ]; then
 	#	MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
@@ -641,145 +777,6 @@ elif [ -f "$UPDATETARGET".sce ]; then
 	else
 		echo " "
 		echo "No updates available for "$UPDATETARGET".sce or any dependency SCE(s)."
-	fi
-	
-	
-elif [ "$SELECT" == "TRUE" ]; then
-	ls *.sce | sed 's:.sce$::' | sort > /tmp/.scelistchoose
-	while true; do
-		[ ! -s /tmp/.scelistchoose ] && break
-		cat /tmp/.scelistchoose | select2 "Choose SCE(s) to update check, press Enter with no selection to proceed." "-"
-		read ANS < /tmp/select.ans
-		if [ "$ANS" == "" ]; then
-			break
-		fi
-		grep "^$ANS$" /tmp/.sceupdatechoose > /dev/null 2>&1 || echo "$ANS" >> /tmp/.sceupdatechoose
-		sed -i "/^$ANS$/d" /tmp/.scelistchoose
-	done
-	##
-	echo " "
-	if [ ! -s /tmp/.sceupdatechoose ]; then
-		echo " "
-		echo "No SCEs chosen for update check, exiting.."
-		exit 0
-	fi
-	cat /tmp/.sceupdatechoose | tr -d :
-	echo " "
-	echo -n "Press Enter to update check above SCE(s), (q)uit to exit: "
-	read ANS
-	echo " "
-	if [ "$ANS" == "q" ] || [ "$ANS" == "Q" ]; then
-		cleanup
-		exit 0
-	else
-		## Update selected SCEs
-		for D in `cat /tmp/.sceupdatechoose | tr -d :`; do
-			echo "Checking ${YELLOW}"$D".sce${NORMAL}..."
-			unset DEPLIST
-			getDeps "$D"
-			for I in `echo "$DEPLIST"`; do
-				UPDATETARGET="$I"
-				if [ -f update/"$I".sce.debinx ] && [ -f update/"$I".sce.md5.txt ]; then
-					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
-					MDOLD=`cat update/"$I".sce.debinx`
-					if [ "$MDOLD" == "$MDNEW" ]; then
-						echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
-							continue
-					fi
-				elif [ -f "$I".sce.debinx ] && [ -f "$I".sce.md5.txt ]; then
-					MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
-					MDOLD=`cat "$I".sce.debinx`
-					if [ "$MDOLD" == "$MDNEW" ]; then
-						echo "         ${YELLOW}"$I".sce${NORMAL} is up to date."
-						continue
-					fi
-				fi
-				echo "         ${YELLOW}"$I".sce${NORMAL} update check..."
-				importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
-			done
-		done
-		if [ -s /tmp/.sceupdatelist ]; then
-			if [ "$CHECKONLY" != "TRUE" ]; then
-				if [ "$NONINTERACTIVE" == "TRUE" ]; then
-					for I in `cat /tmp/.sceupdatelist`; do
-						if [ -f /tmp/"$I".recommended ]; then
-							OPTIONS="$OPTIONS"R
-						fi
-						if [ -f /tmp/"$I".suggested ]; then
-							OPTIONS="$OPTIONS"S
-						fi
-						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-							sce-import -"$OPTIONS"Nnp "$I"
-							#if [ "$?" != "0" ]; then
-							#	echo "Error in updating "$I", exiting.."
-							#	exit 1
-							#fi
-						fi
-						echo "$I" >> /tmp/importupdated
-					done
-				else
-					echo " "
-					echo "Update check completed."
-					echo " "
-					cat  /tmp/.sceupdatelist | sort | uniq
-					echo " "
-					echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
-					read ans
-					echo " "
-					if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-						more -s /tmp/updateavailable
-						echo " "
-						echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
-						read ans
-						echo " "
-					fi
-					for I in `cat /tmp/.sceupdatelist`; do
-						if [ -f /tmp/"$I".recommended ]; then
-							OPTIONS="$OPTIONS"R
-						fi
-						if [ -f /tmp/"$I".suggested ]; then
-							OPTIONS="$OPTIONS"S
-						fi
-						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
-							sce-import -"$OPTIONS"Nnp "$I"
-							#if [ "$?" != "0" ]; then
-							#	echo "Error in updating "$I", exiting.."
-							#	exit 1
-							#fi
-						fi
-						echo "$I" >> /tmp/importupdated
-					done
-				fi
-			else
-				echo " "
-				echo "Update check completed."
-				echo " "
-				cat  /tmp/.sceupdatelist | sort | uniq
-				echo " "
-				#echo -n "Press Enter to view package updates, Ctrl-C aborts: "
-				#read ans
-				#if [ "$ans" == "" ]; then
-					more -s /tmp/updateavailable
-				#fi
-				exit 0
-			fi
-		else
-			:
-		fi
-			unset DEPLIST
-		if [ ! -s /tmp/.sceupdatelist ]; then
-			echo " "
-			echo "No updates available for chosen SCE(s) at this time."
-			exit 0
-		else
-			echo " "
-			echo -n "Press Enter to review packages that had updates available, (n)o to exit: "
-			read ans
-			if [ "$ans" == "" ]; then
-				more -s /tmp/updateavailable
-			fi			
-			exit 0
-		fi
 	fi
 else
 	echo " "
