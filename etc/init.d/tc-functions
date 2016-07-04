@@ -11,6 +11,7 @@ MAGENTA="$(echo -e '\033[1;35m')"
 CYAN="$(echo -e '\033[1;36m')"
 WHITE="$(echo -e '\033[1;37m')"
 NORMAL="$(echo -e '\033[0;39m')"
+BGGREY="$(echo -e '\033[100m')"
 
 useBusybox(){
 alias ar="busybox ar"
@@ -370,24 +371,29 @@ myParent()
 }
 
 launchApp() {
-	FREEDESKTOP=/usr/share/applications
+	FREEDESKTOP=/usr/local/share/applications
 	if [ -e "$FREEDESKTOP"/"$1".desktop ]
 	then
-		E=`awk 'BEGIN{FS="="}/^Exec/{print $2}' "$FREEDESKTOP"/"$1".desktop`
+		E=`awk 'BEGIN{FS="Exec="}/^Exec/{print $2}' "$FREEDESKTOP"/"$1".desktop`
  		E="${E% \%*}"
+		T=`awk 'BEGIN{FS="Terminal="}/^Terminal/{print $2}' "$FREEDESKTOP"/"$1".desktop`
  		shift 1
-		exec ${E} "$@"
+		if [ "$1" != "cliorx" ] && `echo $T | grep -qi true`
+		then
+			exec cliorx ${E} "$@" &
+		else
+			exec ${E} "$@" &
+		fi
 	else
 		fullpath=`which $1`
 		if [ "$?" -eq 0 ] && `echo $fullpath | grep -qv ondemand`
 		then
 			E=$1
 			shift 1
-			exec $E "$@"
+			exec $E "$@" &
 		else
 			echo "Already loaded. Call from regular menu or terminal."
 			printf "\a"
 		fi
 	fi
 }
-

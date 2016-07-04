@@ -210,12 +210,6 @@ with "base" option to fix them.  Proceed anyway?  (y/N:)"
  	fi
 }
 
-if [ -n "$SYSLOG" ]; then
-	 [ -z "$RSYSLOG" ] || SOPTS=" -L -R $RSYSLOG "
-	 /bb/syslogd ${SOPTS} && echo "${GREEN}syslog started.${NORMAL}"
-	 /bb/klogd && echo "${GREEN}klog started."
-fi
-
 [ -n "$LANGUAGE" ] || LANGUAGE="C"
 echo -n "${GREEN}Setting Language to ${MAGENTA}$LANGUAGE"
 echo "LANG=$LANGUAGE" > /etc/sysconfig/language
@@ -243,6 +237,12 @@ if [ -n "$HOST" ]; then
 	sethostname
 else
 	/bb/hostname -F /etc/hostname
+fi
+
+if [ -n "$SYSLOG" ]; then
+	 [ -z "$RSYSLOG" ] || SOPTS=" -L -R $RSYSLOG "
+	 /bb/syslogd ${SOPTS} && echo "${GREEN}syslog started.${NORMAL}"
+	 /bb/klogd && echo "${GREEN}klog started."
 fi
 
 /bb/ifconfig lo 127.0.0.1 up
