@@ -23,7 +23,7 @@ fi
 getMd5sum() {
 > /tmp/"$1".pkglist
 > /tmp/"$1".md5new 
-grep -B 1 -A 10 "^Package: $1$" "$DEBINX" |  grep -B10 "^$" > /tmp/"$1".pkglist
+grep -m 1 -B 1 -A 10 "^Package: $1$" "$DEBINX" |  grep -B10 "^$" > /tmp/"$1".pkglist
 grep "^MD5sum:" /tmp/"$1".pkglist | cut -f2 -d" " >> /tmp/"$1".md5new
 echo ""$1": `cat /tmp/"$1".md5new`" >> /tmp/sce.md5new
 sudo rm /tmp/"$1".pkglist
@@ -53,7 +53,7 @@ getMd5sum1() {
 				if ( f[1] == "MD5sum" )
 					print FIELD f[2] >> md5sum
 			}
-		
+		exit 0
 		}
 		
 	} ' < "$DEBINX"
@@ -82,7 +82,7 @@ getMd5sum2() {
 				if ( f[1] == "MD5sum" )
 					print FIELD f[2] >> md5sum
 			}
-		
+		exit 0
 		}
 		
 	} ' < "$DEBINX_SECURITY"
@@ -99,7 +99,7 @@ if [ -f /etc/sysconfig/tcedir/import/debinx/"$DEBINX_SECURITY" ]; then
 fi
 
 if grep "^$1:" "$DEBINXDIR"/PKGPREBUILTDEP >/dev/null ; then
- echo "$1: `grep "^$1": "$DEBINXDIR"/PREBUILTMD5SUMLIST | cut -f2 -d" "`" >> /tmp/sce.md5new
+ echo "$1: `grep "^$1": "$DEBINXDIR"/PREBUILTMD5SUMLIST | | head -n1 | cut -f2 -d" "`" >> /tmp/sce.md5new
  grep "^$1;" /tmp/.importpkgtype || echo "$1;   dCore custom prebuilt" >> /tmp/.importpkgtype
 elif sudo grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
  DEBINX=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`

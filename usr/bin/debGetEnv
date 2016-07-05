@@ -5,7 +5,7 @@
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
-
+USER=`cat /etc/sysconfig/tcuser`
 exit_tcnet() {
 	echo "There is an issue connecting to `cat /opt/tcemirror`, exiting.."
 	exit 1
@@ -240,6 +240,9 @@ if ls debinx.* > /dev/null 2>&1; then
 else
 	sudo cat *Packages "$DEBINXDIR"/PREBUILTMD5SUMLIST "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST "$DEBINXDIR"/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
 fi
+
+chown "$USER":staff "$TCEDIR"/import/debinx/*
+chmod 664 "$TCEDIR"/import/debinx/*
 
 # Test mirror
 if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
