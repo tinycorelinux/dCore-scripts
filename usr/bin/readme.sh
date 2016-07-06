@@ -19,7 +19,7 @@ fi
 
 if [ -z "$1" ]; then
 	wget -q "$MIRROR"/dCore/"$BUILD"/README/READMELIST -O /tmp/READMELIST
-	select2 "Select SCE to load." /tmp/READMELIST	
+	select2 "Select README file." /tmp/READMELIST	
 	README="$(cat  /tmp/select.ans)"
 fi
 
