@@ -19,6 +19,7 @@ HERE=`pwd`
 
 [ -f /tmp/.installed ] || sudo touch /tmp/.installed
 
+
 abort(){
         echo "Run  sce-load --help  for usage information".
 	exit 2
@@ -32,8 +33,8 @@ abort_to_saved_dir(){
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo " "
-	echo "${YELLOW}sce-load - Load SCE(s) and any SCE(s) that it depends on into RAM for use,"
-	echo "           SCEs typically located in /etc/sysconfig/tcedir/sce/.${NORMAL}"
+	echo "${YELLOW}sce-load - Load SCE(s) and any SCE(s) that it depends on into RAM for use.${NORMAL}"
+	echo "           SCEs typically located in /etc/sysconfig/tcedir/sce/."
 	echo " "
 	echo "Usage:"
 	echo " "
@@ -42,7 +43,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}"sce-load SCE1 SCE2"${NORMAL}   Directly load multiple SCEs."
 	echo "${YELLOW}"sce-load -b SCE"${NORMAL}      Internal use only, to load SCEs at boot time."
 	echo "${YELLOW}"sce-load -d SCE"${NORMAL}      Write any debug information to var/log/sce.log."
-	echo "${YELLOW}"sce-load -s SCE"${NORMAL}      Suppress loading outputs like ' *.sce: OK '."
+	echo "${YELLOW}"sce-load -s SCE"${NORMAL}      Suppress terminal output during loading process."
 	echo " "
 exit 1
 fi
@@ -65,13 +66,14 @@ choose(){
 	mount | awk '$3 ~ /tcloop/{print substr($3,13)}' > "$MOUNTED"
 
 	cat "$SCE" "$MOUNTED" "$MOUNTED" | sort | uniq -u > "$TMP"
-	for I in `cat "$TMP"`; do 
+	for I in `cat "$TMP"`; do
 		grep "^$I:" /tmp/.debinstalled > /dev/null 2>&1 && sed -i "/^$I$/d" "$TMP"
 	done
 	rm "$SCE"
 	rm "$MOUNTED"
 
 	if [ ! -s "$TMP" ]; then
+		echo " "
 		echo "Nothing found to load, exiting.."
 		exit 1
 	fi
@@ -79,10 +81,9 @@ choose(){
 	TARGETAPP="$(cat  /tmp/select.ans)"
 	rm "$TMP"
 	if [ "$TARGETAPP" == "" ]; then
-		echo "No selection made, exiting.."
+		echo "Nothing selected, exiting.."
 		exit 0
 	fi
-	[ "$SUPPRESS" ] || echo "Loading "$TARGETAPP"..."
 
 }
 
@@ -97,7 +98,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-		        [ "$SUPPRESS" ] || echo "${YELLOW}"$APPNAME"${NORMAL} is already loaded!"
+		        [ "$SUPPRESS" ] || echo "* ${YELLOW}"$APPNAME"${NORMAL} already loaded!"
 			continue
 		fi
 	fi
@@ -105,7 +106,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-		        [ "$SUPPRESS" ] || echo "${YELLOW}"$APPNAME"${NORMAL} is already loaded!"
+		        [ "$SUPPRESS" ] || echo "* ${YELLOW}"$APPNAME"${NORMAL} already loaded!"
 			continue
 		fi
 	fi
@@ -120,7 +121,10 @@ processAPP(){
 	#FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
 	EXTENSION=`basename "$TARGETAPP"`
 	install "$TARGETAPP"
-	[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "$TARGETDIR"/"${YELLOW}$THISSCENAME${NORMAL}.sce: OK"
+	## Clear previous terminal echo:
+	[ "$SUPPRESS" ] || echo -ne "\033[2K"
+	[ "$SUPPRESS" ] || echo -e "\r* Loaded "$YELLOW""$APPNAME".sce"$NORMAL"."
+
 }
 
 while getopts bdsf OPTION
@@ -135,20 +139,19 @@ do
 done
 shift `expr $OPTIND - 1`
 
-if [ "$BOOTING" != "TRUE" ]; then 
+if [ "$BOOTING" != "TRUE" ]; then
 	NICE=`grep "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
 	if [ -n "$NICE" ]; then
-		echo " "
+		[ "$SUPPRESS" ] || echo " "
 		if [ "$NICE" -gt 19 ]; then
 			NICE=19
 			[ "$SUPPRESS" ] || echo "Using nice level 19, 19 is the highest possible nice value."
 		elif [ 0 -gt "$NICE" ]; then
 			NICE=0
 			[ "$SUPPRESS" ] || echo "Using nice level "$NICE", only root can use negative nice values."
-		else 
+		else
 			[ "$SUPPRESS" ] || echo "Using nice level "$NICE"."
 		fi
-		echo " "
 		/bb/renice -n "$NICE" -p $$
 	fi
 fi
@@ -191,14 +194,16 @@ update_system() {
 				APP=`basename "$SS"`
 				if ! grep "^$APP:" /tmp/.installed > /dev/null 2>&1; then
 					if [ "$DEBUG" == "TRUE" ]; then
-					  echo "$APP:" >> /tmp/.installed
-					  sudo echo "$APP:" | sudo tee -a /var/log/sce.log > /dev/null 2>&1
-					  sudo $SS 2>&1 | sudo tee -a /var/log/sce.log > /dev/null 2>&1
+						echo "$APP:" >> /tmp/.installed
+						sudo echo "$APP:" | sudo tee -a /var/log/sce.log > /dev/null 2>&1
+						sudo $SS 2>&1 | sudo tee -a /var/log/sce.log > /dev/null 2>&1
 					else
-					  sudo $SS > /dev/null 2>&1 
-					  echo "$APP:" >> /tmp/.installed
+						sudo $SS > /dev/null 2>&1
+						echo "$APP:" >> /tmp/.installed
+						## Clear previous terminal echo:
+						[ "$SUPPRESS" ] || echo -ne "\033[2K"
+						[ "$SUPPRESS" ] || echo -ne "\r  "$APP""
 					fi
-					
 				fi
 			done
 			APP=`basename /usr/local/tce.installed/"$APPNAME"`
@@ -208,7 +213,7 @@ update_system() {
 				sudo /usr/local/tce.installed/"$APPNAME" 2>&1 | sudo tee -a /var/log/sce.log > /dev/null 2>&1
 			else	
 				echo "$APP:" >> /tmp/.installed
-				sudo /usr/local/tce.installed/"$APPNAME" >> /dev/null 2>&1 
+				sudo /usr/local/tce.installed/"$APPNAME" >> /dev/null 2>&1
 			fi
 		   FREEDESKTOP="/tmp/tcloop/"$APPNAME"/usr/share/applications"
 		   if [ "$(ls -A $FREEDESKTOP 2>/dev/null)" ]; then
@@ -220,7 +225,7 @@ update_system() {
 		     		fi
 		    	done
 		   fi
-		   
+		  
 		   FREEDESKTOP="/tmp/tcloop/"$APPNAME"/usr/local/share/applications"
 		   if [ "$(ls -A $FREEDESKTOP 2>/dev/null)" ]; then
 		    	for F in $(ls "$FREEDESKTOP"/*.desktop | grep -v "tinycore-"| grep -Ev '(~[1-9][1-9]*)'.desktop); do
@@ -231,7 +236,7 @@ update_system() {
 		     		fi
 		    	done
 		   fi
-		   
+		  
 		fi
 		
 		rm /tmp/ss$$.lst
@@ -259,6 +264,7 @@ install(){
 	THISAPP="$1"
 	APPNAME=$(getbasefile "$THISAPP" 1)
 
+	[ "$SUPPRESS" ] || echo "* Create /tmp/tcloop/ directory and mount "$THISAPP"."
 	[ -d /tmp/tcloop/"$APPNAME" ] || sudo mkdir -p /tmp/tcloop/"$APPNAME"
 	awk -v appname="/tmp/tcloop/$APPNAME" ' { if ( $2 == appname )  exit 1 }' /etc/mtab
 	[ "$?" == 1 ] || sudo mount "$TARGETDIR"/"$APPNAME".sce /tmp/tcloop/"$APPNAME" -t squashfs -o loop,ro,bs=4096 2>&1
@@ -306,7 +312,7 @@ install(){
 			sudo /usr/local/postinst/libgtk-3-0 trigger > /dev/null 2>&1
 		fi
 
-		update_system "$THISAPP" "$APPNAME"
+		[ "$SUPPRESS" ] || echo -e "* Update system: \n  "$APPNAME"" && update_system "$THISAPP" "$APPNAME"
 		if [ ! "$BOOTING" ]; then
 			[ -s /etc/sysconfig/desktop ] && desktop.sh "$APPNAME" > /dev/null 2>&1
 		fi
@@ -314,6 +320,7 @@ install(){
 		cd "$HERE"
 	else
 		umount -d /tmp/tcloop/"$APPNAME"
+		[ "$SUPPRESS" ] || echo -e "* Update system: \n  "$APPNAME" "
 		update_system "$THISAPP" "$APPNAME"
 	fi
 	#grep "^$APPNAME:" /tmp/.installed > /dev/null 2>&1 || echo "$APPNAME:" >> /tmp/.installed
@@ -325,9 +332,34 @@ install(){
 	[ "$BOOTING" ] && [ "$SHOWAPPS" ] && echo -n "${YELLOW}$APPNAME ${NORMAL}"
 }
 
+
+# Creating md5CHECK function from 'main' still caused md5sum exit issues -> SCE loaded despite flagging incorrect md5.txt file:
+#md5CHECK(){
+#if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
+#	cd "$TARGETDIR"
+#	md5sum -c "$THISSCENAME".sce.md5.txt > /dev/null 2>&1
+#	if [ "$?" != 0 ]; then
+#		echo "* ${YELLOW}Md5sum error on "$TARGETDIR"/"$THISSCENAME".sce,"
+#		echo "  not loading the following:"
+#		LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
+#		echo "    $LIST${NORMAL}"
+#		exit 0
+#	fi
+#	cd "$HERE"
+#else
+#	echo "* ${YELLOW}Missing md5sum file "$TARGETDIR"/"$THISSCENAME".sce.md5.txt,"
+#	echo "  not loading the following:"
+#	LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
+#	echo "    $LIST${NORMAL}"
+#	exit 0
+#fi
+#}
+
+
 # Main
 TCEDIR=/etc/sysconfig/tcedir
 [ -d "$TCEDIR" ] || exit 1
+
 if [ -z "$1" ] && [ -z "$BOOTING" ]; then
 	choose
 fi
@@ -338,11 +370,12 @@ getDeps() {
 DEPLIST=" $1 $DEPLIST "
 
 if [ -f "$TARGETDIR"/"$1".sce.dep ]; then
-	for E in `cat "$TARGETDIR"/"$1".sce.dep`; do 
+	[ "$SUPPRESS" ] || echo "* Retrieve "$1".sce.dep file dependencies."
+	for E in `cat "$TARGETDIR"/"$1".sce.dep`; do
 		H=" $E "
 		if echo "$DEPLIST" | grep "$H" > /dev/null 2>&1; then
 			continue
-		else 
+		else
 			getDeps "$E"
 		fi
 	done
@@ -350,8 +383,8 @@ fi
 }
 
 
-
 for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
+	TARGETAPP=`echo "$TARGETAPP" | tr -d ' '`
 	TARGETAPP="${TARGETAPP/-KERNEL/-${KERNELVER}}"
 	THISSCENAME=${TARGETAPP%%.sce}
 	THISSCENAME=`basename "$THISSCENAME"`
@@ -370,28 +403,42 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		TARGETDIR="`pwd`"
 	fi
 	if [ ! -f "$TARGETDIR"/"$THISSCENAME".sce ]; then
+		echo " "
 		echo "${YELLOW}"$TARGETDIR"/"$THISSCENAME".sce${NORMAL} does not exist, not loading.."
-		exit 1
+		continue
 	fi
 
-	if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
-		if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
-			cd "$TARGETDIR"
-			md5sum -c "$THISSCENAME".sce.md5.txt > /dev/null 2>&1
-			if [ "$?" != 0 ]; then
-				echo "Md5sum error on "$TARGETDIR"/"$THISSCENAME".sce, not loading.."
-				continue
-			fi
-			cd "$HERE"
-		else
-			echo "Missing md5sum file "$TARGETDIR"/"$THISSCENAME".sce.md5.txt, not loading.."
-			continue
-		fi
+	if [ -d /tmp/tcloop/"$THISSCENAME" ] || grep "^$THISSCENAME:" /tmp/.debinstalled > /dev/null 2>&1; then
+		echo " "
+		echo "${YELLOW}"$THISSCENAME"${NORMAL} is already loaded, not loading.."
+		continue
 	fi
+
+	[ "$SUPPRESS" ] || echo " "
+
+# Disable duplicate md5sum check:
+#	[ "$SUPPRESS" ] || echo "* Integrity and md5sum check "$THISSCE"."
+#	if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
+#		if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
+#			cd "$TARGETDIR"
+#			md5sum -c "$THISSCENAME".sce.md5.txt > /dev/null 2>&1
+#			if [ "$?" != 0 ]; then
+#				echo "* Md5sum error on "$TARGETDIR"/"$THISSCENAME".sce,"
+#				echo "  not loading."
+#				continue
+#			fi
+#			cd "$HERE"
+#		else
+#			echo "* Missing md5sum file "$TARGETDIR"/"$THISSCENAME".sce.md5.txt,"
+#			echo "  not loading."
+#			continue
+#		fi
+#	fi
 
 	if [ -f "$TARGETDIR"/"$THISSCENAME".sce.dep ]; then
+		[ "$SUPPRESS" ] || echo "* Retrieve dependency SCEs."
 		DEPLIST=" $THISSCENAME "
-		for I in `cat "$TARGETDIR"/"$THISSCENAME".sce.dep`; do 
+		for I in `cat "$TARGETDIR"/"$THISSCENAME".sce.dep`; do
 			getDeps "$I"
 		done
 	else
@@ -400,45 +447,65 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	fi
 
 	for I in `echo "$DEPLIST"`; do
+		
+		if [ -d /tmp/tcloop/"$I" ] || grep "^$I:" /tmp/.debinstalled > /dev/null 2>&1; then
+			echo " "
+			echo "${YELLOW}"$I"${NORMAL} is already loaded, not loading.."
+			continue
+		fi
+		
 		if [ -f "$TARGETDIR"/"$I".sce ]; then
 			:
 		else
-			echo "${YELLOW}"$TARGETDIR"/"$I".sce${NORMAL} does not exist,"
-			echo "not loading the following:"
+			echo "* ${YELLOW}"$TARGETDIR"/"$I".sce${NORMAL} does not exist,"
+			echo "  not loading the following:"
 			## Strip leading and trailing white space.
 			LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
-			echo "${YELLOW}$LIST${NORMAL}"
+			echo "    ${YELLOW}$LIST${NORMAL}"
 			exit 1
 		fi
+
+		[ "$SUPPRESS" ] || echo " "
+		[ "$SUPPRESS" ] || echo "* Integrity and md5sum check ${YELLOW}"$I"${NORMAL}." #.sce."
+		
 		if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
 			if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
 				cd "$TARGETDIR"
 				md5sum -c "$THISSCENAME".sce.md5.txt > /dev/null 2>&1
 				if [ "$?" != 0 ]; then
-					echo "${RED}Md5sum error on "$TARGETDIR"/"$THISSCENAME".sce, not loading the following:"
+					echo "* ${YELLOW}Md5sum error on "$TARGETDIR"/"$THISSCENAME".sce,"
+					echo "  not loading the following:"
 					LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
-					echo "$LIST${NORMAL}"
+					echo "    $LIST${NORMAL}"
 					exit 0
 				fi
 				cd "$HERE"
 			else
-				echo "${RED}Missing md5sum file "$TARGETDIR"/"$THISSCENAME".sce.md5.txt, not loading the following:"
+				echo "* ${YELLOW}Missing md5sum file "$TARGETDIR"/"$THISSCENAME".sce.md5.txt,"
+				echo "  not loading the following:"
 				LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
-				echo "$LIST${NORMAL}"
+				echo "    $LIST${NORMAL}"
 				exit 0
 			fi
 		fi
-	done
 
-	for I in `echo "$DEPLIST"`; do
 		TARGETAPP=`echo "$I" | tr -d ' '`
+
+		processAPP
+	done # for loop
+
+	#for I in `echo "$DEPLIST"`; do
+		#TARGETAPP=`echo "$I" | tr -d ' '`
 		#APPNAME=${TARGETAPP%%.sce}
 		#if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
-		processAPP
-	done # for loop for dependencies
-done # Finish the for-loop for multiple extensions 
-
-
+		#processAPP
+		#if [ -z "$SUPPRESS" ] && [ -z "$BOOTING" ]; then
+		#	processAPP & /usr/bin/rotdash $!
+		#else
+		#	processAPP
+		#fi
+	#done # for loop for dependencies
+done # Finish the for-loop for multiple extensions
 
 cd "$SAVED_DIR"
 
@@ -450,3 +517,4 @@ then
 fi
 
 exit 0
+

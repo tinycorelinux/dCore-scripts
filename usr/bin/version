@@ -31,15 +31,15 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo " "
 	echo "Usage:"
 	echo " "
-	echo "${YELLOW}"version"${NORMAL}     List running dCore name and version."
-	echo "${YELLOW}"version -c"${NORMAL}  Check if running the latest stable release, if different version"
+	echo "${YELLOW}"version"${NORMAL}     Display dCore name and version being utilized."
+	echo "${YELLOW}"version -c"${NORMAL}  Check if using the latest stable release, if different version"
 	echo "            available prompted to download, wget latest stable release and"
 	echo "            md5.txt file to directory specified in /etc/sysconfig/boot_path."
-	echo "${YELLOW}"version -r"${NORMAL}  Check if running the latest release candidate, if an update is"
+	echo "${YELLOW}"version -r"${NORMAL}  Check if using the latest release candidate, if an update is"
 	echo "            available prompted to download, wget latest release candidate and"
 	echo "            md5.txt file to directory specified in /etc/sysconfig/boot_path."
-	echo "${YELLOW}"version -l"${NORMAL}  List running dCore name and version."
-	echo "${YELLOW}"version -s"${NORMAL}  See dCore version only."
+	echo "${YELLOW}"version -l"${NORMAL}  Display dCore name and version being utilized."
+	echo "${YELLOW}"version -s"${NORMAL}  Display dCore version being utilized."
 	echo " "
 exit 1
 fi
@@ -51,13 +51,14 @@ do
 			if [ "$?" == 0 ]; then
 				RUNNING="${RESULTS##*:}"
 				if [ "$LATEST" != "$RESULTS" ]; then
-					echo "Warning:"
-					echo "You are running:                    "$RESULTS""
-					echo "The latest release candidate is:    "$LATEST""
+					echo "${YELLOW}Warning:${NORMAL}"
+					echo "System using:              "$RESULTS""
+					echo "Latest release candidate:  "$LATEST""
 					echo " "
 					if [ -f /tmp/dCoreUpdateDownloadedReboot! ]; then
-						echo "Update already downloaded to "$BOOTPATH","
-						echo "confirm correct boot path, reboot system to complete update."
+						echo "${YELLOW}Update already downloaded${NORMAL} to "$BOOTPATH"."
+						echo " "
+						echo "Confirm correct boot path, reboot system to complete update."
 						exit 1
 					fi
 					echo "dCore*.gz download path from /etc/sysconfig/boot_path (MAXBACKUPS = "$MAXBACKUPS"):"
@@ -69,7 +70,7 @@ do
 					fi
 					echo " "
 					echo "Press Enter to download the most recent release candidate, existing dCore*.gz"
-					echo -n "and *.md5.txt files will automatically be backed up, (q)uit to exit. "
+					echo -n "and *.md5.txt files will automatically be backed up, (q)uit to exit: "
 					read TARGET
 					if [ "$TARGET" == "Q" ] || [ "$TARGET" == "q" ]; then
 						exit
@@ -114,7 +115,7 @@ do
 					echo " "
 					echo "Correct any errors, confirm boot path, reboot to complete update."
 				else
-					echo "You are running "$RESULTS", the latest release candidate."
+					echo "System using "$RESULTS", the latest release candidate."
 				fi
 			
 			else
@@ -126,13 +127,14 @@ do
 			if [ "$?" == 0 ]; then
 				RUNNING="${RESULTS##*:}"
 				if [ "$LATEST" != "$RESULTS" ]; then
-					echo "Warning:"
-					echo "You are running:          "$RESULTS""
-					echo "The latest release is:    "$LATEST""
+					echo "${YELLOW}Warning:${NORMAL}"
+					echo "System using:    "$RESULTS""
+					echo "Latest release:  "$LATEST""
 					echo " "
 					if [ -f /tmp/dCoreUpdateDownloadedReboot! ]; then
-						echo "Update already downloaded to "$BOOTPATH","
-						echo "confirm correct boot path, reboot system to complete update."
+						echo "${YELLOW}Update already downloaded${NORMAL} to "$BOOTPATH"."
+						echo " "
+						echo "Confirm correct boot path, reboot system to complete update."
 						exit 1
 					fi
 					echo "dCore*.gz download path from /etc/sysconfig/boot_path (MAXBACKUPS = "$MAXBACKUPS"):"
@@ -144,7 +146,7 @@ do
 					fi
 					echo " "
 					echo "Press Enter to download the most recent stable release, existing dCore*.gz"
-					echo -n "and *.md5.txt files will automatically be backed up, (q)uit to exit. "
+					echo -n "and *.md5.txt files will automatically be backed up, (q)uit to exit: "
 					read TARGET
 					if [ "$TARGET" == "Q" ] || [ "$TARGET" == "q" ]; then
 						exit
@@ -189,7 +191,7 @@ do
 					echo " "
 					echo "Correct any errors, confirm boot path, reboot to complete update."
 				else
-					echo "You are running "$RESULTS", the latest release."
+					echo "System using "$RESULTS", the latest release."
 				fi
 			else
 				exit_tcnet
