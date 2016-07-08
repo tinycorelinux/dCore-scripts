@@ -403,15 +403,23 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		TARGETDIR="`pwd`"
 	fi
 	if [ ! -f "$TARGETDIR"/"$THISSCENAME".sce ]; then
-		echo " "
-		echo "${YELLOW}"$TARGETDIR"/"$THISSCENAME".sce${NORMAL} does not exist, not loading.."
-		continue
+		if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
+			continue
+		else
+			echo " "
+			echo "${YELLOW}"$TARGETDIR"/"$THISSCENAME".sce${NORMAL} does not exist, not loading.."
+			continue
+		fi
 	fi
 
 	if [ -d /tmp/tcloop/"$THISSCENAME" ] || grep "^$THISSCENAME:" /tmp/.debinstalled > /dev/null 2>&1; then
-		echo " "
-		echo "${YELLOW}"$THISSCENAME"${NORMAL} is already loaded, not loading.."
-		continue
+		if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
+			continue
+		else
+			echo " "
+			echo "${YELLOW}"$THISSCENAME"${NORMAL} is already loaded, not loading.."
+			continue
+		fi
 	fi
 
 	#[ "$SUPPRESS" ] || echo " "
@@ -449,9 +457,13 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	for I in `echo "$DEPLIST"`; do
 		
 		if [ -d /tmp/tcloop/"$I" ] || grep "^$I:" /tmp/.debinstalled > /dev/null 2>&1; then
-			echo " "
-			echo "${YELLOW}"$I"${NORMAL} is already loaded, not loading.."
-			continue
+			if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
+				continue
+			else
+				echo " "
+				echo "${YELLOW}"$I"${NORMAL} is already loaded, not loading.."
+				continue
+			fi
 		fi
 		
 		if [ -f "$TARGETDIR"/"$I".sce ]; then
@@ -465,8 +477,8 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 			exit 1
 		fi
 
-		[ "$SUPPRESS" ] || echo " "
-		[ "$SUPPRESS" ] || echo "* Integrity and md5sum check ${YELLOW}"$I"${NORMAL}." #.sce."
+		[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo " "
+		[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "* Integrity and md5sum check ${YELLOW}"$I"${NORMAL}." #.sce."
 		
 		if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
 			if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
