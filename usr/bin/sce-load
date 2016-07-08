@@ -414,7 +414,7 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		continue
 	fi
 
-	[ "$SUPPRESS" ] || echo " "
+	#[ "$SUPPRESS" ] || echo " "
 
 # Disable duplicate md5sum check:
 #	[ "$SUPPRESS" ] || echo "* Integrity and md5sum check "$THISSCE"."
