@@ -370,7 +370,8 @@ getDeps() {
 DEPLIST=" $1 $DEPLIST "
 
 if [ -f "$TARGETDIR"/"$1".sce.dep ]; then
-	[ "$SUPPRESS" ] || echo "* Retrieve "$1".sce.dep file dependencies."
+	[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo " "
+	[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "* Retrieve "$1".sce.dep file dependencies."
 	for E in `cat "$TARGETDIR"/"$1".sce.dep`; do
 		H=" $E "
 		if echo "$DEPLIST" | grep "$H" > /dev/null 2>&1; then
@@ -444,7 +445,8 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 #	fi
 
 	if [ -f "$TARGETDIR"/"$THISSCENAME".sce.dep ]; then
-		[ "$SUPPRESS" ] || echo "* Retrieve dependency SCEs."
+		[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo " "
+		[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "* Retrieve dependency SCEs."
 		DEPLIST=" $THISSCENAME "
 		for I in `cat "$TARGETDIR"/"$THISSCENAME".sce.dep`; do
 			getDeps "$I"
