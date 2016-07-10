@@ -16,9 +16,9 @@ elif [ "$BUILD" == "armv7" ]; then
 	DEBBUILD="armhf"
 fi
 
-if ! ps a | grep "/usr/bin/sce-update" | grep -v grep > /dev/null 2>&1; then
-	exit 1
-fi
+#if ! ps a | grep "/usr/bin/sce-update" | grep -v grep > /dev/null 2>&1; then
+#	exit 1
+#fi
 
 getMd5sum() {
 > /tmp/"$1".pkglist
@@ -51,13 +51,13 @@ getMd5sum1() {
 					}
 				
 				if ( f[1] == "MD5sum" )
-					print FIELD f[2] >> md5sum
+					print FIELD f[2] >> md5sum 
 			}
 		exit 0
 		}
 		
 	} ' < "$DEBINX"
-}
+} 
 
 getMd5sum2() {
 	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: " -v md5sum="/tmp/sce.md5new" '
@@ -83,8 +83,7 @@ getMd5sum2() {
 					print FIELD f[2] >> md5sum
 			}
 		exit 0
-		}
-		
+		}	
 	} ' < "$DEBINX_SECURITY"
 }
 
@@ -99,7 +98,7 @@ if [ -f /etc/sysconfig/tcedir/import/debinx/"$DEBINX_SECURITY" ]; then
 fi
 
 if grep "^$1:" "$DEBINXDIR"/PKGPREBUILTDEP >/dev/null ; then
- echo "$1: `grep "^$1": "$DEBINXDIR"/PREBUILTMD5SUMLIST | | head -n1 | cut -f2 -d" "`" >> /tmp/sce.md5new
+ echo "$1: `grep "^$1": "$DEBINXDIR"/PREBUILTMD5SUMLIST | head -n1 | cut -f2 -d" "`" >> /tmp/sce.md5new
  grep "^$1;" /tmp/.importpkgtype || echo "$1;   dCore custom prebuilt" >> /tmp/.importpkgtype
 elif sudo grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
  DEBINX=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
@@ -111,7 +110,7 @@ elif sudo grep "^Package: $1$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
   #DEBINX="$DEBINX_SECURITY"
   DISTRO=`cat /usr/share/doc/tc/distro.txt`
   REPO=`cat /usr/share/doc/tc/repo.txt` 
-  grep ""$1";" /tmp/.importpkgtype || echo ""$1";   "$DISTRO" "$REPO" main" >> /tmp/.importpkgtype
+  grep ""$1";" /tmp/.importpkgtype || echo ""$1";   "$DISTRO" "$REPO" security-updates" >> /tmp/.importpkgtype
   getMd5sum2 "$1"
 elif sudo grep "^Package: $1$" "$DEBINX" > /dev/null 2>&1; then
   DISTRO=`cat /usr/share/doc/tc/distro.txt`

@@ -83,6 +83,8 @@ echo "$FILE" > /tmp/FILE
 ## Find if needed md5sum file inside SCE exists.
 if [ ! -f "$FILE" ]; then
 	echo ""$1" has no built in md5sum list, not updating.." >> /tmp/updateavailable
+	echo " " >> /tmp/updateavailable
+	echo " " >> /tmp/updateavailable
 	echo 
 	if sudo busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
 		sudo busybox umount /tmp/sceupdatetest
@@ -388,7 +390,7 @@ echo " " >> /tmp/updateavailable
 echo "$SCE" >> /tmp/.updatechecked
 
 busybox mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo busybox umount /tmp/sceupdatetest
-#[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
+[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
 [ -f /tmp/.updatechanged ] && sudo rm /tmp/.updatechanged
 [ -f /tmp/.lstchanged ] && sudo rm /tmp/.lstchanged
 [ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
@@ -398,10 +400,10 @@ busybox mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo busybox umount 
 [ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
 [ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
 [ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
-#[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
-#[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
+[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
+[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
 [ -f /tmp/.updateavailable ] && sudo rm /tmp/.updateavailable
-#[ -f/tmp/.importupdates ] && sudo rm /tmp/.importupdates
+[ -f/tmp/.importupdates ] && sudo rm /tmp/.importupdates
 [ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
 [ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
 
