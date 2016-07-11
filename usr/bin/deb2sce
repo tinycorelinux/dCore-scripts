@@ -36,6 +36,7 @@ TCEDIR=/etc/sysconfig/tcedir
 SCEDIR="$TCEDIR"/sce
 DEBINXDIR=""$TCEDIR"/import/debinx"
 
+
 [ -d /etc/sysconfig/tcedir/import/debinx ] || mkdir -p /etc/sysconfig/tcedir/import/debinx
 
 setupStartupScript() {
@@ -261,15 +262,15 @@ cd "$TARGET"
 
 ## Get the dependencies of the desired packages or list of packages.
 if [ -s /tmp/.targetfile ]; then
-	echo "Gathering dependency info..."
-	echo " "
+	echo -n "Gathering dependencies."
 	for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
 		debGetDeps "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 	done
+	echo " " && echo " "
 else
-	echo "Gathering dependency info..."
-	echo " "
+	echo -n "Gathering dependencies."
 	debGetDeps "$TARGET" > /dev/null 2>&1 & /usr/bin/rotdash $!
+	echo " " && echo " "
 fi
 ##
 
@@ -293,8 +294,6 @@ fi
 
 ## Determine if 'Recommended' packages are desired.
 if [ -f /tmp/.recommends ]; then
-	echo "Gathering Recommended packages info..."
-	echo " "
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
 			debGetRecommends "$I" > /dev/null 2>&1 &
@@ -306,19 +305,17 @@ if [ -f /tmp/.recommends ]; then
 	if [ -s /tmp/sce.recommends ]; then
 		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 		touch usr/local/sce/"$TARGET"/recommends
-		echo "Gathering Recommended packages dependency info..."
-		echo " "
+		echo -n "Gathering Recommended packages dependencies."
 		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
 		done &
 	/usr/bin/rotdash $!
+	echo " " && echo " "
 	fi
 fi
 
 ## Determine if 'Suggested' packages are desired.
 if [ -f /tmp/.suggests ]; then
-	echo "Gathering Suggested packages info..."
-	echo " "
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
 			debGetSuggests "$I" > /dev/null 2>&1 &
@@ -330,12 +327,12 @@ if [ -f /tmp/.suggests ]; then
 	if [ -s /tmp/sce.suggests ]; then
 		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 		touch usr/local/sce/"$TARGET"/suggests
-		echo "Gathering Suggested packages dependency info..."
-		echo " "
+		echo -n "Gathering Suggested packages dependencies."
 		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
 		done &
 		/usr/bin/rotdash $!
+		echo " " && echo " "
 	fi
 fi
 
@@ -346,15 +343,17 @@ if [ -f /tmp/.importdep ]; then
 		if [ ! -f /tmp/.importinteractive ]; then
 			cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
 			echo " "
-			echo "Press Enter to use existing "$TARGET".sce.dep entries "
-			echo "above for dependencies, otherwise enter (n)o."
+			echo "Press Enter to use the existing "$TARGET".sce.dep entries above"
+			echo "for dependencies or enter (n)o to remove or modify dependencies." && sleep 3
 			echo " "
-			echo -n "${YELLOW}WARNING:${NORMAL} Answering no will delete "$TARGET".sce.dep now."
+			echo -n "${YELLOW}WARNING:${NORMAL} Entering (n)o will delete existing "$TARGET".sce.dep file: "
 			read ans
 			if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
-				echo "Press Enter to create a new "$TARGET".sce.dep file from existing SCEs."
-				echo -n "otherwise enter (n)o."
+				echo " "
+				echo "Press Enter to create a new "$TARGET".sce.dep file from existing SCE(s),"
+				echo -n "or enter (n)o to import "$TARGET" without a dependency file: "
 				read ANS
+				echo " "
 				if [ "$ANS" == "n" ] || [ "$ANS" == "N" ]; then
 					sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
 				else
@@ -405,7 +404,7 @@ if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep ]; then
 			echo "$FILE"
 		fi
 	done
-	sleep 3 & /usr/bin/rotdash $!
+	sleep 3
 	echo " "
 fi
 ##
@@ -468,6 +467,24 @@ for DEBINFO in `ls -t /tmp/work`; do
 	 if [ -f /tmp/.scedebs ]; then
 	 	grep "^$DEBINFO$" /tmp/.scedebs > /dev/null 2>&1 && continue
 	 fi 
+
+	## Package counter during import session:
+	if [ ! "$pkgCOUNT" ]; then
+		totalPKG=`ls /tmp/work | wc -l`
+		adjPKG=`cat /tmp/.pkglist | wc -l`
+		if [ "$totalPKG" != "$adjPKG" ]; then
+			echo "Merging "$adjPKG" packages ("$totalPKG" - $((totalPKG-adjPKG)) dependency provided):" && sleep 3
+			totalPKG="$adjPKG"
+		else
+			echo "Merging "$totalPKG" packages:" && sleep 3
+		fi
+		echo " "
+		pkgNUM="0"
+		pkgCOUNT="TRUE"
+	fi
+	pkgNUM=$((pkgNUM+1))
+	echo -n ""$pkgNUM"/"$totalPKG" "
+
 	 read FULLPATH < /tmp/work/"$DEBINFO"
 	 read IMPORTMIRROR < /opt/tcemirror                                                                             
 	 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
@@ -511,7 +528,8 @@ for DEBINFO in `ls -t /tmp/work`; do
 	
 			if [ -f "${DEBINFO}".tar.gz ] && [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": "$DEBINXDIR"/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then	 
 				echo "${DEBINFO}: `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		
-				echo "Merging ${YELLOW}"${DEBINFO}"${NORMAL}"
+				## Merging:
+				echo "${YELLOW}"${DEBINFO}"${NORMAL}"
 	    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET" 
 				if [ "$?" != 0 ]
 				then
@@ -671,7 +689,7 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TA
 			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
 		fi
 		echo " "
-		echo "Finished importing "$TARGET".sce."
+		echo "Imported "${YELLOW}""$TARGET".sce"${NORMAL}"."
 	else
 		echo " "
 		echo "Error creating "$TARGET".sce, exiting.." 
@@ -696,7 +714,7 @@ else
 			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
 		fi
 		echo " "
-		echo "Finished importing "$TARGET".sce."
+		echo "Imported "${YELLOW}""$TARGET".sce"${NORMAL}"."
 	else
 		echo " "
 		echo "Error creating "$TARGET".sce, exiting.." 

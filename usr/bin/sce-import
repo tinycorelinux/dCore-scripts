@@ -450,12 +450,12 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   			mksce "$TARGET"
 			exit 0
   		else
-                        echo "Create "$TARGET".sce from "$TARGETFILE"?"
+                        echo "${YELLOW}Create "$TARGET".sce from "$TARGETFILE"?${NORMAL}"
 			echo " "
 			echo "Press Enter to use this package list or enter '(n)o' to import a standard"
 			echo "'"$TARGET"' package if it exists, Ctrl-C aborts."
                         echo " "
-                        echo -n "${YELLOW}Warning:${NORMAL} Entering '(n)o' will delete "$TARGETFILE"."
+                        echo -n "${YELLOW}Warning:${NORMAL} Entering '(n)o' will delete "$TARGETFILE": "
                         read ans                  
 	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  			sudo rm /tmp/.targetfile
@@ -479,13 +479,13 @@ elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
   		mksce "$TARGET"
 		exit 0
   	else
-	  	echo "Create "$TARGET".sce from "$TARGETFILE"?"
+	  	echo "${YELLOW}Create "$TARGET".sce from "$TARGETFILE"?${NORMAL}"
 		echo " "
 		echo "Press Enter to use this package list or enter (n)o to import a standard"
 		echo "'"$TARGET"' package if it exists, Ctrl-C aborts."
                 echo " "
-		echo "${YELLOW}Warning:${NORMAL} Entering (n)o will delete "$TARGETFILE"."
-                echo -n "$ " & read ans
+		echo -n "${YELLOW}Warning:${NORMAL} Entering (n)o will delete "$TARGETFILE": "
+                read ans
 	  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  		sudo rm /tmp/.targetfile
 			mksce "$TARGET" 

@@ -98,7 +98,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-		        [ "$SUPPRESS" ] || echo "* ${YELLOW}"$APPNAME"${NORMAL} already loaded!"
+		        [ "$SUPPRESS" ] || echo "* ${YELLOW}"$APPNAME"${NORMAL} already loaded."
 			continue
 		fi
 	fi
@@ -106,7 +106,7 @@ processAPP(){
 		if [ "$BOOTING" ]; then
 			continue
 		else
-		        [ "$SUPPRESS" ] || echo "* ${YELLOW}"$APPNAME"${NORMAL} already loaded!"
+		        [ "$SUPPRESS" ] || echo "* ${YELLOW}"$APPNAME"${NORMAL} already loaded."
 			continue
 		fi
 	fi
@@ -152,6 +152,7 @@ if [ "$BOOTING" != "TRUE" ]; then
 		else
 			[ "$SUPPRESS" ] || echo "Using nice level "$NICE"."
 		fi
+		[ "$SUPPRESS" ] || echo " "
 		/bb/renice -n "$NICE" -p $$
 	fi
 fi
@@ -333,29 +334,6 @@ install(){
 }
 
 
-# Creating md5CHECK function from 'main' still caused md5sum exit issues -> SCE loaded despite flagging incorrect md5.txt file:
-#md5CHECK(){
-#if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
-#	cd "$TARGETDIR"
-#	md5sum -c "$THISSCENAME".sce.md5.txt > /dev/null 2>&1
-#	if [ "$?" != 0 ]; then
-#		echo "* ${YELLOW}Md5sum error on "$TARGETDIR"/"$THISSCENAME".sce,"
-#		echo "  not loading the following:"
-#		LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
-#		echo "    $LIST${NORMAL}"
-#		exit 0
-#	fi
-#	cd "$HERE"
-#else
-#	echo "* ${YELLOW}Missing md5sum file "$TARGETDIR"/"$THISSCENAME".sce.md5.txt,"
-#	echo "  not loading the following:"
-#	LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
-#	echo "    $LIST${NORMAL}"
-#	exit 0
-#fi
-#}
-
-
 # Main
 TCEDIR=/etc/sysconfig/tcedir
 [ -d "$TCEDIR" ] || exit 1
@@ -370,7 +348,6 @@ getDeps() {
 DEPLIST=" $1 $DEPLIST "
 
 if [ -f "$TARGETDIR"/"$1".sce.dep ]; then
-	[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo " "
 	[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "* Retrieve "$1".sce.dep file dependencies."
 	for E in `cat "$TARGETDIR"/"$1".sce.dep`; do
 		H=" $E "
@@ -407,7 +384,6 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
 			continue
 		else
-			echo " "
 			echo "${YELLOW}"$TARGETDIR"/"$THISSCENAME".sce${NORMAL} does not exist, not loading.."
 			continue
 		fi
@@ -417,35 +393,12 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
 			continue
 		else
-			echo " "
-			echo "${YELLOW}"$THISSCENAME"${NORMAL} is already loaded, not loading.."
+			echo "* ${YELLOW}"$THISSCENAME"${NORMAL} already loaded."
 			continue
 		fi
 	fi
 
-	#[ "$SUPPRESS" ] || echo " "
-
-# Disable duplicate md5sum check:
-#	[ "$SUPPRESS" ] || echo "* Integrity and md5sum check "$THISSCE"."
-#	if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
-#		if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
-#			cd "$TARGETDIR"
-#			md5sum -c "$THISSCENAME".sce.md5.txt > /dev/null 2>&1
-#			if [ "$?" != 0 ]; then
-#				echo "* Md5sum error on "$TARGETDIR"/"$THISSCENAME".sce,"
-#				echo "  not loading."
-#				continue
-#			fi
-#			cd "$HERE"
-#		else
-#			echo "* Missing md5sum file "$TARGETDIR"/"$THISSCENAME".sce.md5.txt,"
-#			echo "  not loading."
-#			continue
-#		fi
-#	fi
-
 	if [ -f "$TARGETDIR"/"$THISSCENAME".sce.dep ]; then
-		[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo " "
 		[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "* Retrieve dependency SCEs."
 		DEPLIST=" $THISSCENAME "
 		for I in `cat "$TARGETDIR"/"$THISSCENAME".sce.dep`; do
@@ -462,8 +415,7 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 			if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
 				continue
 			else
-				echo " "
-				echo "${YELLOW}"$I"${NORMAL} is already loaded, not loading.."
+				echo "* ${YELLOW}"$I"${NORMAL} already loaded."
 				continue
 			fi
 		fi
@@ -472,15 +424,14 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 			:
 		else
 			echo "* ${YELLOW}"$TARGETDIR"/"$I".sce${NORMAL} does not exist,"
-			echo "  not loading the following:"
+			echo "  not loading:"
 			## Strip leading and trailing white space.
 			LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
 			echo "    ${YELLOW}$LIST${NORMAL}"
 			exit 1
 		fi
 
-		[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo " "
-		[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "* Integrity and md5sum check ${YELLOW}"$I"${NORMAL}." #.sce."
+		[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "* Integrity and md5sum check "$I"."
 		
 		if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
 			if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
@@ -488,15 +439,15 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 				md5sum -c "$THISSCENAME".sce.md5.txt > /dev/null 2>&1
 				if [ "$?" != 0 ]; then
 					echo "* ${YELLOW}Md5sum error on "$TARGETDIR"/"$THISSCENAME".sce,"
-					echo "  not loading the following:"
+					echo "  not loading:"
 					LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
 					echo "    $LIST${NORMAL}"
 					exit 0
 				fi
 				cd "$HERE"
 			else
-				echo "* ${YELLOW}Missing md5sum file "$TARGETDIR"/"$THISSCENAME".sce.md5.txt,"
-				echo "  not loading the following:"
+				echo "* ${YELLOW}Missing "$TARGETDIR"/"$THISSCENAME".sce.md5.txt file,"
+				echo "  not loading:"
 				LIST=`echo "$DEPLIST" | sed 's/^[ \t]*//;s/[ \t]*$//'`
 				echo "    $LIST${NORMAL}"
 				exit 0
@@ -513,11 +464,6 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		#APPNAME=${TARGETAPP%%.sce}
 		#if [ ${TARGETAPP} == ${APPNAME} ]; then TARGETAPP=${TARGETAPP}.sce; fi
 		#processAPP
-		#if [ -z "$SUPPRESS" ] && [ -z "$BOOTING" ]; then
-		#	processAPP & /usr/bin/rotdash $!
-		#else
-		#	processAPP
-		#fi
 	#done # for loop for dependencies
 done # Finish the for-loop for multiple extensions
 
@@ -531,4 +477,3 @@ then
 fi
 
 exit 0
-
