@@ -483,7 +483,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 		pkgCOUNT="TRUE"
 	fi
 	pkgNUM=$((pkgNUM+1))
-	echo -n ""$pkgNUM"/"$totalPKG" "
+	#echo -n ""$pkgNUM"/"$totalPKG" "
 
 	 read FULLPATH < /tmp/work/"$DEBINFO"
 	 read IMPORTMIRROR < /opt/tcemirror                                                                             
@@ -529,6 +529,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			if [ -f "${DEBINFO}".tar.gz ] && [ `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "` == `grep "^$DEBINFO": "$DEBINXDIR"/PREBUILTMD5SUMLIST | cut -f2 -d" "` ]; then	 
 				echo "${DEBINFO}: `/bb/md5sum "${DEBINFO}".tar.gz | cut -f1 -d" "`" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".md5sum		
 				## Merging:
+				echo -n ""$pkgNUM"/"$totalPKG" "
 				echo "${YELLOW}"${DEBINFO}"${NORMAL}"
 	    	   		tar xf "${DEBINFO}".tar.gz -C "$IMPORT"/"$TARGET" 
 				if [ "$?" != 0 ]
@@ -562,7 +563,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			else
 				fetchDeb "$FULLPATH"
 			fi
-			sudo debExtract "$DEBS"/"$THISDEB" "$TARGET"
+			env pkgNUM="$pkgNUM" totalPKG="$totalPKG" debExtract "$DEBS"/"$THISDEB" "$TARGET"
 			if [ "$?" != "0" ]; then
 				echo " "
 				echo "Failure to extract "$THISDEB", exiting.."
@@ -588,7 +589,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			else
 				fetchDeb "$FULLPATH"
 			fi
-			sudo debExtract "$DEBS"/"$THISDEB" "$TARGET"
+			env pkgNUM="$pkgNUM" totalPKG="$totalPKG" debExtract "$DEBS"/"$THISDEB" "$TARGET"
 			if [ "$?" != "0" ]; then
 				echo " "
 				echo "Failure to extract "$THISDEB", exiting.."
@@ -616,7 +617,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			else
 				fetchDeb "$FULLPATH"
 			fi
-			sudo debExtract "$DEBS"/"$THISDEB" "$TARGET"
+			env pkgNUM="$pkgNUM" totalPKG="$totalPKG" debExtract "$DEBS"/"$THISDEB" "$TARGET"
 			if [ "$?" != "0" ]; then
 				echo " "
 				echo "Failure to extract "$THISDEB", exiting.."

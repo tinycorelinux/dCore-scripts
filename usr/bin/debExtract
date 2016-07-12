@@ -62,9 +62,9 @@ if sudo tar xzf deb2sce.tar.gz "${BASENAME}".deb2sce > /dev/null 2>&1
 then
 	[ -d "$PKG"/usr/local/sce/"$BASENAME" ] || mkdir -p "$PKG"/usr/local/sce/"$BASENAME"
 	## Merging:
-	echo "${YELLOW}"${BASENAME}".deb2sce${NORMAL}: "$BASENAME" & dCore start script."
+	echo ""$pkgNUM"/"$totalPKG" ${YELLOW}${BASENAME}.deb2sce${NORMAL}: dCore start script."
 	## Set variable for proper package count echo during import:
-	deb2SCE="TRUE"
+	#deb2SCE="TRUE"
 	setupStartupScript
 	cat "${BASENAME}.deb2sce" > "$PKG/usr/local/tce.installed/${BASENAME}"
 	echo ""$BASENAME"-deb2sce: `md5sum ${BASENAME}.deb2sce | cut -f1 -d" "`" >> "$PKG"/usr/local/sce/"$TARGET"/"$TARGET"-data.md5sum
@@ -90,7 +90,7 @@ if grep "^$BASENAME"-data: PKGDATAFILEMD5SUMLIST >/dev/null; then
 
   if [ `md5sum "$DEBS"/"$BASENAME"-data.tar.gz | cut -f1 -d" "` == `grep "^$BASENAME"-data: PKGDATAFILEMD5SUMLIST | cut -f2 -d" "` ]; then
     ## Merging:
-    echo "        ${YELLOW}"$BASENAME"-data.tar.gz${NORMAL}: "${BASENAME}" extra files."
+    echo ""$pkgNUM/$totalPKG" ${YELLOW}"$BASENAME"-data.tar.gz${NORMAL}: "${BASENAME}" extra files."
     echo ""$BASENAME"-data: `grep "^$BASENAME"-data: PKGDATAFILEMD5SUMLIST | cut -f2 -d" "`" >> "$PKG"/usr/local/sce/"$TARGET"/"$TARGET"-data.md5sum
     tar xf "$DEBS"/"$BASENAME"-data.tar.gz -C "$PKG"|| exit 1
   else
@@ -123,7 +123,7 @@ if [ "$deb2SCE" == "TRUE" ]; then
 	deb2SCE="FALSE"
 else
 	## Merging:
-	echo "${YELLOW}"$BASENAME"${NORMAL}"
+	echo ""$pkgNUM"/"$totalPKG" ${YELLOW}${BASENAME}${NORMAL}"
 fi
 
 #find . -depth | cpio -pmd "$PKG" 2>&1 > /dev/null
