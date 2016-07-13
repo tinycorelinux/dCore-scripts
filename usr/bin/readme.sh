@@ -1,6 +1,5 @@
 #!/bb/ash
 . /etc/init.d/tc-functions
-
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
 BUILD=`getBuild`
@@ -10,16 +9,17 @@ checknotroot
 [ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+	clear
 	echo " "
 	echo "${YELLOW}readme.sh - View README files for dCore packages.${NORMAL}"
 	echo " "
 	echo "Usage:"
 	echo " "
 	echo "${YELLOW}"readme.sh gcc"${NORMAL}             View the gcc readme file."
-	echo "${YELLOW}"readme.sh"${NORMAL}             View available readme files."
+	echo "${YELLOW}"readme.sh"${NORMAL}                 View available readme files."
 	echo " "
+	exit 0
 fi
-
 exit_tcnet() {
 	echo "There is an issue connecting to "$MIRROR", exiting.."
 	exit 1
@@ -45,6 +45,7 @@ fi
 [ -f /tmp/README-"$README".txt ] && rm /tmp/README-"$README".txt
 if wget -s "$MIRROR"/dCore/"$BUILD"/README/README-"$README".txt > /dev/null 2>&1; then
    wget -q "$MIRROR"/dCore/"$BUILD"/README/README-"$README".txt -O /tmp/README-"$README".txt 
+   clear
    more /tmp/README-"$README".txt
    exit 1
 else 
