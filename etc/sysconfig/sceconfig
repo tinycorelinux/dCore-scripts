@@ -47,3 +47,8 @@ PRESERVEDEBINXMODE=FALSE
 # Use NICE=19 for the most cpu friendly use of sce-import and sce-update.  
 # Use NICE=0 to give sce-import and sce-update high system priority.
 NICE=19
+
+# Use UIMMODULE=<plugin> to enable Universal Input Method plugins for uim-fep.
+# The following example enables the SKK plugin:
+# UIMMODULE=skk
+
