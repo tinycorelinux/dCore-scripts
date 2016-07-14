@@ -515,7 +515,7 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 				exit 1
 			fi     
 		else
-			{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq  > /tmp/.sceimportselect 
+			{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx* | awk '{print $2}' ; sudo grep -i "^Package: .*$TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq  > /tmp/.sceimportselect 
 			LINES=`/bb/wc -l /tmp/.sceimportselect | cut -f1 -d" "`
 			if [ "$LINES" == "1" ]; then
 				DEB=`cat /tmp/.sceimportselect`
@@ -555,7 +555,7 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 				exit 1
 			fi  
 		 else
-			{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "^$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "^$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq  > /tmp/.sceimportselect 
+			{ ls "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 && sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* | awk '{print $2}' ; sudo grep -i "^Package: $TARGET" "$DEBINX" | awk '{print $2}' ; sudo grep -i "^$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep "$TARGET" ; sudo grep -i "^$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" ; } | sort | uniq  > /tmp/.sceimportselect 
 			LINES=`/bb/wc -l /tmp/.sceimportselect | cut -f1 -d" "`
 			if [ "$LINES" == "1" ]; then
 				DEB=`cat /tmp/.sceimportselect`
