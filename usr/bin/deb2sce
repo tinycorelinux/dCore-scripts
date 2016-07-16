@@ -630,7 +630,13 @@ for DEBINFO in `ls -t /tmp/work`; do
 			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		fi	
-	 fi
+	else
+		if [ ! -s /tmp/.targetfile ] && ! grep -q "^$TARGET:" "$DEBINXDIR"/PKGADDDEP; then
+			echo ""$pkgNUM"/"$totalPKG" ""${YELLOW}$DEBINFO${NORMAL} does not exist in dCore repos."
+		else
+			echo ""$pkgNUM"/"$totalPKG" ""${YELLOW}$DEBINFO${NORMAL} is a meta package."
+		fi
+	fi
 done
 
 
