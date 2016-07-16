@@ -203,7 +203,7 @@ fi
 
 ## Determine which repo the package will come from.
 if [ -s /tmp/.targetfile ]; then
-	echo "$TARGET is from your own custom package list."
+	echo "$TARGET is made from your own custom package list."
 	echo "`readlink /tmp/.targetfile`"
 	META="$TARGET"
 elif sudo grep "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
@@ -263,7 +263,7 @@ cd "$TARGET"
 ## Get the dependencies of the desired packages or list of packages.
 if [ -s /tmp/.targetfile ]; then
 	echo -n "Gathering dependencies."
-	for I in `echo "$TARGET" && cat /tmp/.targetfile`; do 
+	for I in `cat /tmp/.targetfile`; do 
 		debGetDeps "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 	done
 	echo " " && echo " "
@@ -631,10 +631,10 @@ for DEBINFO in `ls -t /tmp/work`; do
 			read MIRROR < /opt/debmirror
 		fi	
 	else
-		if [ ! -s /tmp/.targetfile ] && ! grep -q "^$TARGET:" "$DEBINXDIR"/PKGADDDEP; then
-			echo ""$pkgNUM"/"$totalPKG" ""${YELLOW}$DEBINFO${NORMAL} does not exist in dCore repos."
+		if ! grep -q "^$DEBINFO:" "$DEBINXDIR"/PKGADDDEP; then
+			echo ""$pkgNUM"/"$totalPKG" ""${YELLOW}$DEBINFO${NORMAL} is a Debian/Ubuntu meta package or does not exist."
 		else
-			echo ""$pkgNUM"/"$totalPKG" ""${YELLOW}$DEBINFO${NORMAL} is a meta package."
+			echo ""$pkgNUM"/"$totalPKG" ""${YELLOW}$DEBINFO${NORMAL} is a dCore custom meta package."
 		fi
 	fi
 done
