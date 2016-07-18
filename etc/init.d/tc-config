@@ -113,45 +113,16 @@ echo "${GREEN}Done.${NORMAL}"
 
 [ -n "$WAITUSB" ] && (
 	case $WAITUSB in
-		*LABEL*) 
-			timeout=${WAITUSB%:*} 
-			ID=${WAITUSB#*:}
-			PART=${ID#*=}
-			mkdir /tmp/testusbdevice
-			while [ $timeout -gt 0 ]; do
-				echo -en "${BLUE}\rWaiting as requested ... ${NORMAL} $timeout "
-				timeout=$(($timeout - 1))
-				DEV1=$(blkid -L "$PART")
-				sleep 1
-				[ -n "$DEV1" ] || continue
-				/bb/mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
-	  				
-			done
-			umount "$DEV1" > /dev/null 2>&1
-			rmdir /tmp/testusbdevice
-			echo
+		*:*) dev=${WAITUSB#*:}
+		timeout=$((${WAITUSB%:*} * 4))
+		while [ $timeout -gt 0 ]; do
+			echo -en "${BLUE}\rWaiting as requested... ${NORMAL}$(($timeout / 4)) "
+			timeout=$(($timeout - 1))
+			blkid -lt $dev >/dev/null && timeout=0 || sleep 0.25
+		done
+		echo
 		;;
-		*UUID*) 
-			timeout=${WAITUSB%:*}
-			ID=${WAITUSB#*:}
-			PART=${ID#*=}
-			mkdir /tmp/testusbdevice
-
-			while [ $timeout -gt 0 ]; do
-				echo -en "${BLUE}\rWaiting as requested ... ${NORMAL} $timeout "
-				timeout=$(($timeout - 1))
-				DEV1=$(blkid -U "$PART")
-				sleep 1
-				[ -n "$DEV1" ] || continue
-				/bb/mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
-	  				
-			done
-			umount "$DEV1" > /dev/null 2>&1
-			rmdir /tmp/testusbdevice
-			echo
-		;;
-		*) sleep "$WAITUSB" 
-		;;	
+		*) sleep "$WAITUSB" ;;
 	esac
 )
 
