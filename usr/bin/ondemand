@@ -116,7 +116,7 @@ fi
 
 if  [ -n "$1" ]; then
 	EXTN="$1"
-	APPNAME="${EXTN%.*}"
+	APPNAME=`basename "$EXTN" .sce`
 	if [ "$APPNAME" == "$EXTN" ]
 	then
 		EXTN="$EXTN".sce
