@@ -8,7 +8,7 @@ TCEDIR=/etc/sysconfig/tcedir
 SCEDIR="/etc/sysconfig/tcedir/sce"
 DEBINXDIR="/etc/sysconfig/tcedir/import/debinx"
 BUILD=`getBuild`
-unset DEPLIST SCEBOOTLIST
+unset DEPLIST SCEBOOTLIST VIEWED
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
         echo " "
@@ -521,6 +521,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 					read ans
 					echo " "
 					if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+						VIEWED=TRUE
 						more -s /tmp/updateavailable
 						echo " "
 						echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
@@ -565,24 +566,18 @@ elif [ "$SELECT" == "TRUE" ]; then
 			echo " "
 			echo "No updates available for chosen SCE(s) at this time."
 		else
-			echo " "
-			echo -n "Press Enter to review packages that had updates available, (n)o to exit: "
-			read ans
-			if [ "$ans" == "" ]; then
-				more -s /tmp/updateavailable
+			if [ "$VIEWED" != "TRUE" ]; then
+				echo " "
+				echo -n "Press Enter to review packages that had updates available, (n)o to exit: "
+				read ans
+				if [ "$ans" == "" ]; then
+					more -s /tmp/updateavailable
+				fi
 			fi			
 		fi
 	fi
 
 elif [ -f update/"$UPDATETARGET".sce ]; then
-	#if [ -f update/"$UPDATETARGET".sce.debinx ] && [ -f update/"$UPDATETARGET".sce.md5.txt ]; then
-	#	MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
-	#	MDOLD=`cat update/"$UPDATETARGET".sce.debinx`
-	#	if [ "$MDOLD" == "$MDNEW" ]; then
-	#		echo "         ${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
-	#		exit 0
-	#	fi
-	#fi
 	cd update/
 	echo "Searching for available updates for "$UPDATETARGET".sce."
 	unset DEPLIST
@@ -677,15 +672,6 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 	fi
 	cd ..
 elif [ -f "$UPDATETARGET".sce ]; then
-	#if [ -f "$UPDATETARGET".sce.debinx ] && [ -f "$UPDATETARGET".sce.md5.txt ]; then
-	#	MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
-	#	MDOLD=`cat "$UPDATETARGET".sce.debinx`
-	#	if [ "$MDOLD" == "$MDNEW" ]; then
-	#		echo " "
-	#		echo "${YELLOW}"$UPDATETARGET".sce${NORMAL} is up to date."
-	#		exit 0
-	#	fi
-	#fi
 	echo " "
 	echo "Searching for available updates for ${YELLOW}"$UPDATETARGET".sce${NORMAL}."
 	unset DEPLIST
@@ -721,10 +707,6 @@ elif [ -f "$UPDATETARGET".sce ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						#if [ "$?" != "0" ]; then
-						#	echo "Error in updating "$I", exiting.."
-						#	exit 1
-						#fi
 					fi
 					echo "$I" >> /tmp/importupdated
 				done
