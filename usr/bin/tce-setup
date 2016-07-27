@@ -138,6 +138,14 @@ if [ "$(ls -A "/tmp/builtin"/*.gz 2>/dev/null)" ]; then
 	process_gz "/tmp/builtin"
 fi
 
+# Handle startup scripts of any .gz initrd files installed.
+for I in `ls /usr/local/tce.installed/`; do
+	SS=/usr/local/tce.installed/"$I"
+	$SS
+	echo "$I:" >> /tmp/.installed
+	echo "$I:" >> /tmp/.debinstalled
+done
+
 # Next process regular extensions unless BASE boot option has been specified.
 
 if [ "$1" == "booting" ] && [ -n "$ONLYBASE" ]; then
