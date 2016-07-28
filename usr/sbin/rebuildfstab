@@ -65,7 +65,7 @@ for i in `find /sys/block/*/ -name dev`; do
   fi
 
 checkntfs() {
-  if [ -f /usr/local/bin/ntfs-3g ]; then
+  if [ -f /usr/sbin/ntfs-3g ]; then
       FSTYPE="ntfs-3g"
       OPTIONS="$OPTIONS"
   else
