@@ -288,7 +288,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 				echo " "
 				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
-                                echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
+                                echo -n "Press Enter to update above SCE(s), (v)iew package update details, Ctrl-C aborts: "
 				read ans
 				echo " "
 				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
@@ -321,9 +321,9 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			echo " "
 			cat  /tmp/.sceupdatelist | sort | uniq
 			echo " "
-			echo -n "Press Enter to view package updates, Ctrl-C aborts: "
+			echo -n "Press Enter to view package update details, Ctrl-C aborts: "
 			read ans
-			if [ "$ans" == "" ]; then
+			if [ "$ans" == "" ] || [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 				more -s /tmp/updateavailable
 			fi
 			exit 0
@@ -427,9 +427,9 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 			echo " "
 			cat  /tmp/.sceupdatelist | sort | uniq
 			echo " "
-			echo -n "Press Enter to view package updates, Ctrl-C aborts: "
+			echo -n "Press Enter to view package update details, Ctrl-C aborts: "
 			read ans
-			if [ "$ans" == "" ]; then
+			if [ "$ans" == "" ] || [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 				more -s /tmp/updateavailable
 			fi
 			exit 0
@@ -551,11 +551,11 @@ elif [ "$SELECT" == "TRUE" ]; then
 				echo " "
 				cat  /tmp/.sceupdatelist | sort | uniq
 				echo " "
-				#echo -n "Press Enter to view package updates, Ctrl-C aborts: "
-				#read ans
-				#if [ "$ans" == "" ]; then
+				echo -n "Press Enter to view package update details, Ctrl-C aborts: "
+				read ans
+				if [ "$ans" == "" ] || [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 					more -s /tmp/updateavailable
-				#fi
+				fi
 				exit 0
 			fi
 		else
@@ -659,9 +659,9 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 			echo " "
 			cat  /tmp/.sceupdatelist | sort | uniq
 			echo " "
-			echo -n "Press Enter to view package updates, Ctrl-C aborts: "
+			echo -n "Press Enter to view package update details, Ctrl-C aborts: "
 			read ans
-			if [ "$ans" == "" ]; then
+			if [ "$ans" == "" ] || [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 				more -s /tmp/updateavailable
 			fi
 			exit 0
@@ -749,9 +749,9 @@ elif [ -f "$UPDATETARGET".sce ]; then
 			echo " "
 			cat  /tmp/.sceupdatelist | sort | uniq
 			echo " "
-			echo -n "Press Enter to view package updates, Ctrl-C aborts: "
+			echo -n "Press Enter to view package update details, Ctrl-C aborts: "
 			read ans
-			if [ "$ans" == "" ]; then
+			if [ "$ans" == "" ] || [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
 				more -s /tmp/updateavailable
 			fi
 			exit 0
