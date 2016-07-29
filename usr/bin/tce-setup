@@ -146,6 +146,8 @@ for I in `ls /usr/local/tce.installed/`; do
 	echo "$I:" >> /tmp/.debinstalled
 done
 
+chown "$USER":staff /tmp/.installed /tmp/.debinstalled
+
 # Next process regular extensions unless BASE boot option has been specified.
 
 if [ "$1" == "booting" ] && [ -n "$ONLYBASE" ]; then

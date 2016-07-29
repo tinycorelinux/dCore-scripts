@@ -407,7 +407,7 @@ fi
 
 # Check for MS Windows filesystem of TCEDIR, and only continue of RAM 
 # is being used for unpacking.
-MS_MNTS=`mount|awk '$5~/fat|vfat|msdos|ntfs/{printf "%s ",$1}'`
+MS_MNTS=`mount|awk '$5~/fat|vfat|msdos|ntfs|ntfs-3g|fuseblk/{printf "%s ",$1}'`
 REALDIR=`readlink /etc/sysconfig/tcedir`
 MNTDEV=`df "$REALDIR" | tail -n1 | cut -f1 -d" "`
 case "$MS_MNTS" in 
