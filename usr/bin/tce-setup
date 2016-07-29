@@ -141,7 +141,7 @@ fi
 # Handle startup scripts of any .gz initrd files installed.
 for I in `ls /usr/local/tce.installed/`; do
 	SS=/usr/local/tce.installed/"$I"
-	$SS
+	$SS > /dev/null 2>&1
 	echo "$I:" >> /tmp/.installed
 	echo "$I:" >> /tmp/.debinstalled
 done
