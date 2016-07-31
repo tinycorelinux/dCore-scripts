@@ -74,8 +74,14 @@ process_gz() {
 	for FILE in $FILELIST; do
 		zcat "$FILE" | cpio -idmu > /dev/null 2>&1
 		GZ="${FILE##*/}"
-		STARTSCRIPT="$TCEINSTALLED"/"${GZ%.gz}"
-		[ -s "$STARTSCRIPT" ] && sh "$STARTSCRIPT"
+	done
+	# Handle startup scripts of any .gz initrd files installed.
+	for I in `ls /usr/local/tce.installed/`; do
+		SS=/usr/local/tce.installed/"$I"
+		if ! grep "$I:" /tmp/.installed > /dev/null 2>&1; then
+			$SS > /dev/null 2>&1
+			echo "$I:" >> /tmp/.installed
+		fi
 	done
 	cd -
 }
@@ -136,17 +142,19 @@ SCELIST="$TCEDIR"/"$TARGETLIST"
 # /tmp/builtin support provided for embedding extensions inside the initrd.
 if [ "$(ls -A "/tmp/builtin"/*.gz 2>/dev/null)" ]; then
 	process_gz "/tmp/builtin"
+	# Handle startup scripts of any .gz initrd files installed.
+	for I in `ls /usr/local/tce.installed/`; do
+		SS=/usr/local/tce.installed/"$I"
+		if ! grep "$I:" /tmp/.installed > /dev/null 2>&1; then
+			$SS > /dev/null 2>&1
+			echo "$I:" >> /tmp/.installed
+		fi
+	done
+	# Rebuildfstab as /tmp/builtin can be used for filesystem drivers.
+	rebuildfstab
 fi
 
-# Handle startup scripts of any .gz initrd files installed.
-for I in `ls /usr/local/tce.installed/`; do
-	SS=/usr/local/tce.installed/"$I"
-	$SS > /dev/null 2>&1
-	echo "$I:" >> /tmp/.installed
-	echo "$I:" >> /tmp/.debinstalled
-done
-
-chown "$USER":staff /tmp/.installed /tmp/.debinstalled
+chown "$USER":staff /tmp/.installed /tmp/.debinstalled > /dev/null 2>&1
 
 # Next process regular extensions unless BASE boot option has been specified.
 
