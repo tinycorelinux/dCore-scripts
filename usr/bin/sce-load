@@ -469,11 +469,17 @@ done # Finish the for-loop for multiple extensions
 
 cd "$SAVED_DIR"
 
-[ "$BOOTING" ] && exit 0
+if [ "$BOOTING" ]; then
+	sudo rm /tmp/.sceloadlock > /dev/null 2>&1 
+	exit 0
+fi
+
 if [ -n "$DISPLAY" ]
 then
 	[ $(which "$DESKTOP"_restart) ] && "$DESKTOP"_restart > /dev/null 2>&1
 	[ $(which wbar) ] && pkill wbar && wbar.sh > /dev/null 2>&1
 fi
+
+sudo rm /tmp/.sceloadlock > /dev/null 2>&1 
 
 exit 0
