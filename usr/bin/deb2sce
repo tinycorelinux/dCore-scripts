@@ -639,9 +639,8 @@ for DEBINFO in `ls -t /tmp/work`; do
 	fi
 done
 
-
-
 cd ..
+
 ## Move *.debs package listing to the SCE.
 mv /tmp/*.debs "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/ > /dev/null 2>&1
 if [ -f /tmp/"$TARGET".debdeps ]; then
