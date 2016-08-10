@@ -279,8 +279,40 @@ elif ls /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
 	echo "Existing dependency file found."
 fi
 
-
 echo " "
+
+# Check for ntfs TCEDIR without ntfs-3g loaded, and exit if so.
+MS_MNTS=`mount|awk '$5~/ntfs/{printf "%s ",$1}'`
+REALDIR=`readlink /etc/sysconfig/tcedir`
+MNTDEV=`df "$REALDIR" | tail -n1 | cut -f1 -d" "`
+case "$MS_MNTS" in 
+			*"$MNTDEV"* )
+				
+				echo " "
+				echo "${YELLOW}Warning:${NORMAL} "$REALDIR" resides on a read only ntfs filesystem, exiting.."
+				exit 1
+					
+			;;
+
+esac
+
+
+# Check for MS Windows filesystem of TCEDIR, and only continue of RAM 
+# is being used for unpacking.
+MS_MNTS=`mount|awk '$5~/fat|vfat|msdos|ntfs|ntfs-3g|fuseblk/{printf "%s ",$1}'`
+REALDIR=`readlink /etc/sysconfig/tcedir`
+MNTDEV=`df "$REALDIR" | tail -n1 | cut -f1 -d" "`
+case "$MS_MNTS" in 
+			*"$MNTDEV"* )
+				if [ ! -f /tmp/.importram ]; then 
+					echo " "
+					echo "${YELLOW}Warning:${NORMAL} "$REALDIR" resides on a Windows filesystem."
+					echo "Please try again with the -r flag to unpack files in RAM, exiting.."
+					exit 1
+				fi	
+			;;
+
+esac
 
 if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	sudo debGetEnv "$2"
@@ -404,23 +436,6 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 		exit 0
 	fi
 fi
-
-# Check for MS Windows filesystem of TCEDIR, and only continue of RAM 
-# is being used for unpacking.
-MS_MNTS=`mount|awk '$5~/fat|vfat|msdos|ntfs|ntfs-3g|fuseblk/{printf "%s ",$1}'`
-REALDIR=`readlink /etc/sysconfig/tcedir`
-MNTDEV=`df "$REALDIR" | tail -n1 | cut -f1 -d" "`
-case "$MS_MNTS" in 
-			*"$MNTDEV"* )
-				if [ ! -f /tmp/.importram ]; then 
-					echo " "
-					echo "${YELLOW}Warning:${NORMAL} "$REALDIR" resides on a Windows filesystem."
-					echo "Please try again with the -r flag to unpack files in RAM, exiting.."
-					exit 1
-				fi	
-			;;
-
-esac
 
 # When no package is specified on command line, ask for one.
 if [ -z "$TARGET" ] && [ "$CHECKALL" == "TRUE" ]; then
