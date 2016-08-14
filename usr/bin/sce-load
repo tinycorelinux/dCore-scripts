@@ -371,8 +371,8 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	else
 		THISSCE=${TARGETAPP}
 	fi
-	if [ -f "$TARGETAPP" ] || [ -f "$TCEDIR"/"$TARGETAPP" ]; then
-		TARGETDIR=`dirname "$TARGETAPP"`
+	if [ -f "$THISSCE" ]; then
+		TARGETDIR=`dirname "$THISSCE"`
 	else
 		TARGETDIR="$TCEDIR"/sce
 	fi
