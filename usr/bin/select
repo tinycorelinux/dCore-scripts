@@ -37,7 +37,10 @@ END {
 		if ( NR > 15 ) printf ", (n)ext/Enter, (p)revious"
 		printf ": "
 		selection = read_console()
-		if (selection == "q") break
+		if (selection == "q") {
+			system ("touch /tmp/select.ans") 
+			exit
+		}
 		if (selection == "p") {
 			if ( j > 15 )
 				j = j - 30

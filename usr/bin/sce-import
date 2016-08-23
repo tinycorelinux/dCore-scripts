@@ -93,6 +93,18 @@ do
 	esac
 done
 
+if [ ! "$NOLOCK" == "TRUE" ]; then
+	if [ -f /tmp/.scelock ]; then
+		LOCK=`cat /tmp/.scelock`
+		if /bb/ps | /bb/grep "$LOCK " | /bb/grep -v grep > /dev/null 2>&1; then
+			echo "Another SCE utility is presently in use, exiting.."
+			exit 1
+		fi
+	fi
+	
+	echo "$$" > /tmp/.scelock
+fi
+
 NICE=`grep "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
 if [ -n "$NICE" ]; then
 	echo " "
@@ -119,18 +131,6 @@ if grep -i "^ONDEMAND=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOC
 fi
 
 shift `expr $OPTIND - 1`
-
-if [ ! "$NOLOCK" == "TRUE" ]; then
-	if [ -f /tmp/.scelock ]; then
-		LOCK=`cat /tmp/.scelock`
-		if /bb/ps | /bb/grep "$LOCK " | /bb/grep -v grep > /dev/null 2>&1; then
-			echo "Another SCE utility is presently in use, exiting.."
-			exit 1
-		fi
-	fi
-	
-	echo "$$" > /tmp/.scelock
-fi
 
 [ "$FLAGS" ] && FLAGS="-$FLAGS"
 TARGET="$1"
