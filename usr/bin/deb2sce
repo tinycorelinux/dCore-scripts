@@ -114,13 +114,13 @@ getMd5sum1() {
 ##
 
 cleanup() {
-	rm -rf /tmp/work
-	sudo chown -R "$TCUSER":staff "$SCEDIR" > /dev/null 2>&1
-	chmod 1777 /tmp
-	chmod 775 /usr/local/tce.installed
-	chmod 775 /usr/local/tce.icons 2>/dev/null
-	chgrp staff /usr/local/tce.installed
-	chgrp staff /usr/local/tce.icons 2>/dev/null
+	[ -d /tmp/work ] && rm -rf /tmp/work
+	[ -d "$SCEDIR" ] && sudo chown -R "$TCUSER":staff "$SCEDIR" > /dev/null 2>&1
+	[ -d /tmp ] && chmod 1777 /tmp
+	[ -d /usr/local/tce.installed ] && chmod 775 /usr/local/tce.installed
+	[ -d /usr/local/tce.icons ] && chmod 775 /usr/local/tce.icons 2>/dev/null
+	[ -d /usr/local/tce.installed ] && chgrp staff /usr/local/tce.installed
+	[ -d /usr/local/tce.icons ] &&  chgrp staff /usr/local/tce.icons 2>/dev/null
 	if ls /tmp/*.debs > /dev/null 2>&1; then 
 		sudo rm /tmp/*.debs
 	fi
@@ -148,6 +148,7 @@ cleanup() {
 	[ -d "$TCEDIR"/import/"$TARGET" ] && sudo rm -r "$TCEDIR"/import/"$TARGET"
 	[ -d  /tmp/import/"$TARGET" ] && sudo rm -r /tmp/import/"$TARGET"
 	[ -f /tmp/.scenoconfig ] && sudo rm /tmp/.scenoconfig
+	:
 }
 
 # Main

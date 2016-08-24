@@ -39,7 +39,7 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}"sce-import -z PKG"${NORMAL}      Ignore locale.nopurge, sce.purge, sceconfig files."
 	echo "${YELLOW}"sce-import -R PKG"${NORMAL}      Include recommended Debian packages, warning large SCE."
 	echo "${YELLOW}"sce-import -S PKG"${NORMAL}      Include suggested Debian packages, warning large SCE."
-exit 1
+exit 0
 fi
 
 mksce() {
@@ -599,4 +599,4 @@ fi
 
 echo " "
 echo "'"$TARGET"' is not available as a package, exiting.."
-exit 1
+exit 0
