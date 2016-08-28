@@ -78,6 +78,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
   if grep "^Package: "$1"$" "$TCEDIR"/import/debinx/debinx.* > /dev/null; then
     DEBINX=`grep -l "^Package: $1$" "$TCEDIR"/import/debinx/debinx.*  /dev/null | head -n 1`
     DEPS="$(getDeps2 $1)"
+    read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
     DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
     DEPS=" $DEPS $(getDeps1 $1)"
     #[ ! -z "$DEPS" ] && echo " "
