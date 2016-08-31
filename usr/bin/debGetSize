@@ -66,9 +66,8 @@ getdsize_extra() {
 					}
 
 				if ( f[1] == "Size" )
-					print f[2]
+					{ print f[2]; exit; }
 			}
-		exit 0
 		}
 		
 	} ' < "$DEBINX1" 
@@ -95,9 +94,8 @@ getisize_extra() {
 					}
 
 				if ( f[1] == "Installed-Size" )
-					print f[2]
+					{ print f[2]; exit; }
 			}
-		exit 0
 		}
 		
 	} ' < "$DEBINX1" 

@@ -187,11 +187,10 @@ getName1() {
 					}
 		
 				if ( f[1] == "Filename" )
-					print f[2]
+					{ print f[2]; exit; }
 						   
 			
 		}
-	exit 0
 
 		}
 		

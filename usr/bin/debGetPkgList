@@ -56,11 +56,11 @@ getDeps2() {
 					}
 				}
 				if ( f[1] == "Filename" )
-					print f[2] > location
+					{ print f[2] > location; exit; }
 						     
 			
 		}
-		exit 0
+		
 		}
 		
 	} ' < "$DEBINX"

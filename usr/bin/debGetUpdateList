@@ -51,9 +51,8 @@ getMd5sum1() {
 					}
 				
 				if ( f[1] == "MD5sum" )
-					print FIELD f[2] >> md5sum 
+					{ print FIELD f[2] >> md5sum; exit; } 
 			}
-		exit 0
 		}
 		
 	} ' < "$DEBINX"
@@ -80,9 +79,8 @@ getMd5sum2() {
 					}
 				
 				if ( f[1] == "MD5sum" )
-					print FIELD f[2] >> md5sum
+					{ print FIELD f[2] >> md5sum; exit; } 
 			}
-		exit 0
 		}	
 	} ' < "$DEBINX_SECURITY"
 }

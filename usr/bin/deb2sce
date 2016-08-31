@@ -103,10 +103,9 @@ getMd5sum1() {
 					}
 				
 				if ( f[1] == "MD5sum" )
-					print f[2]
+					{ print f[2]; exit; }
 					
 			}
-		exit 0
 		} 
 
 	} ' < "$DEBINX"

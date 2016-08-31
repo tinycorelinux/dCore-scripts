@@ -40,15 +40,17 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 fi
 
 
-if [ -f /tmp/.scelock ]; then
-	LOCK=`cat /tmp/.scelock`
-	if /bb/ps | /bb/grep "$LOCK " | /bb/grep -v grep > /dev/null 2>&1; then
-		echo "Another SCE utility is presently in use, exiting.."
-		exit 1
+if [ ! "$NOLOCK" == "TRUE" ]; then
+	if [ -f /tmp/.scelock ]; then
+		LOCK=`cat /tmp/.scelock`
+		if /bb/ps -o pid | sed -e 's/^[ \t]*//'| grep "^$LOCK$" | /bb/grep -v grep > /dev/null 2>&1; then
+			echo "Another SCE utility is presently in use, exiting.."
+			exit 1
+		fi
 	fi
+	
+	echo "$$" > /tmp/.scelock
 fi
-
-echo "$$" > /tmp/.scelock
 
 while getopts canrszb OPTION
 do

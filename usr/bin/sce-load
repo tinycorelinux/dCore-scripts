@@ -50,8 +50,8 @@ fi
 
 if [ -f /tmp/.sceloadlock ]; then
 	LOCK=`cat /tmp/.sceloadlock`
-	if /bb/ps | /bb/grep "$LOCK " | grep "sce-load" > /dev/null 2>&1; then
-		echo "Another sce-load session is presently in use, exiting.."
+	if /bb/ps -o pid | sed -e 's/^[ \t]*//'| grep "^$LOCK$" | /bb/grep -v grep > /dev/null 2>&1; then
+		echo "Another SCE utility is presently in use, exiting.."
 		exit 1
 	fi
 fi
