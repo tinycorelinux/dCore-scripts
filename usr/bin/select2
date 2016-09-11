@@ -33,9 +33,8 @@ END {
 			++j
 			if ( j <= NR ) printf "\t%2d. %s\n", j,  A[j]
 		}
-		printf "\nEnter selection ( 1 - %s ) or Enter to proceed, Ctrl-c to quit", NR
-		if ( NR > 15 ) printf ","
-		if ( NR > 15 ) printf "\n(n)ext, (p)revious"
+		printf "\nEnter selection ( 1 - %s ), Enter to proceed or exit", NR
+		if ( NR > 15 ) printf ", (n)ext, (p)revious"
 		printf ": "
 		selection = read_console()
 		if (selection == "") break

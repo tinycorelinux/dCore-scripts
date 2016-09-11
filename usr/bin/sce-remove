@@ -8,17 +8,20 @@ SCEDIR=""$TCEDIR"/sce"
 SCE=${SCE%%.sce}
 cd "$SCEDIR"
 
-
+cleanup () {
 [ -f /tmp/.keeplist ] && sudo rm /tmp/.keeplist
 [ -f /tmp/.scermlist ] && sudo rm /tmp/.scermlist
+[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
+}
 
+cleanup
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo " "
-	echo "${YELLOW}sce-remove - Remove SCE(s) upon shutdown or reboot${NORMAL}. Removing an SCE that other"
-	echo "             SCE(s) depend on for shared dependencies will also flag these for"
-	echo "             removal. SCE(s) flagged for removal are listed in /tmp/.removesce"
-	echo "             prior to reboot."
+	echo "${YELLOW}sce-remove - Remove SCE(s) upon shutdown${NORMAL}. Removing an SCE that other SCE(s)"
+	echo "             depend on for shared dependencies will also flag these for removal."
+	echo "             SCE(s) flagged for removal are listed in /tmp/.removesce prior to"
+	echo "             shutdown. Applicable SCE(s) will also be removed from OnDemand."
 	echo " "
 	echo "Usage:"
 	echo " "
@@ -43,6 +46,17 @@ do
 done
 shift `expr $OPTIND - 1`
 SCE="$1"
+
+if [ -n "$2" ]; then
+	echo " "
+	echo "${YELLOW}Warning:${NORMAL} Only one SCE can be entered in command line for removal."
+	echo "         Run 'sce-remove' to select more than one SCE, exiting.."
+	exit 1
+fi
+
+if [ "$KEEPLIST" == "TRUE" ]; then
+	echo "* Using the -k option."
+fi
 
 if grep -i "^KEEPLIST=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1; then
 	touch /tmp/.keeplist
@@ -85,17 +99,29 @@ if ls *.dep > /dev/null 2>&1; then
 fi	
 }
 if [ -s /tmp/.removesce ]; then
+	for I in `cat /tmp/.removesce`; do
+		rmdep "$I"
+	done
+	echo " "
+	cat /tmp/.removesce
+	echo " "
+	echo "${YELLOW}Warning:${NORMAL} Selected SCE(s) and any that require the dependencies, listed above,"
+	echo "         will be removed at shutdown, any OnDemand scripts will now be removed."
+	echo " "
+	echo -n "Press Enter to confirm removal, (q)uit to exit without changes: "
+	read ans
+	if [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
+		rm /tmp/.removesce
+		cleanup
+		exit 1
+	fi
 	for I in `cat /tmp/.removesce`; do 
 		ondemand -r "$I"
-		rmdep "$I"	
 	done
 	echo " "
-	for I in `cat /tmp/.removesce`; do
-		echo "$I"
-	done
-	echo " "
-	echo "The above SCE(s) will be removed upon shutdown or reboot."
+	echo "These SCE(s) will be removed during shutdown, exiting.."
 else
-	echo " "
 	echo "No SCE(s) selected for removal, exiting.."
 fi
+
+cleanup

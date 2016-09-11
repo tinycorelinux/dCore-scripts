@@ -17,14 +17,13 @@ zsyncDebianIndex()
 	getMirror "$BUILD"
 	MIRROR="${MIRROR%/tcz}"
 	cd "$TCEDIR"/import/debinx
-	if zsync -i "$TCEDIR"/import/debinx/"$DEBINX" "$MIRROR"/"$DEBINX".zsync 2>/dev/null
+	if zsync -q -i "$TCEDIR"/import/debinx/"$DEBINX" "$MIRROR"/"$DEBINX".zsync 2>/dev/null
 	then
 		rm -f "$DEBINX".zs-old
 	else
 		wget -O "$TCEDIR"/import/debinx/"$DEBINX" "$MIRROR"/"$DEBINX" || exit_tcnet
 
 	fi
-        echo " "
 	cd - > /dev/null
 }
 
@@ -34,13 +33,12 @@ zsyncDebianSecurityIndex()
 	getMirror "$BUILD"
 	MIRROR="${MIRROR%/tcz}"
 	cd "$TCEDIR"/import/debinx
-	if zsync -i "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" "$MIRROR"/"$DEBINX_SECURITY".zsync 2>/dev/null
+	if zsync -q -i "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" "$MIRROR"/"$DEBINX_SECURITY".zsync 2>/dev/null
 	then
 		rm -f "$DEBINX_SECURITY".zs-old
 	else
 		wget -O "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" "$MIRROR"/"$DEBINX_SECURITY" || exit_tcnet
 	fi
-        echo " "
 	cd - > /dev/null
 }
 
@@ -63,10 +61,8 @@ else
 	REPO=wheezy
 fi
 
-echo "* Fetching updated DEBINX."
-#echo " "
+echo "* Fetching DEBINX update."
 echo "* Distro: "$DISTRO""
-echo " "
 
 BUILD="$1"
 [ -z "$BUILD" ] && BUILD=`getBuild`
@@ -107,7 +103,8 @@ read MIRROR_SECURITY 2>/dev/null < /opt/securitymirror 2>/dev/null || MIRROR_SEC
 
 if [ -z "$DEBINX" ]
 then
-	echo "* No Package Index available, exiting.."
+	echo " "
+	echo "${YELLOW}Warning:${NORMAL} No Package Index available, exiting.."
 	exit 1
 else
 	echo "$DEBINX" > /etc/sysconfig/tcedir/import/debinx/debinx
@@ -138,7 +135,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/"$DIST"/"$POOL"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.bz2 > /dev/null 2>&1; then
-				echo "* Using the repo mirror "$MIR""
+				echo "* Using the repo "$MIR""
 			elif wget -s "$MIR""$F"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
@@ -147,7 +144,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
-				echo "* Using the repo mirror "$MIR""
+				echo "* Using the repo "$MIR""
 			elif wget -s "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR""$F"/Packages.gen 
@@ -159,11 +156,12 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			elif wget -s "$MIR"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" "$MIR"/Packages.gen 
-				echo "* Using the repo mirror "$MIR""
+				echo "* Using the repo "$MIR""
 
 			else
-				#echo " "
-				echo -n "* WARNING: Repo "$MIR"  "$DIST"  "$POOL" is unavailable, exiting.."
+				echo " "
+				echo "${YELLOW}Warning:${NORMAL} Repo "$MIR"  "$DIST"  "$POOL" is unavailable,"
+				echo "         exiting.."
 				exit 1
 			fi
 		else
@@ -179,7 +177,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
-				echo "* Using the repo mirror "$MIR""
+				echo "* Using the repo "$MIR""
 			elif wget -s "$MIR""$F"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
@@ -188,7 +186,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
-				echo "* Using the repo mirror "$MIR""
+				echo "* Using the repo "$MIR""
 			elif wget -s "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR""$F"/Packages.gen 
@@ -200,10 +198,11 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			elif wget -s "$MIR"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR"/Packages.gen 
-				echo "* Using the repo mirror "$MIR""
+				echo "* Using the repo "$MIR""
 			else
-				#echo " "
-				echo -n "* WARNING: Repo "$MIR" "$DIST" "$POOL" is unavailable, exiting.."
+				echo " "
+				echo "${YELLOW}Warning:${NORMAL} Repo "$MIR" "$DIST" "$POOL" is unavailable,"
+				echo "         exiting.."
 				exit 1
 			fi
 		fi
@@ -253,6 +252,8 @@ if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
 		sleep 5
 	fi
 else
-	echo "* "$DISTRO" "$REPO" main repo of mirror "$MIRROR" not available, exiting.."  
+	echo " "
+	echo "${YELLOW}Warning:${NORMAL} "$DISTRO" "$REPO" main repo of "$MIRROR" unavailable,"
+	echo "         exiting.."  
 	exit 1
 fi 

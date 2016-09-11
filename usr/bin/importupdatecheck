@@ -37,18 +37,18 @@ ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/*.deb2sce
 
 exit_tcnet() {
 	echo " "
-	echo "Issue connecting to `cat /opt/tcemirror`, exiting.."
+	echo "${YELLOW}Warning:${NORMAL} Issue connecting to `cat /opt/tcemirror`, exiting.."
 	exit 1
 }
 
 
 if [ ! -f "$SCEDIR"/"$SCE".sce ] && [ ! -f "$SCEDIR"/update/"$SCE".sce ]; then
   echo " "
-  echo ""$SCE".sce does not exist, exiting.."
+  echo "${YELLOW}Warning:${NORMAL} "$SCE".sce does not exist, exiting.."
   exit 1
 fi
 
-echo "${YELLOW}"$SCE" updates:${NORMAL}" >> /tmp/updateavailable
+echo "====  "$SCE" updates  ====" >> /tmp/updateavailable
 
 if sudo busybox mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then
  sudo busybox umount /tmp/sceupdatetest
@@ -82,10 +82,10 @@ echo "$FILE" > /tmp/FILE
 
 ## Find if needed md5sum file inside SCE exists.
 if [ ! -f "$FILE" ]; then
-	echo ""$1" has no built in md5sum list, not updating.." >> /tmp/updateavailable
+	echo ""$1" has no built in md5sum list, not updating." >> /tmp/updateavailable
 	echo " " >> /tmp/updateavailable
 	echo " " >> /tmp/updateavailable
-	echo 
+	echo " "
 	if sudo busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
 		sudo busybox umount /tmp/sceupdatetest
 	fi
@@ -102,7 +102,7 @@ if [ -f "$SCEDIR"/"$SCE".sce.md5.txt ]; then
 	else
 		echo "$SCE" >> /tmp/.sceupdatelist
 		echo "$SCE" >>/tmp/.updatemd5failed
-		echo "$SCE did not pass the md5sum check, needs re-importing.." >> /tmp/updateavailable
+		echo "$SCE did not pass the md5sum check, needs re-importing." >> /tmp/updateavailable
 		echo " " >> /tmp/updateavailable
 		echo "$SCE" >> /tmp/.updatechecked
 		cd "$HERE"
@@ -111,7 +111,7 @@ if [ -f "$SCEDIR"/"$SCE".sce.md5.txt ]; then
 else
 	echo "$SCE" >> /tmp/.sceupdatelist
 	echo "$SCE" >>/tmp/.updatemd5failed
-	echo "$SCE has no $SCE.md5.txt file, needs re-importing.." >> /tmp/updateavailable
+	echo "$SCE has no $SCE.md5.txt file, needs re-importing." >> /tmp/updateavailable
 	echo " " >> /tmp/updateavailable
 	echo "$SCE" >> /tmp/.updatechecked
 	exit 0

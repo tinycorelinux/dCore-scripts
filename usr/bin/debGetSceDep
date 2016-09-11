@@ -38,6 +38,9 @@ else
 	## Echo the selected deps to the dep file
 	if [ -f /tmp/.scedeps ]; then
 		cat /tmp/.scedeps >> /etc/sysconfig/tcedir/sce/"$1".sce.dep
+	else
+		echo " "
+		echo -n "* No dependency SCE(s) selected, proceeding to import '"$1"'."
 	fi
 	##
 fi
@@ -76,6 +79,7 @@ unset PKGEXISTS
 		  	[ -d "$DIR1" ] || mkdir -p "$DIR1"
 			sudo mount /etc/sysconfig/tcedir/sce/update/"$I".sce "$DIR1" > /dev/null 2>&1
 			if [ "$?" != "0" ]; then
+				echo " "
 				echo "Unable to mount "$I".sce to get needed information, exiting.."
 				exit 1
 			fi
@@ -110,6 +114,7 @@ unset PKGEXISTS
 		  	[ -d "$DIR1" ] || mkdir -p "$DIR1"
 			sudo mount /etc/sysconfig/tcedir/sce/"$I".sce "$DIR1" > /dev/null 2>&1
 			if [ "$?" != "0" ]; then
+				echo " "
 				echo "Unable to mount "$I".sce to get needed information, exiting.."
 				exit 1
 			fi
@@ -139,8 +144,3 @@ fi
 
 ls -t /tmp/work > /tmp/"$1".debdeps
 cd "$HERE"
-
-
-
-
-
