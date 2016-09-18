@@ -33,7 +33,7 @@ abort_to_saved_dir(){
 
 if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo " "
-	echo "${YELLOW}sce-load - Load SCE(s) and any SCE(s) that it depends on into RAM for use.${NORMAL}"
+	echo "${YELLOW}sce-load - Load SCE(s) and any SCE(s) depended on into RAM for use.${NORMAL}"
 	echo "           SCEs typically located in /etc/sysconfig/tcedir/sce/."
 	echo " "
 	echo "Usage:"
@@ -73,8 +73,7 @@ choose(){
 	rm "$MOUNTED"
 
 	if [ ! -s "$TMP" ]; then
-		echo " "
-		echo "Nothing found to load, exiting.."
+		echo "* Nothing found to load, exiting.."
 		exit 1
 	fi
 	select2 "Select SCE to load." "$TMP"
@@ -115,7 +114,7 @@ processAPP(){
 	elif [ -f "$TCEDIR"/sce/"$TARGETAPP" ]; then
 		TARGETAPP="$TCEDIR"/sce/"$TARGETAPP"
 	else
-		echo "'"$TARGETAPP"' does not exist, not loading.."
+		echo "* '"$TARGETAPP"' does not exist, not loading.."
 		abort_to_saved_dir
 	fi
 	#FROMWHERE=`dirname "$TARGETAPP"` && cd "$FROMWHERE"
@@ -142,17 +141,15 @@ shift `expr $OPTIND - 1`
 if [ "$BOOTING" != "TRUE" ]; then
 	NICE=`grep "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
 	if [ -n "$NICE" ]; then
-		[ "$SUPPRESS" ] || echo " "
 		if [ "$NICE" -gt 19 ]; then
 			NICE=19
-			[ "$SUPPRESS" ] || echo "Using nice level 19, 19 is the highest possible nice value."
+			[ "$SUPPRESS" ] || echo "* Using nice level 19, 19 is the highest possible nice value."
 		elif [ 0 -gt "$NICE" ]; then
 			NICE=0
-			[ "$SUPPRESS" ] || echo "Using nice level "$NICE", only root can use negative nice values."
+			[ "$SUPPRESS" ] || echo "* Using nice level "$NICE", only root can use negative nice values."
 		else
-			[ "$SUPPRESS" ] || echo "Using nice level "$NICE"."
+			[ "$SUPPRESS" ] || echo "* Using nice level "$NICE"."
 		fi
-		[ "$SUPPRESS" ] || echo " "
 		/bb/renice -n "$NICE" -p $$
 	fi
 fi
@@ -264,8 +261,7 @@ install(){
 
 	THISAPP="$1"
 	APPNAME=$(getbasefile "$THISAPP" 1)
-
-	[ "$SUPPRESS" ] || echo "* Create /tmp/tcloop/ directory and mount "$THISAPP"."
+	[ "$SUPPRESS" ] || echo "* Mount /tmp/tcloop/"$APPNAME"/."
 	[ -d /tmp/tcloop/"$APPNAME" ] || sudo mkdir -p /tmp/tcloop/"$APPNAME"
 	awk -v appname="/tmp/tcloop/$APPNAME" ' { if ( $2 == appname )  exit 1 }' /etc/mtab
 	[ "$?" == 1 ] || sudo mount "$TARGETDIR"/"$APPNAME".sce /tmp/tcloop/"$APPNAME" -t squashfs -o loop,ro,bs=4096 2>&1
@@ -384,7 +380,7 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 		if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
 			continue
 		else
-			echo "${YELLOW}"$TARGETDIR"/"$THISSCENAME".sce${NORMAL} does not exist, not loading.."
+			echo "* ${YELLOW}"$TARGETDIR"/"$THISSCENAME".sce${NORMAL} does not exist, not loading.."
 			continue
 		fi
 	fi

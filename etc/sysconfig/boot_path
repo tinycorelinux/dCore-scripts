@@ -1,23 +1,23 @@
-# Specify download directory for  version -c  or  version -r  dCore updates. The full dCore boot
-# pathway must be specified (contains the dCore-*.gz and vmlinuz-* files). The version command
-# automatically backs up the old dCore-*.gz and *.md5.txt file before downloading the update.
-# Specify the maximum number of backups to store below. Reboot to complete the update.
-
-# If this file is modified, add an /opt/.filetool.lst entry to save changes:
-#      etc/sysconfig/boot_path
-
-# NO SPACES, ONLY ONE ENTRY FOR EACH OPTION
-# BOOTPATH ENTRY MUST START WITH A SLASH
-# BOOTPATH ENTRY MUST CONTAIN /mnt/* IF DOWNLOAD DIRECTORY IS NOT MOUNTED AFTER BOOT
-
-# Note dCore uses the symlink 'tcedir' to point to the /tce directory. The dCore installer by default
-# uses /etc/sysconfig/tcedir/boot, on the actual system this may be something like /mnt/sdb4/tce/boot.
-
+# Specify the full dCore boot path directory (contains dCore-*.gz and vmlinuz-*
+# files) when running the version -c or version -r command to update the dCore
+# base file system. Old dCore-*.gz and *.md5.txt files are backed up before
+# downloading the update. Specify the maximum number of backups to keep.
+# Reboot system to complete update.
+#
+# Do not use spaces. Only one entry for each option. Bootpath must start with
+# a slash and /mnt/* if partition not automatically mounted after boot. Note
+# dCore uses the symlink 'tcedir' to point to the /tce directory. The dCore
+# installer by default uses /etc/sysconfig/tcedir/boot, on the actual system
+# this may be something like /mnt/sdb4/tce/boot.
+#
+# If this file is modified, add this /opt/.filetool.lst entry to save changes:
+#   etc/sysconfig/boot_path
+#
 # Use BOOTPATH=/* to specify dCore boot path directory:
 #BOOTPATH=/etc/sysconfig/tcedir/boot
 #BOOTPATH=/mnt/sdb4/tce/boot
 BOOTPATH=/etc/sysconfig/tcedir/boot
-
+#
 # USE MAXBACKUPS=* to specify number of backups to keep:
 #MAXBACKUPS=3
 MAXBACKUPS=3

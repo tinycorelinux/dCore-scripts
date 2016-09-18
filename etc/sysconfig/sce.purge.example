@@ -1,17 +1,21 @@
-# Enter the files or directories you want to be deleted in the resulting SCE during sce-import.
-# Make sure there are no spaces before or after entries, leading slash not needed, wildcards accepted. 
-# Move this file to /etc/sysconfig/sce.purge or create a new one.
-#
-# Warning: Although this purge system may result in significantly smaller SCEs, removing required files
-#          or directories can break the extension. If problems arise modify this sce.purge file then
-#          re-import and re-test the SCE. Although the  sce-import -z  command can be used to ignore
-#          this sce.purge file when importing SCEs, running update all (sce-update -a) will by
-#          default use this sce.purge file to re-import any outdated SCEs.
+# Enter files or directories to purge before squashing SCE during sce-import.
+# Ensure there are no spaces before or after entries, leading slash not needed,
+# wildcards accepted.
+# 
+# To activate move this file to /etc/sysconfig/sce.purge or create a new one.
 #
 # Add /opt/.filetool.lst entry to save any changes:
-#     etc/sysconfig/sce.purge
+#   etc/sysconfig/sce.purge
+#
+# Warning: Although this purge system may result in significantly smaller SCEs,
+#          removing required files can break the extension. If problems arise
+#          modify this sce.purge file, re-import and re-test the SCE. Although
+#          the  sce-import -z  command can be used to ignore this sce-purge file
+#          when importing SCEs, running sce-update without the -z option will by
+#          default use this sce.purge file again to re-import outdated SCEs.
 #
 # Example entries:
+#
 #usr/lib/i386-linux-gnu/libLLVM-3.5.so.1
 #usr/lib/i386-linux-gnu/libLLVM*
 #usr/share/locale
