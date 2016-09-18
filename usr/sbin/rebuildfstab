@@ -1,7 +1,8 @@
-#!/bb/ash
+#!/bin/busybox ash
 . /etc/init.d/tc-functions
+useBusybox
 
-PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
+PATH="/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
 umask 022
 
@@ -65,7 +66,7 @@ for i in `find /sys/block/*/ -name dev`; do
   fi
 
 checkntfs() {
-  if which ntfs-3g > /dev/null 2>&1; then
+  if [ -f /usr/local/bin/ntfs-3g ]; then
       FSTYPE="ntfs-3g"
       OPTIONS="$OPTIONS"
   else
@@ -79,7 +80,7 @@ checkntfs() {
   case "$FSTYPE" in
     ntfs) checkntfs ;;
     vfat|msdos) OPTIONS="${OPTIONS},umask=000" ;;
-    ext2|ext3|ext4) OPTIONS="${OPTIONS}" ;;
+    ext2|ext3) OPTIONS="${OPTIONS},relatime" ;;
     swap) OPTIONS="defaults"; MOUNTPOINT="none" ;;
   esac
   if [ "$MOUNTPOINT" != "none" ]; then
