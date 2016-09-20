@@ -443,8 +443,10 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 		exit 0
 	else
 		echo " "
-		echo "${YELLOW}Warning:${NORMAL} Neither '"$1"' or "$TCEDIR"/sce/"$1".sce.lst"
-		echo "         files exist, exiting.."
+		echo ""`pwd`/$1""
+		echo ""$TCEDIR"/sce/"$1".sce.lst"
+		echo " "
+		echo "${YELLOW}Warning:${NORMAL} Neither of the above list files exist, exiting.."
 		exit 0
 	fi
 fi
@@ -471,21 +473,18 @@ fi
 # Below is where -l list file option is being used.
 if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	if [ -f "$TARGETFILE" ]; then
-  		echo " "
   		if [ -f /tmp/.importinteractive ]; then
   			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
   			mksce "$TARGET"
 			exit 0
   		else
 			echo " "
-                        echo "${YELLOW}Create "$TARGET".sce from "$TARGETFILE"?${NORMAL}"
+			echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
+			echo "         Entering (n)o will delete "$TARGETFILE"."
 			echo " "
 			echo "Press Enter to use this package list, (n)o to import a standard"
-			echo "'"$TARGET"' package if it exists, (q)uit exits."
-                        echo " "
-                        echo -n "${YELLOW}Warning:${NORMAL} Entering '(n)o' will delete "$TARGETFILE": "
+			echo -n "'"$TARGET"' package if it exists, (q)uit exits: "
                         read ans
-			echo " "
 	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  			sudo rm /tmp/.targetfile
 				mksce "$TARGET" 
@@ -495,6 +494,7 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 				cleanup
 				exit 0
 			else
+				echo "* Creating "$TARGET".sce from "$TARGETFILE"."
 				mksce "$TARGET"
 				exit 0
 			fi
@@ -512,14 +512,12 @@ elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 		exit 0
   	else
 		echo " "
-                echo "${YELLOW}Create "$TARGET".sce from "$TARGETFILE"?${NORMAL}"
+		echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
+		echo "         Entering (n)o will delete "$TARGETFILE"."
 		echo " "
 		echo "Press Enter to use this package list, (n)o to import a standard"
-		echo "'"$TARGET"' package if it exists, (q)uit exits."
-                echo " "
-		echo -n "${YELLOW}Warning:${NORMAL} Entering (n)o will delete "$TARGETFILE": "
+		echo -n "'"$TARGET"' package if it exists, (q)uit exits: "
                 read ans
-		echo " "
 	  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  		sudo rm /tmp/.targetfile
 			mksce "$TARGET" 
@@ -529,6 +527,7 @@ elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 			cleanup
 			exit 0
 		else
+			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
 			mksce "$TARGET"
 			exit 0
 		fi

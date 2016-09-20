@@ -55,7 +55,7 @@ getRecommends2() {
 					jmax = split(f[2],item,",")
 					for (j=1; j<=jmax; j++) { 
 						kmax = split(item[j],deps," ")
-						{ print( deps[1] ) >> location; print( deps[1] ); exit }
+						{ print( deps[1] ) >> location; print( deps[1] ) }
 					}
 				}
 						     

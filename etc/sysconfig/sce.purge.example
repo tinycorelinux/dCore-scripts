@@ -7,12 +7,11 @@
 # Add /opt/.filetool.lst entry to save any changes:
 #   etc/sysconfig/sce.purge
 #
-# Warning: Although this purge system may result in significantly smaller SCEs,
-#          removing required files can break the extension. If problems arise
-#          modify this sce.purge file, re-import and re-test the SCE. Although
-#          the  sce-import -z  command can be used to ignore this sce-purge file
-#          when importing SCEs, running sce-update without the -z option will by
-#          default use this sce.purge file again to re-import outdated SCEs.
+# Warning: Purging files may result in smaller SCEs but break the extension.
+#          If problems arise modify the sce.purge file, re-import and retest
+#          the SCE. Although the sce-import -z command will ignore this purge
+#          file when importing SCEs, running sce-update without the -z option
+#          will by default use this purge file again during SCE re-imports.
 #
 # Example entries:
 #

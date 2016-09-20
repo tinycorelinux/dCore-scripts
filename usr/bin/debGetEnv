@@ -160,8 +160,9 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 
 			else
 				echo " "
-				echo "${YELLOW}Warning:${NORMAL} Repo "$MIR"  "$DIST"  "$POOL" is unavailable,"
-				echo "         exiting.."
+				echo "${YELLOW}Warning:${NORMAL} The following repository is not available:"
+				echo " "
+				echo ""$MIR"  "$DIST"  "$POOL""
 				exit 1
 			fi
 		else
@@ -201,8 +202,9 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				echo "* Using the repo "$MIR""
 			else
 				echo " "
-				echo "${YELLOW}Warning:${NORMAL} Repo "$MIR" "$DIST" "$POOL" is unavailable,"
-				echo "         exiting.."
+				echo "${YELLOW}Warning:${NORMAL} The following repository is not available:"
+				echo " "
+				echo ""$MIR"  "$DIST"  "$POOL""
 				exit 1
 			fi
 		fi
@@ -253,7 +255,8 @@ if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
 	fi
 else
 	echo " "
-	echo "${YELLOW}Warning:${NORMAL} "$DISTRO" "$REPO" main repo of "$MIRROR" unavailable,"
-	echo "         exiting.."  
+	echo "${YELLOW}Warning:${NORMAL} The following repository is not available:"
+	echo " "
+	echo ""$DISTRO" "$REPO" "$MIRROR""
 	exit 1
-fi 
+fi
