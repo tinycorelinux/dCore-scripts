@@ -335,6 +335,8 @@ fi
 
 ## Determine if 'Recommended' packages are desired.
 if [ -f /tmp/.recommends ]; then
+	[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
+	touch usr/local/sce/"$TARGET"/recommends
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
 			debGetRecommends "$I" > /dev/null 2>&1 &
@@ -344,8 +346,6 @@ if [ -f /tmp/.recommends ]; then
 	fi
 	/usr/bin/rotdash $!
 	if [ -s /tmp/sce.recommends ]; then
-		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
-		touch usr/local/sce/"$TARGET"/recommends
 		echo -n "* Gathering Recommended package dependencies."
 		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
@@ -357,6 +357,8 @@ fi
 
 ## Determine if 'Suggested' packages are desired.
 if [ -f /tmp/.suggests ]; then
+	touch usr/local/sce/"$TARGET"/suggests
+	[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
 			debGetSuggests "$I" > /dev/null 2>&1 &
@@ -366,8 +368,6 @@ if [ -f /tmp/.suggests ]; then
 	fi
 	/usr/bin/rotdash $!
 	if [ -s /tmp/sce.suggests ]; then
-		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
-		touch usr/local/sce/"$TARGET"/suggests
 		echo -n "* Gathering Suggested package dependencies."
 		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
