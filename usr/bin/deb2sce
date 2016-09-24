@@ -112,6 +112,50 @@ getMd5sum1() {
 }
 ##
 
+## Create import data.
+create_import_data () {
+	touch ""$TARGET"/usr/local/tce.installed/"$TARGET"_import_data"
+	echo ""$TARGET".sce" > "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	echo " " >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	if [ -f "$TCEDIR"/sce/"$TARGET".sce ]; then
+		echo "Update re-import:`date`" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	else
+		echo "Original import:`date`" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	fi
+	echo " " >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	if cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
+		echo "Dependency import using:" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		echo " " >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	fi
+	if [ -f /tmp/.recommends ]; then
+		echo "Used -R option, added:" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		if [ -f /tmp/sce.recommends ]; then
+			cat /tmp/sce.recommends >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		else
+			echo "0 packages" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		fi
+	else
+		echo "Did not use -R option." >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	fi
+	echo " " >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	if [ -f /tmp/.suggests ]; then
+		echo "Used -S option, added:" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		if [ -f /tmp/sce.suggests ]; then
+			cat /tmp/sce.suggests >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		else
+			echo "0 packages" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		fi
+	else
+		echo "Did not use -S option." >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	fi
+	echo " " >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	totalPKG=`ls /tmp/work | wc -l`
+	adjPKG=`cat /tmp/.pkglist | wc -l`
+	echo "Total import "$adjPKG" packages ("$totalPKG" - $((totalPKG-adjPKG)) dependency provided):" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	cat /tmp/.pkglist >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+}
+
 cleanup() {
 	[ -d /tmp/work ] && rm -rf /tmp/work
 	[ -d "$SCEDIR" ] && sudo chown -R "$TCUSER":staff "$SCEDIR" > /dev/null 2>&1
@@ -674,6 +718,7 @@ fi
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1
 if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TARGET" " > /dev/null 2>&1; then
 	[ -d "$TCEDIR"/sce/update ] || mkdir -p "$TCEDIR"/sce/update
+	create_import_data
 	mksquashfs "$TARGET" "$TCEDIR"/sce/update/"$TARGET".sce -noappend
 	if [ "$?" == "0" ]; then
 		sudo rm -rf "$TARGET"
@@ -699,6 +744,7 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TA
 		exit 1
 	fi
 else
+	create_import_data
 	mksquashfs "$TARGET" "$TCEDIR"/sce/"$TARGET".sce -noappend
 	if [ "$?" == "0" ]; then
 		cd "$TCEDIR"/sce/
