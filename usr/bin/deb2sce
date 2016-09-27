@@ -36,7 +36,6 @@ TCEDIR=/etc/sysconfig/tcedir
 SCEDIR="$TCEDIR"/sce
 DEBINXDIR=""$TCEDIR"/import/debinx"
 
-
 [ -d /etc/sysconfig/tcedir/import/debinx ] || mkdir -p /etc/sysconfig/tcedir/import/debinx
 
 setupStartupScript() {
@@ -112,49 +111,64 @@ getMd5sum1() {
 }
 ##
 
-## Create import data.
-create_import_data () {
-	touch ""$TARGET"/usr/local/tce.installed/"$TARGET"_import_data"
-	echo ""$TARGET".sce" > "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
-	echo " " >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+## Create SCE_import_summary file before squashing up extension.
+createImportSummary () {
+	IMPORTSUMMARY=""$TARGET"/usr/local/sce/"$TARGET"/"$TARGET"_import_summary"
+	touch "$IMPORTSUMMARY"
 	if [ -f "$TCEDIR"/sce/"$TARGET".sce ]; then
-		echo "Update re-import:`date`" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		echo "Re-imported "$TARGET".sce on `date`." >> "$IMPORTSUMMARY"
 	else
-		echo "Original import:`date`" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		echo "Imported "$TARGET".sce on `date`." >> "$IMPORTSUMMARY"
 	fi
-	echo " " >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
-	if cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
-		echo "Dependency import using:" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
-		cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
-		echo " " >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
-	fi
+	echo " " >> "$IMPORTSUMMARY"
 	if [ -f /tmp/.recommends ]; then
-		echo "Used -R option, added:" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		echo "Used -R option, added:" >> "$IMPORTSUMMARY"
 		if [ -f /tmp/sce.recommends ]; then
-			cat /tmp/sce.recommends >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+			cat /tmp/sce.recommends >> "$IMPORTSUMMARY"
 		else
-			echo "0 packages" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+			echo "0 packages" >> "$IMPORTSUMMARY"
 		fi
 	else
-		echo "Did not use -R option." >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		echo "Did not use -R option." >> "$IMPORTSUMMARY"
 	fi
-	echo " " >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	echo " " >> "$IMPORTSUMMARY"
 	if [ -f /tmp/.suggests ]; then
-		echo "Used -S option, added:" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		echo "Used -S option, added:" >> "$IMPORTSUMMARY"
 		if [ -f /tmp/sce.suggests ]; then
-			cat /tmp/sce.suggests >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+			cat /tmp/sce.suggests >> "$IMPORTSUMMARY"
 		else
-			echo "0 packages" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+			echo "0 packages" >> "$IMPORTSUMMARY"
 		fi
 	else
-		echo "Did not use -S option." >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+		echo "Did not use -S option." >> "$IMPORTSUMMARY"
 	fi
-	echo " " >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	echo " " >> "$IMPORTSUMMARY"
+	if cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
+		echo "Dependency import using:" >> "$IMPORTSUMMARY"
+		cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep >> "$IMPORTSUMMARY"
+		echo " " >> "$IMPORTSUMMARY"
+		for I in `cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep`; do
+			echo "Dependencies provided by "$I":" >> "$IMPORTSUMMARY"
+			for E in `cat /tmp/"$I".debs`; do
+				if cat /tmp/"$TARGET".debdeps | grep "$E" > /dev/null 2>&1; then
+					echo "$E" >> "$IMPORTSUMMARY"
+					DEPS="1"
+				fi
+			done
+			if [ "$DEPS" != "1" ]; then
+				echo "0 packages" >> "$IMPORTSUMMARY"
+			fi
+			DEPS="0"
+			#cat /tmp/"$I".debs >> "$TARGET"/usr/local/sce/"$TARGET"/"$TARGET"_import_summary
+			echo " " >> "$IMPORTSUMMARY"
+		done
+	fi
 	totalPKG=`ls /tmp/work | wc -l`
 	adjPKG=`cat /tmp/.pkglist | wc -l`
-	echo "Total import "$adjPKG" packages ("$totalPKG" - $((totalPKG-adjPKG)) dependency provided):" >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
-	cat /tmp/.pkglist >> "$TARGET"/usr/local/tce.installed/"$TARGET"_import_data
+	echo "Total import "$adjPKG" packages ("$totalPKG" - $((totalPKG-adjPKG)) dependency provided):" >> "$IMPORTSUMMARY"
+	cat /tmp/.pkglist >> "$IMPORTSUMMARY"
 }
+##
 
 cleanup() {
 	[ -d /tmp/work ] && rm -rf /tmp/work
@@ -335,8 +349,6 @@ fi
 
 ## Determine if 'Recommended' packages are desired.
 if [ -f /tmp/.recommends ]; then
-	[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
-	touch usr/local/sce/"$TARGET"/recommends
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
 			debGetRecommends "$I" > /dev/null 2>&1 &
@@ -346,6 +358,8 @@ if [ -f /tmp/.recommends ]; then
 	fi
 	/usr/bin/rotdash $!
 	if [ -s /tmp/sce.recommends ]; then
+		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
+		touch usr/local/sce/"$TARGET"/recommends
 		echo -n "* Gathering Recommended package dependencies."
 		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
@@ -357,8 +371,6 @@ fi
 
 ## Determine if 'Suggested' packages are desired.
 if [ -f /tmp/.suggests ]; then
-	touch usr/local/sce/"$TARGET"/suggests
-	[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
 	if [ -s /tmp/.targetfile ]; then
 		for I in `cat /tmp/.targetfile`; do
 			debGetSuggests "$I" > /dev/null 2>&1 &
@@ -368,6 +380,8 @@ if [ -f /tmp/.suggests ]; then
 	fi
 	/usr/bin/rotdash $!
 	if [ -s /tmp/sce.suggests ]; then
+		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
+		touch usr/local/sce/"$TARGET"/suggests
 		echo -n "* Gathering Suggested package dependencies."
 		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
 			debGetDeps "$I" > /dev/null 2>&1
@@ -683,8 +697,8 @@ done
 
 cd ..
 
-## Move *.debs package listing to the SCE.
-mv /tmp/*.debs "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/ > /dev/null 2>&1
+## Copy *.debs package listing to the SCE.
+cp /tmp/*.debs "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/ > /dev/null 2>&1
 if [ -f /tmp/"$TARGET".debdeps ]; then
 	cp /tmp/"$TARGET".debdeps "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/
 fi
@@ -718,7 +732,7 @@ fi
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1
 if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TARGET" " > /dev/null 2>&1; then
 	[ -d "$TCEDIR"/sce/update ] || mkdir -p "$TCEDIR"/sce/update
-	create_import_data
+	createImportSummary
 	mksquashfs "$TARGET" "$TCEDIR"/sce/update/"$TARGET".sce -noappend
 	if [ "$?" == "0" ]; then
 		sudo rm -rf "$TARGET"
@@ -744,7 +758,7 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TA
 		exit 1
 	fi
 else
-	create_import_data
+	createImportSummary
 	mksquashfs "$TARGET" "$TCEDIR"/sce/"$TARGET".sce -noappend
 	if [ "$?" == "0" ]; then
 		cd "$TCEDIR"/sce/
