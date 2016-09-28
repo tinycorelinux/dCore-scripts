@@ -45,13 +45,13 @@ fi
 mksce() {
 	if [ "$FLAGS" ]
 	then
-		sudo deb2sce "$FLAGS" "$1"
+		sudo -E deb2sce "$FLAGS" "$1"
 		if [ "$?" != "0" ]; then
 			exit 1
 		fi
 		cleanup
 	else
-		sudo deb2sce "$1"
+		sudo -E deb2sce "$1"
 		if [ "$?" != "0" ]; then
 			exit 1
 		fi
@@ -319,7 +319,7 @@ case "$MS_MNTS" in
 esac
 
 if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
-	sudo debGetEnv "$2"
+	sudo -E debGetEnv "$2"
 	if [ "$?" != "0" ]; then
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} Error updating DEBINX files, exiting.."

@@ -47,7 +47,7 @@ setupStartupScript() {
 ## Retrieve the Debian package from the appropriate Debian repo.
 fetchDeb() {
 
-		sudo /bb/wget -O "$DEBS"/"$THISDEB"  ${MIRROR}/${1}
+		/bb/wget -O "$DEBS"/"$THISDEB"  ${MIRROR}/${1}
 		if [ "$?" != 0 ]
 		then
 			echo "Failed on download of "$1"."

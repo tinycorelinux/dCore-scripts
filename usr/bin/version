@@ -81,9 +81,9 @@ do
 					sudo mv ""$PORT".gz.md5.txt" ""$PORT".gz.md5.txt."$VERSION"" > /dev/null 2>&1
 					sudo mv ""$PORT".gz" ""$PORT".gz."$VERSION"" > /dev/null 2>&1
 					echo " "
-					sudo wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz.md5.txt
+					sudo -E wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz.md5.txt
 					echo " "
-					sudo wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz
+					sudo -E wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release_candidates/"$PORT"/"$PORT".gz
 					echo " "
 					if [ -f ""$BOOTPATH"/"$PORT".gz.md5.txt" ]; then
 						echo "Download success: "$BOOTPATH"/"$PORT".gz.md5.txt"
@@ -157,9 +157,9 @@ do
 					sudo mv ""$PORT".gz.md5.txt" ""$PORT".gz.md5.txt."$VERSION"" > /dev/null 2>&1
 					sudo mv ""$PORT".gz" ""$PORT".gz."$VERSION"" > /dev/null 2>&1
 					echo " "
-					sudo wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz.md5.txt
+					sudo -E wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz.md5.txt
 					echo " "
-					sudo wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz
+					sudo -E wget -c $(cat /opt/tcemirror)/dCore/"$BUILD"/release/"$PORT"/"$PORT".gz
 					echo " "
 					if [ -f ""$BOOTPATH"/"$PORT".gz.md5.txt" ]; then
 						echo "Download success: "$BOOTPATH"/"$PORT".gz.md5.txt"

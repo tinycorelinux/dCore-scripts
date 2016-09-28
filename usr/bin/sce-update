@@ -193,7 +193,7 @@ read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
-sudo debGetEnv "$2"
+sudo -E debGetEnv "$2"
 if [ "$?" != "0" ]; then
 	echo " "
 	echo "${YELLOW}Warning:${NORMAL} Error updating DEBINX files, exiting.."
