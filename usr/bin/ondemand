@@ -17,7 +17,7 @@ selectList() {
 		[ -e "$TCEDIR"/ondemand/"$ITEM" ] && ADDITEM=0
 		
 		[ "$ADDITEM" == "1" ] &&  sudo echo "$ITEM" >> "$TMPFILE"
-		chown "$TCUSER":staff "$TMPFILE"
+		sudo chown "$TCUSER":staff "$TMPFILE" > /dev/null 2>&1
 	done
 	
 	sort -f "$TMPFILE"
@@ -160,13 +160,13 @@ fi
 # Arrive here if no flags were specified.
 # Create ondemand item....
 # Generic shell script for OnDemand by all WMs
-[ -d "$TCEDIR"/ondemand ] || sudo mkdir -p "$TCEDIR"/ondemand
-[ -d "$TCEDIR"/ondemand ] && sudo chown -R "$TCUSER":staff "$TCEDIR"/ondemand
+[ -d "$TCEDIR"/ondemand ] || sudo mkdir -p "$TCEDIR"/ondemand > /dev/null 2>&1
+[ -d "$TCEDIR"/ondemand ] && sudo chown -R "$TCUSER":staff "$TCEDIR"/ondemand > /dev/null 2>&1
 FILE="$TCEDIR"/ondemand/"$APPNAME"
 sudo echo '#!/bin/sh' > "$FILE"
 sudo echo "ondemand -e $APPNAME.sce" >> "$FILE"
-sudo chmod +x "$FILE"
-sudo chown "$TCUSER":staff "$FILE"
+sudo chmod +x "$FILE" > /dev/null 2>&1
+sudo chown "$TCUSER":staff "$FILE" > /dev/null 2>&1
 
 # Optional as flwm does not need a make_ondemand.
 [ $(which ${DESKTOP}_ondemand) ] && sudo su "$TCUSER" -c "${DESKTOP}_ondemand "$APPNAME""

@@ -160,7 +160,7 @@ fi
 [ -f /tmp/.updatechecked ] && sudo rm /tmp/.updatechecked
 
 cleanup() {
-	sudo chown -R "$TCUSER":staff "$SCEDIR" 
+	sudo chown -R "$TCUSER":staff "$SCEDIR" > /dev/null 2>&1
 	[ -f /tmp/.sceupdatechoose ] && sudo rm /tmp/.sceupdatechoose
 	[ -f /tmp/.scelistchoose ] && sudo rm /tmp/.scelistchoose
 	[ -f /tmp/.sceupdateall ] && sudo rm /tmp/.sceupdateall

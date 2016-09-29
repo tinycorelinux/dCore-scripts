@@ -9,8 +9,8 @@ checknotroot
 [ -f /tmp/.debpurgedsize ] && sudo rm /tmp/.debpurgedsize
 [ -f /tmp/.debpurged ] && sudo rm /tmp/.debpurged
 echo 0 > /tmp/.debpurgedsize
-sudo chown "$TCUSER":staff /tmp
-sudo chmod 1777 /tmp
+sudo chown "$TCUSER":staff /tmp > /dev/null 2>&1
+sudo chmod 1777 /tmp > /dev/null 2>&1
 BUILD=`getBuild`
 if [ "$BUILD" == "x86" ]; then
 	DEBBUILD="i386"

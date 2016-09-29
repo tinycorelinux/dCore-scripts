@@ -240,8 +240,8 @@ else
 	sudo cat *Packages "$DEBINXDIR"/PREBUILTMD5SUMLIST "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST "$DEBINXDIR"/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
 fi
 
-chown "$USER":staff "$TCEDIR"/import/debinx/*
-chmod 664 "$TCEDIR"/import/debinx/*
+chown "$USER":staff "$TCEDIR"/import/debinx/* > /dev/null 2>&1
+chmod 664 "$TCEDIR"/import/debinx/* > /dev/null 2>&1
 
 # Test mirror
 if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then

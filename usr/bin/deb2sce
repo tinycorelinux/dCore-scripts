@@ -10,8 +10,8 @@ alias mount='/bb/mount'
 > /tmp/.pkglist
 
 TCUSER=`cat /etc/sysconfig/tcuser`
-sudo chown "$TCUSER":staff /tmp
-sudo chmod 1777 /tmp
+sudo chown "$TCUSER":staff /tmp > /dev/null 2>&1
+sudo chmod 1777 /tmp > /dev/null 2>&1
 checkroot
 BUILD=`getBuild`
 if [ "$BUILD" == "x86" ]; then
@@ -40,8 +40,8 @@ DEBINXDIR=""$TCEDIR"/import/debinx"
 
 setupStartupScript() {
 	[ -d "$IMPORT"/"$TARGET"/usr/local/tce.installed ] || mkdir -p "$IMPORT"/"$TARGET"/usr/local/tce.installed
-	chmod 775 "$IMPORT"/"$TARGET"/usr/local/tce.installed
-	chown root.staff "$IMPORT"/"$TARGET"/usr/local/tce.installed
+	chmod 775 "$IMPORT"/"$TARGET"/usr/local/tce.installed > /dev/null 2>&1
+	chown root.staff "$IMPORT"/"$TARGET"/usr/local/tce.installed > /dev/null 2>&1
 }
 
 ## Retrieve the Debian package from the appropriate Debian repo.
@@ -173,38 +173,38 @@ createImportSummary () {
 cleanup() {
 	[ -d /tmp/work ] && rm -rf /tmp/work
 	[ -d "$SCEDIR" ] && sudo chown -R "$TCUSER":staff "$SCEDIR" > /dev/null 2>&1
-	[ -d /tmp ] && chmod 1777 /tmp
-	[ -d /usr/local/tce.installed ] && chmod 775 /usr/local/tce.installed
-	[ -d /usr/local/tce.icons ] && chmod 775 /usr/local/tce.icons 2>/dev/null
-	[ -d /usr/local/tce.installed ] && chgrp staff /usr/local/tce.installed
-	[ -d /usr/local/tce.icons ] &&  chgrp staff /usr/local/tce.icons 2>/dev/null
+	[ -d /tmp ] && chmod 1777 /tmp > /dev/null 2>&1
+	[ -d /usr/local/tce.installed ] && chmod 775 /usr/local/tce.installed > /dev/null 2>&1
+	[ -d /usr/local/tce.icons ] && chmod 775 /usr/local/tce.icons > /dev/null 2>&1
+	[ -d /usr/local/tce.installed ] && chgrp staff /usr/local/tce.installed > /dev/null 2>&1
+	[ -d /usr/local/tce.icons ] &&  chgrp staff /usr/local/tce.icons > /dev/null 2>&1
 	if ls /tmp/*.debs > /dev/null 2>&1; then 
-		sudo rm /tmp/*.debs
+		sudo rm /tmp/*.debs > /dev/null 2>&1
 	fi
-	[ -f /tmp/.sceconflict ] && sudo rm /tmp/.sceconflict
-	[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps
-	[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs
-	[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist
-	[ -f /tmp/.importfree ] && sudo rm /tmp/.importfree
-	[ -f /tmp/.pkgexists ] && sudo rm /tmp/.pkgexists
-	[ -f /tmp/.importdep ] && sudo rm /tmp/.importdep
-	[ -f /tmp/.newdep ] && sudo rm /tmp/.newdep
+	[ -f /tmp/.sceconflict ] && sudo rm /tmp/.sceconflict > /dev/null 2>&1
+	[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps > /dev/null 2>&1
+	[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs > /dev/null 2>&1
+	[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist > /dev/null 2>&1
+	[ -f /tmp/.importfree ] && sudo rm /tmp/.importfree > /dev/null 2>&1
+	[ -f /tmp/.pkgexists ] && sudo rm /tmp/.pkgexists > /dev/null 2>&1
+	[ -f /tmp/.importdep ] && sudo rm /tmp/.importdep > /dev/null 2>&1
+	[ -f /tmp/.newdep ] && sudo rm /tmp/.newdep > /dev/null 2>&1
 	if ls /tmp/*.debdeps > /dev/null 2>&1; then 
-		sudo rm /tmp/*.debdeps
+		sudo rm /tmp/*.debdeps > /dev/null 2>&1
 	fi	 
-	[ -f /tmp/control.tar.gz ] && sudo rm /tmp/control.tar.gz
-	[ -f /tmp/data.tar.gz ] && sudo rm /tmp/data.tar.gz
-	[ -f /tmp/data.tar.bz2 ] && sudo rm /tmp/data.tar.bz2
-	[ -f /tmp/data.tar.xz ] && sudo rm /tmp/data.tar.xz
-	#[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz
-	[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
-	[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
-	#[ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps
-	[ -f /tmp/.recommends ] && sudo rm /tmp/.recommends
-	[ -f /tmp/.suggests ] && sudo rm /tmp/.suggests
-	[ -d "$TCEDIR"/import/"$TARGET" ] && sudo rm -r "$TCEDIR"/import/"$TARGET"
-	[ -d  /tmp/import/"$TARGET" ] && sudo rm -r /tmp/import/"$TARGET"
-	[ -f /tmp/.scenoconfig ] && sudo rm /tmp/.scenoconfig
+	[ -f /tmp/control.tar.gz ] && sudo rm /tmp/control.tar.gz > /dev/null 2>&1
+	[ -f /tmp/data.tar.gz ] && sudo rm /tmp/data.tar.gz > /dev/null 2>&1
+	[ -f /tmp/data.tar.bz2 ] && sudo rm /tmp/data.tar.bz2 > /dev/null 2>&1
+	[ -f /tmp/data.tar.xz ] && sudo rm /tmp/data.tar.xz > /dev/null 2>&1
+	#[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz > /dev/null 2>&1
+	[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist > /dev/null 2>&1
+	[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans > /dev/null 2>&1
+	#[ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps > /dev/null 2>&1
+	[ -f /tmp/.recommends ] && sudo rm /tmp/.recommends > /dev/null 2>&1
+	[ -f /tmp/.suggests ] && sudo rm /tmp/.suggests > /dev/null 2>&1
+	[ -d "$TCEDIR"/import/"$TARGET" ] && sudo rm -r "$TCEDIR"/import/"$TARGET" > /dev/null 2>&1
+	[ -d  /tmp/import/"$TARGET" ] && sudo rm -r /tmp/import/"$TARGET" > /dev/null 2>&1
+	[ -f /tmp/.scenoconfig ] && sudo rm /tmp/.scenoconfig > /dev/null 2>&1
 	:
 }
 

@@ -12,7 +12,7 @@ read USER < /etc/sysconfig/tcuser
 TCEINSTALLED="/usr/local/tce.installed"
 if [ ! -f /tmp/.installed ]; then
   touch /tmp/.installed
-  chown "$USER":staff /tmp/.installed
+  chown "$USER":staff /tmp/.installed > /dev/null 2>&1
 fi
 
 process_normal_tcedir() {
@@ -40,11 +40,11 @@ process_normal_tcedir() {
 	TCEDIR="$MOUNTPOINT"/"$TCE_DIR"
 	if [ ! -d "$TCEDIR"/sce ]; then
 		mkdir "$TCEDIR"/sce
-		chown -R "$USER".staff "$TCEDIR"
+		chown -R "$USER".staff "$TCEDIR" > /dev/null 2>&1
 	fi
 	[ -L /etc/sysconfig/tcedir ] && rm -f /etc/sysconfig/tcedir
 	ln -sf "$TCEDIR" /etc/sysconfig/tcedir
-	chown -R "$USER".staff "$TCEINSTALLED"
+	chown -R "$USER".staff "$TCEINSTALLED" > /dev/null 2>&1
 	sync
 	[ "$MOUNTPOINT" == "/tmp" ] && return
 
@@ -163,7 +163,7 @@ if [ "$1" == "booting" ] && [ -n "$ONLYBASE" ]; then
 	TCEDIR="/tmp/tce"
 	if [ ! -d "$TCEDIR"/sce ]; then
 		mkdir "$TCEDIR"/sce
-		chown -R "$USER".staff "$TCEDIR"
+		chown -R "$USER".staff "$TCEDIR" > /dev/null 2>&1
 	fi
 else
 	process_normal_tcedir

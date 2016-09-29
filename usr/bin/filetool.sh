@@ -9,8 +9,8 @@
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
 export PATH
-sudo chown root:staff /opt
-sudo chmod 775 /opt
+sudo chown root:staff /opt > /dev/null 2>&1
+sudo chmod 775 /opt > /dev/null 2>&1
 CMDLINE="$(cat /proc/cmdline)"
 
 MYDATA=mydata
