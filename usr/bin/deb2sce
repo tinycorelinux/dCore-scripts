@@ -144,12 +144,15 @@ createImportSummary () {
 	fi
 	echo " " >> "$IMPORTSUMMARY"
 	if cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
-		echo "Dependency import using:" >> "$IMPORTSUMMARY"
+		echo "Dependency SCE(s) selected during import:" >> "$IMPORTSUMMARY"
 		cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep >> "$IMPORTSUMMARY"
 		echo " " >> "$IMPORTSUMMARY"
-		for I in `cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep`; do
-			echo "Dependencies provided by "$I":" >> "$IMPORTSUMMARY"
-			for E in `cat /tmp/"$I".debs`; do
+		echo "Packages provided by selected dependency SCE(s) and any" >> "$IMPORTSUMMARY"
+		echo "applicable dependency chain SCE(s) outlined below." >> "$IMPORTSUMMARY"
+		echo " " >> "$IMPORTSUMMARY"
+		for I in `ls /tmp/*.debs`; do
+			echo "Dependencies provided as per "$I":" >> "$IMPORTSUMMARY"
+			for E in `cat "$I"`; do
 				if cat /tmp/"$TARGET".debdeps | grep "$E" > /dev/null 2>&1; then
 					echo "$E" >> "$IMPORTSUMMARY"
 					DEPS="1"
@@ -159,7 +162,6 @@ createImportSummary () {
 				echo "0 packages" >> "$IMPORTSUMMARY"
 			fi
 			DEPS="0"
-			#cat /tmp/"$I".debs >> "$TARGET"/usr/local/sce/"$TARGET"/"$TARGET"_import_summary
 			echo " " >> "$IMPORTSUMMARY"
 		done
 	fi
@@ -399,10 +401,11 @@ if [ -f /tmp/.importdep ]; then
 			echo " "
 			cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
 			echo " "
-			echo "Press Enter to use the existing "$TARGET".sce.dep entries above"
-			echo "for dependencies or enter (n)o to remove or modify dependencies." && sleep 3
+			echo "${YELLOW}WARNING:${NORMAL} Existing "$TARGET".sce.dep file found."
+			echo "         Entering (n)o will delete this file."
 			echo " "
-			echo -n "${YELLOW}WARNING:${NORMAL} Entering (n)o will delete existing "$TARGET".sce.dep file: "
+			echo "Press Enter to use the existing "$TARGET".sce.dep entries above"
+			echo -n "for dependencies or enter (n)o to remove or modify dependencies: "
 			read ans
 			if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then
 				echo " "
@@ -495,15 +498,22 @@ for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo 
 
 ## Function to provide a "less" list of packages that will be imported.
 if [ -f /tmp/.viewpkgs ]; then
-	echo " "
 	echo "Press Enter to review the packages "$TARGET".sce will consist of,"
 	echo -n "enter (n)o to skip review: "
 	read ans
 	echo " "
 	if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
 		more /tmp/.pkglist
-		sleep 3
 		echo " "
+		echo -n "Press Enter to continue with import, (q)uit exits: "
+		read ans
+		if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
+			echo " "
+			:
+		else
+			cleanup
+			exit 1
+		fi
 	fi
 	echo  "*Proceeding to create $TARGET.sce..."
 fi
