@@ -1,6 +1,6 @@
 #!/bin/busybox ash
 # (c) Robert Shingledecker 2012
-# Contributions by Jason Williams 
+# Contributions by Jason Williams
 . /etc/init.d/tc-functions
 
 PATH="/bb:/bin:/sbin:/usr/bin:/usr/sbin"
@@ -117,7 +117,7 @@ else
 	echo "$DEBINX_SECURITY" > /etc/sysconfig/tcedir/import/debinx/debinx_security
 fi
 
-if ls "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then 
+if ls "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
 	sudo rm "$TCEDIR"/import/debinx/debinx.*
 fi
 
@@ -126,9 +126,11 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 		if [ ! -z $(cat /opt/debextra/"$I" | awk '{print $3}') ]; then
 			MIR=`cat /opt/debextra/"$I" | awk '{print $1}'`
 			DIST=`cat /opt/debextra/"$I" | awk '{print $2}'`
-			POOL=`cat /opt/debextra/"$I" | awk '{print $3}'` 
+			POOL=`cat /opt/debextra/"$I" | awk '{print $3}'`
 			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
-			if wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
+			if cat /opt/debextra/"$I" | grep "#" > /dev/null 2>&1; then
+				echo "* Not using the repo `cat /opt/debextra/"$I" | sed 's:#::'`"
+			elif wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/"$DIST"/"$POOL"/Packages.bz2 > /dev/null 2>&1; then
@@ -147,15 +149,15 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				echo "* Using the repo "$MIR""
 			elif wget -s "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
-				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR""$F"/Packages.gen 
+				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR""$F"/Packages.gen
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/"$DIST"/"$POOL"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
-				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR"/"$DIST"/"$POOL"/Packages.gen 
+				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR"/"$DIST"/"$POOL"/Packages.gen
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
-				wget -O "$TCEDIR"/import/debinx/debinx."$I" "$MIR"/Packages.gen 
+				wget -O "$TCEDIR"/import/debinx/debinx."$I" "$MIR"/Packages.gen
 				echo "* Using the repo "$MIR""
 
 			else
@@ -168,9 +170,11 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 		else
 			MIR=`cat /opt/debextra/"$I" | awk '{print $1}'`
 			DIST="$REPO"
-			POOL=`cat /opt/debextra/"$I" | awk '{print $2}'` 
+			POOL=`cat /opt/debextra/"$I" | awk '{print $2}'`
 			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
-			if wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
+			if cat /opt/debextra/"$I" | grep "#" > /dev/null 2>&1; then
+				echo "* Not using the repo `cat /opt/debextra/"$I" | sed 's:#::'`"
+			elif wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/"$POOL"/Packages.bz2 > /dev/null 2>&1; then
@@ -190,15 +194,15 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				echo "* Using the repo "$MIR""
 			elif wget -s "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
-				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR""$F"/Packages.gen 
+				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR""$F"/Packages.gen
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/"$POOL"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
-				wget -O "$TCEDIR"/import/debinx/debinx."$I" "$MIR"/"$POOL"/Packages.gen 
+				wget -O "$TCEDIR"/import/debinx/debinx."$I" "$MIR"/"$POOL"/Packages.gen
 				echo "* Using the repo "$MIR" "$DIST" "$POOL""
 			elif wget -s "$MIR"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
-				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR"/Packages.gen 
+				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR"/Packages.gen
 				echo "* Using the repo "$MIR""
 			else
 				echo " "
@@ -260,3 +264,4 @@ else
 	echo ""$DISTRO" "$REPO" "$MIRROR""
 	exit 1
 fi
+

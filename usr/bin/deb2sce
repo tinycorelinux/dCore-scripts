@@ -707,6 +707,12 @@ done
 
 cd ..
 
+## List extra repos used to make the SCE.
+if grep -v "#" /opt/debextra/* > /dev/null 2>*1; then
+	for I in `ls /opt/debextra/`; do grep "#" /opt/debextra/"$I" > /dev/null 2>&1 || cat /opt/debextra/"$I" >> "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/"$TARGET".extrarepo; done
+fi
+##
+
 ## Copy *.debs package listing to the SCE.
 cp /tmp/*.debs "$IMPORT"/"$TARGET"/usr/local/sce/"$TARGET"/ > /dev/null 2>&1
 if [ -f /tmp/"$TARGET".debdeps ]; then
