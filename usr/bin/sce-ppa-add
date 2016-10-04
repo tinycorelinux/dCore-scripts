@@ -1,0 +1,63 @@
+#!/bin/sh
+
+. /etc/init.d/tc-functions
+SERVER="http://ppa.launchpad.net"
+ENTRY=`echo "$1" | awk ' BEGIN{FS=":"} { print $2 } '`
+DISTRO=`cat /usr/share/doc/tc/distro.txt`
+VERSION=`cat /usr/share/doc/tc/repo.txt`
+REPO="$2"
+SOURCESLISTDIR="/opt/debextra"
+
+if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+        echo
+        echo "${YELLOW}sce-ppa-add - Add a PPA (Personal Package Archive) entry in /opt/debextra.${NORMAL}"
+        echo "              For use with Ubuntu-based dCore ports."
+        echo
+        echo "${YELLOW}Ubuntu warning:${NORMAL} PPAs do not undergo the same validation process as packages in"
+        echo "the main Ubuntu repositories. PPA keys are cryptographically signed but are"
+        echo "still a lower security alternative to the main repository. The user will"
+        echo "be installing software at their own risk."
+        echo
+        echo "Usage:"
+        echo
+        echo "${YELLOW}'sce-ppa-add PPA_NAME'${NORMAL} Create a PPA entry in /opt/debextra/. Use exact PPA_NAME"
+        echo "                       provided by the PPA (eg. sce-ppa-add ppa:midori/ppa)."
+        echo "                       Re-run command for each PPA added. Manually remove PPA"
+        echo "                       entry from /opt/debextra/ as desired. Use sce-import to"
+        echo "                       install the actual extension and create an SCE."
+        echo "                       For more information on available PPA archives"
+        echo "                       see https://launchpad.net/ubuntu/+ppas."
+        echo
+exit 1
+fi
+
+[ -d "$SOURCESLISTDIR" ] || sudo mkdir -p "$SOURCESLISTDIR"
+
+if [ ! -n "$1" ]; then
+	echo "Must specify a PPA, exiting.."
+	exit 1
+fi
+
+if [ ! -n "$2" ]; then
+	REPO=main
+fi
+
+FILE="`echo "$1" | awk ' BEGIN{FS=":"} { print $2 } ' | sed 's/\//-/g'`"
+FILENAME="$FILE"-"$REPO"
+if [ -f "$SOURCESLISTDIR"/"$FILENAME" ]; then
+	echo " "
+	echo ""$SOURCESLISTDIR"/"$FILENAME""
+	echo " "
+	echo "The above PPA entry already exists, exiting.."
+	#echo "${YELLOW}Warning:${NORMAL} "$SOURCESLISTDIR"/"$FILENAME" already exists, exiting.."
+	exit 1
+else
+	#echo " "
+	echo "* Created PPA entry:"
+	echo "  "$SOURCESLISTDIR"/"$FILENAME""
+	echo "* Containing:"
+	#echo " "
+	echo "  "$SERVER"/"$ENTRY"/"$DISTRO" "$VERSION" "$REPO"" | sudo tee -a "$SOURCESLISTDIR"/"$FILENAME"
+	#echo " "
+fi
+
