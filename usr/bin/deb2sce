@@ -729,6 +729,7 @@ if [ ! -f /tmp/.scenoconfig ]; then
 	LOCCONFFILE=/etc/sysconfig/locale.nopurge
 
 	if [ -f "$LOCCONFFILE" ]; then
+		echo "* Processing locale.nopurge file."
 		if [ -d "$TARGET"/usr/share/locale ]; then
 			for I in `find "$TARGET"/usr/share/locale -maxdepth 1 -mindepth 1 -type d`; do I=`basename "$I"`; grep "^$I$" "$LOCCONFFILE" > /dev/null 2>&1 || sudo rm -r "$TARGET"/usr/share/locale/"$I" ; done
 		fi
@@ -737,6 +738,7 @@ if [ ! -f /tmp/.scenoconfig ]; then
 	DELETEFILE=/etc/sysconfig/sce.purge
 
 	if [ -f "$DELETEFILE" ]; then
+		echo "* Processing sce.purge file."
 		for I in `cat "$DELETEFILE" | grep -v "#"`; do
 			if [ -n "$I" ] && [ -n "$TARGET" ]; then
 				rm -rf "$TARGET"/$I > /dev/null 2>&1

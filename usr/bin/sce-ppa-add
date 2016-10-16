@@ -49,15 +49,10 @@ if [ -f "$SOURCESLISTDIR"/"$FILENAME" ]; then
 	echo ""$SOURCESLISTDIR"/"$FILENAME""
 	echo " "
 	echo "The above PPA entry already exists, exiting.."
-	#echo "${YELLOW}Warning:${NORMAL} "$SOURCESLISTDIR"/"$FILENAME" already exists, exiting.."
 	exit 1
 else
-	#echo " "
 	echo "* Created PPA entry:"
-	echo "  "$SOURCESLISTDIR"/"$FILENAME""
+	echo ""$SOURCESLISTDIR"/"$FILENAME""
 	echo "* Containing:"
-	#echo " "
-	echo "  "$SERVER"/"$ENTRY"/"$DISTRO" "$VERSION" "$REPO"" | sudo tee -a "$SOURCESLISTDIR"/"$FILENAME"
-	#echo " "
+	echo ""$SERVER"/"$ENTRY"/"$DISTRO" "$VERSION" "$REPO"" | sudo tee -a "$SOURCESLISTDIR"/"$FILENAME"
 fi
-
