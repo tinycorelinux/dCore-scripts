@@ -282,6 +282,11 @@ while read line; do
      		echo "$E" >> /tmp/.importupdates
         fi
 	##
+	if ! grep "^$E:" "$FILE" > /dev/null 2>&1; then
+		echo ""$E"  New "$E" dependency of $SCE." >>  /tmp/updateavailable
+		echo "$E" >> /tmp/.importupdates
+		continue
+	fi
 	NAME="$E"
 		## Get updated or deleted startup script or data files info.
 		if grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-deb2sce:" "$FILEDATA"; then
