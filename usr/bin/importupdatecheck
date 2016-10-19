@@ -282,15 +282,10 @@ while read line; do
      		echo "$E" >> /tmp/.importupdates
         fi
 	##
-	if ! grep "^$E:" "$FILE" > /dev/null 2>&1; then
-		echo ""$E"  New "$E" dependency of $SCE." >>  /tmp/updateavailable
-		echo "$E" >> /tmp/.importupdates
-		continue
-	fi
 	NAME="$E"
 		## Get updated or deleted startup script or data files info.
 		if grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-deb2sce:" "$FILEDATA"; then
-			echo ""$E"  New "$E".deb2sce starup script available." >>  /tmp/updateavailable
+			echo ""$E"  New "$E".deb2sce startup script available." >>  /tmp/updateavailable
 			echo "$E" >> /tmp/ssupdates
 		elif grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 			MD5SSNEW=`grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
@@ -298,7 +293,7 @@ while read line; do
 			if [ "$MD5SSNEW" != "$MD5SSOLD" ]; then
 				if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates	
-					echo ""$E"  Updated "$E".deb2sce starup script available." >>  /tmp/updateavailable 
+					echo ""$E"  Updated "$E".deb2sce startup script available." >>  /tmp/updateavailable 
 				fi
 			fi
 		elif grep "^$E-deb2sce:" "$FILEDATA" && ! grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
