@@ -476,7 +476,6 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
   		if [ -f /tmp/.importinteractive ]; then
   			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
   			mksce "$TARGET"
-			exit 0
   		else
 			echo " "
 			echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
@@ -489,14 +488,12 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	  			sudo rm /tmp/.targetfile
 				mksce "$TARGET" 
 				sudo rm "$TARGETFILE"
-				exit 0
 	  		elif [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
 				cleanup
 				exit 0
 			else
 				echo "* Creating "$TARGET".sce from "$TARGETFILE"."
 				mksce "$TARGET"
-				exit 0
 			fi
 		fi
 	else
@@ -509,7 +506,6 @@ elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
   	if [ -f /tmp/.importinteractive ]; then
   		echo "* Creating "$TARGET".sce from "$TARGETFILE"."
   		mksce "$TARGET"
-		exit 0
   	else
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
@@ -522,14 +518,12 @@ elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 	  		sudo rm /tmp/.targetfile
 			mksce "$TARGET" 
 			sudo rm "$TARGETFILE"
-			exit 0
   		elif [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
 			cleanup
 			exit 0
 		else
 			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
 			mksce "$TARGET"
-			exit 0
 		fi
 	fi  
 # Below checks for package in the extra repos first, then the 
@@ -573,7 +567,6 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 		fi 
   		echo "* Importing ${YELLOW}$DEB${NORMAL}."
   		mksce "$DEB"
-  		exit 0
 	fi 
 elif [ "$CHECKALL" != "TRUE" ]; then  
 	if sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
@@ -615,11 +608,9 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 		fi
   		echo "* Importing ${YELLOW}"$DEB"${NORMAL}."
   		mksce "$DEB"
-  		exit 0
 	fi
   	
 fi
 
 echo " "
 echo "${YELLOW}Warning:${NORMAL} '"$TARGET"' is not available as a package, exiting.."
-exit 0
