@@ -486,14 +486,17 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
                         read ans
 	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  			sudo rm /tmp/.targetfile
-				mksce "$TARGET" 
+				mksce "$TARGET"
+				EXIT="$?" 
 				sudo rm "$TARGETFILE"
+				exit "$EXIT"
 	  		elif [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
 				cleanup
 				exit 0
 			else
 				echo "* Creating "$TARGET".sce from "$TARGETFILE"."
 				mksce "$TARGET"
+				exit "$?"
 			fi
 		fi
 	else
@@ -506,6 +509,7 @@ elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
   	if [ -f /tmp/.importinteractive ]; then
   		echo "* Creating "$TARGET".sce from "$TARGETFILE"."
   		mksce "$TARGET"
+		exit "$?"
   	else
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
@@ -517,13 +521,16 @@ elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 	  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  		sudo rm /tmp/.targetfile
 			mksce "$TARGET" 
+			EXIT="$?"
 			sudo rm "$TARGETFILE"
+			exit "$EXIT"
   		elif [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
 			cleanup
 			exit 0
 		else
 			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
 			mksce "$TARGET"
+			exit "$?"
 		fi
 	fi  
 # Below checks for package in the extra repos first, then the 
@@ -567,6 +574,7 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 		fi 
   		echo "* Importing ${YELLOW}$DEB${NORMAL}."
   		mksce "$DEB"
+		exit "$?"
 	fi 
 elif [ "$CHECKALL" != "TRUE" ]; then  
 	if sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
@@ -608,9 +616,10 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 		fi
   		echo "* Importing ${YELLOW}"$DEB"${NORMAL}."
   		mksce "$DEB"
+		exit "$?"
 	fi
   	
 fi
 
 echo " "
-echo "${YELLOW}Warning:${NORMAL} '"$TARGET"' is not available as a package, exiting.."
+echo "${YELLOW}WARNING:${NORMAL} '"$TARGET"' is not available as a package, exiting.."
