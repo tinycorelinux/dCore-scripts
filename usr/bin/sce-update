@@ -40,7 +40,7 @@ if [ ! "$NOLOCK" == "TRUE" ]; then
 	if [ -f /tmp/.scelock ]; then
 		LOCK=`cat /tmp/.scelock`
 		if /bb/ps -o pid | sed -e 's/^[ \t]*//'| grep "^$LOCK$" | /bb/grep -v grep > /dev/null 2>&1; then
-			echo "${YELLOW}Warning:${NORMAL} Another SCE utility is presently in use, exiting.."
+			echo "${YELLOW}WARNING:${NORMAL} Another SCE utility is presently in use, exiting.."
 			exit 1
 		fi
 	fi
@@ -91,7 +91,7 @@ OPTIONS=""
 if [ "$UPDATEALL" == "TRUE" ]; then
 	if [ -n "$1" ]; then
 		echo " "
-		echo "${YELLOW}Warning:${NORMAL} The -a option is not to be used with a specified SCE, exiting.."
+		echo "${YELLOW}WARNING:${NORMAL} The -a option is not to be used with a specified SCE, exiting.."
 		exit 1
 	else
 		echo "* Using the -a option."
@@ -101,7 +101,7 @@ fi
 if [ "$SCEBOOTLIST" == "TRUE" ]; then
 	if [ -n "$1" ]; then
 		echo " "
-		echo "${YELLOW}Warning:${NORMAL} The -b option is not to be used with a specified SCE, exiting.."
+		echo "${YELLOW}WARNING:${NORMAL} The -b option is not to be used with a specified SCE, exiting.."
 		exit 1
 	else
 		echo "* Using the -b option."
@@ -136,13 +136,13 @@ fi
 
 if [ "$SCEBOOTLIST" == "TRUE" ] && [ "$UPDATEALL" == "TRUE" ]; then
 	echo " "
-	echo "${YELLOW}Warning:${NORMAL} The -a and -b options cannot be used together, exiting.."
+	echo "${YELLOW}WARNING:${NORMAL} The -a and -b options cannot be used together, exiting.."
 	exit 1
 fi
 
 if [ -n "$2" ]; then
 	echo " "
-	echo "${YELLOW}Warning:${NORMAL} Only one SCE per sce-update session can be entered in command line."
+	echo "${YELLOW}WARNING:${NORMAL} Only one SCE per sce-update session can be entered in command line."
 	echo "         Run 'sce-update' to check more than one SCE per session, exiting.."
 	exit 1
 fi
@@ -184,7 +184,7 @@ cd /etc/sysconfig/tcedir/sce
 
 exit_tcnet() {
 	echo " "
-	echo "${YELLOW}Warning:${NORMAL} Issue connecting to `cat /opt/tcemirror`, exiting.."
+	echo "${YELLOW}WARNING:${NORMAL} Issue connecting to `cat /opt/tcemirror`, exiting.."
 	exit 1
 }
 
@@ -196,7 +196,7 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 sudo -E debGetEnv "$2"
 if [ "$?" != "0" ]; then
 	echo " "
-	echo "${YELLOW}Warning:${NORMAL} Error updating DEBINX files, exiting.."
+	echo "${YELLOW}WARNING:${NORMAL} Error updating DEBINX files, exiting.."
 	exit 1
 fi
 read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
@@ -239,7 +239,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 	elif [ ! "$NONINTERACTIVE" == "TRUE" ]; then
 		echo " "
 		if [ ! -f "$DEBINXDIR"/OLDDEBINX ]; then
-			echo "${YELLOW}Warning:${NORMAL} No "$DEBINXDIR"/OLDDEBINX available to compare."
+			echo "${YELLOW}WARNING:${NORMAL} No "$DEBINXDIR"/OLDDEBINX available to compare."
 			echo " "
 			echo -n "Recommend press Enter to proceed with update check, Ctrl-C aborts: "
 			read ans
@@ -370,7 +370,7 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 	## Added top of script:
 	#if [ -n "$1" ]; then
 	#	echo " "
-	#	echo "${YELLOW}Warning:${NORMAL} The -b option is not to be used with a specified SCE, exiting.."
+	#	echo "${YELLOW}WARNING:${NORMAL} The -b option is not to be used with a specified SCE, exiting.."
 	#	exit 1
 	#fi	
 	for i in `cat /proc/cmdline`; do
@@ -801,7 +801,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 	fi
 else
 	echo " "
-	echo "${YELLOW}Warning:${NORMAL} '"$UPDATETARGET"' is not an existing SCE file, exiting.."
+	echo "${YELLOW}WARNING:${NORMAL} '"$UPDATETARGET"' is not an existing SCE file, exiting.."
 fi
 
 cleanup
