@@ -305,10 +305,10 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						#if [ "$?" != "0" ]; then
-						#	echo "Error in updating "$I", exiting.."
-						#	exit 1
-						#fi
+						if [ "$?" != "0" ]; then
+							echo "Error in updating "$I", exiting.."
+							exit 1
+						fi
 					fi
 					echo "$I" >> /tmp/importupdated
 				done
@@ -337,10 +337,10 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						#if [ "$?" != "0" ]; then
-						#	echo "Error in updating "$I", exiting.."
-						#	exit 1
-						#fi
+						if [ "$?" != "0" ]; then
+							echo "Error in updating "$I", exiting.."
+							exit 1
+						fi
 					fi
 					echo "$I" >> /tmp/importupdated
 				done
@@ -414,10 +414,10 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						#if [ "$?" != "0" ]; then
-						#	echo "Error in updating "$I", exiting.."
-						#	exit 1
-						#fi
+						if [ "$?" != "0" ]; then
+							echo "Error in updating "$I", exiting.."
+							exit 1
+						fi
 					fi
 					echo "$I" >> /tmp/importupdated
 				done
@@ -446,10 +446,10 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						#if [ "$?" != "0" ]; then
-						#	echo "Error in updating "$I", exiting.."
-						#	exit 1
-						#fi
+						if [ "$?" != "0" ]; then
+							echo "Error in updating "$I", exiting.."
+							exit 1
+						fi
 					fi
 					echo "$I" >> /tmp/importupdated
 				done
@@ -537,10 +537,10 @@ elif [ "$SELECT" == "TRUE" ]; then
 						fi
 						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 							sce-import -"$OPTIONS"Nnp "$I"
-							#if [ "$?" != "0" ]; then
-							#	echo "Error in updating "$I", exiting.."
-							#	exit 1
-							#fi
+							if [ "$?" != "0" ]; then
+								echo "Error in updating "$I", exiting.."
+								exit 1
+							fi
 						fi
 						echo "$I" >> /tmp/importupdated
 					done
@@ -570,10 +570,10 @@ elif [ "$SELECT" == "TRUE" ]; then
 						fi
 						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 							sce-import -"$OPTIONS"Nnp "$I"
-							#if [ "$?" != "0" ]; then
-							#	echo "Error in updating "$I", exiting.."
-							#	exit 1
-							#fi
+							if [ "$?" != "0" ]; then
+								echo "Error in updating "$I", exiting.."
+								exit 1
+							fi
 						fi
 						echo "$I" >> /tmp/importupdated
 					done
@@ -647,10 +647,10 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						#if [ "$?" != "0" ]; then
-						#	echo "Error in updating "$I", exiting.."
-						#	exit 1
-						#fi
+						if [ "$?" != "0" ]; then
+							echo "Error in updating "$I", exiting.."
+							exit 1
+						fi
 					fi
 					echo "$I" >> /tmp/importupdated
 				done
@@ -679,10 +679,10 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						#if [ "$?" != "0" ]; then
-						#	echo "Error in updating "$I", exiting.."
-						#	exit 1
-						#fi
+						if [ "$?" != "0" ]; then
+							echo "Error in updating "$I", exiting.."
+							exit 1
+						fi
 					fi
 					echo "$I" >> /tmp/importupdated
 				done
@@ -742,6 +742,10 @@ elif [ -f "$UPDATETARGET".sce ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
+						if [ "$?" != "0" ]; then
+							echo "Error in updating "$I", exiting.."
+							exit 1
+						fi
 					fi
 					echo "$I" >> /tmp/importupdated
 				done
@@ -770,10 +774,10 @@ elif [ -f "$UPDATETARGET".sce ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						#if [ "$?" != "0" ]; then
-						#	echo "Error in updating "$I", exiting.."
-						#	exit 1
-						#fi
+						if [ "$?" != "0" ]; then
+							echo "Error in updating "$I", exiting.."
+							exit 1
+						fi
 					fi
 					echo "$I" >> /tmp/importupdated
 				done
