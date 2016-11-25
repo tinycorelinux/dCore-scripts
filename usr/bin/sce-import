@@ -50,12 +50,14 @@ mksce() {
 			exit 1
 		fi
 		cleanup
+		exit 0
 	else
 		sudo -E deb2sce "$1"
 		if [ "$?" != "0" ]; then
 			exit 1
 		fi
 		cleanup
+		exit 0
 	fi
 
 }
@@ -475,8 +477,8 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	if [ -f "$TARGETFILE" ]; then
   		if [ -f /tmp/.importinteractive ]; then
   			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
-  			mksce "$TARGET"
-			exit "$?"
+  			mksce "$TARGET" && exit 0
+			#exit "$?"
   		else
 			echo " "
 			echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
@@ -487,17 +489,17 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
                         read ans
 	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  			sudo rm /tmp/.targetfile
-				mksce "$TARGET"
-				EXIT="$?" 
-				sudo rm "$TARGETFILE"
-				exit "$EXIT"
+				mksce "$TARGET" && exit 0
+				#EXIT="$?" 
+				#sudo rm "$TARGETFILE"
+				#exit "$EXIT"
 	  		elif [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
 				cleanup
 				exit 0
 			else
 				echo "* Creating "$TARGET".sce from "$TARGETFILE"."
-				mksce "$TARGET"
-				exit "$?"
+				mksce "$TARGET" && exit 0
+				#exit "$?"
 			fi
 		fi
 	else
@@ -509,8 +511,8 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
   	if [ -f /tmp/.importinteractive ]; then
   		echo "* Creating "$TARGET".sce from "$TARGETFILE"."
-  		mksce "$TARGET"
-		exit "$?"
+  		mksce "$TARGET" && exit 0
+		#exit "$?"
   	else
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
@@ -521,17 +523,17 @@ elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
                 read ans
 	  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
 	  		sudo rm /tmp/.targetfile
-			mksce "$TARGET" 
-			EXIT="$?"
-			sudo rm "$TARGETFILE"
-			exit "$EXIT"
+			mksce "$TARGET" && exit 0
+			#EXIT="$?"
+			#sudo rm "$TARGETFILE"
+			#exit "$EXIT"
   		elif [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
 			cleanup
 			exit 0
 		else
 			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
-			mksce "$TARGET"
-			exit "$?"
+			mksce "$TARGET" && exit 0
+			#exit "$?"
 		fi
 	fi  
 # Below checks for package in the extra repos first, then the 
@@ -574,8 +576,8 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 			fi   
 		fi 
   		echo "* Importing ${YELLOW}$DEB${NORMAL}."
-  		mksce "$DEB"
-		exit "$?"
+  		mksce "$DEB" && exit 0
+		#exit "$?"
 	fi 
 elif [ "$CHECKALL" != "TRUE" ]; then  
 	if sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
@@ -616,8 +618,8 @@ elif [ "$CHECKALL" != "TRUE" ]; then
         
 		fi
   		echo "* Importing ${YELLOW}"$DEB"${NORMAL}."
-  		mksce "$DEB"
-		exit "$?"
+  		mksce "$DEB" && exit 0
+		#exit "$?"
 	fi
   	
 fi
