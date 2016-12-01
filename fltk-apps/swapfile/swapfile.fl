@@ -1,0 +1,99 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0110 
+i18n_type 1 
+i18n_include <libintl.h> 
+i18n_function mygettext 
+header_name {.h} 
+code_name {.cxx}
+decl {// (c) Robert Shingledecker 2008} {} 
+
+decl {\#include <cstdlib>} {} 
+
+decl {\#include <iostream>} {} 
+
+decl {\#include <sstream>} {} 
+
+decl {\#include <string>} {} 
+
+decl {\#include <FL/fl_ask.H>} {} 
+
+decl {\#include <locale.h>} {} 
+
+decl {using namespace std;} {} 
+
+decl {int locales_set=0;} {} 
+
+Function {mygettext(const char *msgid)} {open return_type {char *}
+} {
+  code {if (!locales_set) {
+
+setlocale(LC_ALL, "");
+bindtextdomain("tinycore","/usr/local/share/locale");
+textdomain("tinycore");
+
+locales_set=1;
+
+}
+
+return gettext(msgid);} {}
+} 
+
+Function {btn_callback(Fl_Widget*, void* userdata)} {open return_type {static void}
+} {
+  code {const string userdatastr = userdata ? (char *) userdata : "";
+
+if (userdatastr == "cancel")
+   exit(1);
+string str_mount = inp_mount->value();
+if ( str_mount == "" )
+   return;
+string str_size = inp_size->value();
+if (str_size == "")
+   return;
+   
+int size;
+istringstream ins;
+ins.str(str_size);
+ins >> size;   
+
+if ( size < 1 )
+   return;
+   
+string command = "sudo dd if=/dev/zero of=" + str_mount + "/tc.swp bs=1024 count=" + str_size; 
+if ( fl_ask(command.c_str()) )
+{
+   system(command.c_str());
+   system( ("sudo mkswap " + str_mount + "/tc.swp").c_str());
+   system( ("sudo swapon " + str_mount + "/tc.swp").c_str());
+   exit(0);
+}} {}
+} 
+
+Function {} {open
+} {
+  Fl_Window {} {
+    label Swapfile open selected
+    xywh {487 412 275 105} type Double hide
+  } {
+    Fl_Input inp_mount {
+      label {Mounted Partition:}
+      xywh {130 11 135 24}
+    }
+    Fl_Input inp_size {
+      label {tc.swp in k bytes:}
+      xywh {130 41 55 24}
+    }
+    Fl_Button {} {
+      label {&Cancel}
+      user_data {"cancel"}
+      callback btn_callback
+      xywh {65 75 64 20}
+    }
+    Fl_Button {} {
+      label {&Proceed}
+      user_data {"proceed"}
+      callback btn_callback
+      xywh {140 75 64 20}
+    }
+  }
+} 

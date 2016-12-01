@@ -1,0 +1,70 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0110
+i18n_type 1
+i18n_include <libintl.h>
+i18n_function gettext
+header_name {.h}
+code_name {.cxx}
+decl {// (c) Jason Williams 2015} {}
+
+decl {\#include <cstdlib>} {}
+
+decl {\#include <iostream>} {}
+
+decl {\#include <locale.h>} {}
+
+decl {using namespace std;} {}
+
+Function {btn_callback(Fl_Widget* w, void* userdata)} {open return_type {static void}
+} {
+  code {system((const char*)userdata);} {}
+}
+
+Function {} {open
+} {
+  code {setlocale(LC_ALL, "");
+bindtextdomain("tinycore","/usr/local/share/locale");
+textdomain("tinycore");} {}
+  Fl_Window {} {
+    label {SCE Tools} open
+    xywh {185 284 295 150} type Double hide
+  } {
+    Fl_Box {} {
+      xywh {5 18 140 123} box EMBOSSED_FRAME align 1
+    }
+    Fl_Box {} {
+      xywh {150 18 140 123} box EMBOSSED_FRAME align 1
+    }
+    Fl_Button {} {
+      label {sce-import}
+      user_data {"aterm -bg black +sb -T \\"Import SCE Extensions\\" -e /usr/bin/sce-import &"}
+      callback btn_callback
+      xywh {15 30 120 30}
+    }
+    Fl_Button {} {
+      label {sce-update}
+      user_data {"aterm -bg black +sb -T \\"Update SCE Extensions\\" -e /usr/bin/sce-update &"}
+      callback btn_callback
+      xywh {160 30 120 30}
+    }
+    Fl_Button {} {
+      label {sce-load}
+      user_data {"aterm -bg black +sb -T \\"Load SCE Extensions\\" -e /usr/bin/sce-load &"}
+      callback btn_callback
+      xywh {15 65 120 30}
+    }
+    Fl_Button {} {
+      label {sce-remove}
+      user_data {"aterm -bg black +sb -T \\"Uninstall SCE Extensions\\" -e /usr/bin/sce-remove &"}
+      callback btn_callback
+      xywh {160 65 120 30}
+    }
+    Fl_Button {} {
+      label {sce-debpurge}
+      user_data {"aterm -bg black +sb -T \\"Remove Stale Debian Packages From Storage.\\" -e /usr/bin/sce-debpurge &"}
+      callback btn_callback selected
+      xywh {15 100 120 30}
+    }
+  }
+}
+

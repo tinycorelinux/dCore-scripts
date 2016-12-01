@@ -1,0 +1,120 @@
+# data file for the Fltk User Interface Designer (fluid)
+version 1.0110
+i18n_type 1
+i18n_include <libintl.h>
+i18n_function gettext
+header_name {.h}
+code_name {.cxx}
+decl {// (c) Robert Shingledecker 2008-2010} {}
+
+decl {\#include <cstdlib>} {}
+
+decl {\#include <iostream>} {}
+
+decl {\#include <locale.h>} {}
+
+decl {using namespace std;} {}
+
+Function {btn_callback(Fl_Widget* w, void* userdata)} {open return_type {static void}
+} {
+  code {system((const char*)userdata);} {}
+}
+
+Function {} {open
+} {
+  code {setlocale(LC_ALL, "");
+bindtextdomain("tinycore","/usr/local/share/locale");
+textdomain("tinycore");} {}
+  Fl_Window {} {
+    label ControlPanel open
+    xywh {41 336 445 180} type Double hide
+  } {
+    Fl_Box {} {
+      label Maintenance
+      xywh {5 18 140 155} box EMBOSSED_FRAME align 1
+    }
+    Fl_Box {} {
+      label Utilities
+      xywh {150 18 140 155} box EMBOSSED_FRAME align 1
+    }
+    Fl_Box {} {
+      label Setup
+      xywh {295 18 140 155} box EMBOSSED_FRAME align 1
+    }
+    Fl_Button {} {
+      label {Backup/Restore}
+      user_data {"filetool &"}
+      callback btn_callback
+      xywh {15 30 120 30}
+    }
+    Fl_Button {} {
+      label {Mount Tool}
+      user_data {"mnttool &"}
+      callback btn_callback
+      xywh {160 30 120 30}
+    }
+    Fl_Button {} {
+      label Services
+      user_data {"services &"}
+      callback btn_callback
+      xywh {305 30 120 30}
+    }
+    Fl_Button {} {
+      label {Date/Time}
+      user_data {"datetool &"}
+      callback btn_callback
+      xywh {15 65 120 30}
+    }
+    Fl_Button {} {
+      label {Mouse Tool}
+      user_data {"mousetool &"}
+      callback btn_callback
+      xywh {160 65 120 30}
+    }
+    Fl_Button {} {
+      label {Swapfile Tool}
+      user_data {"swapfile &"}
+      callback btn_callback
+      xywh {305 65 120 30}
+    }
+    Fl_Button {} {
+      label Network
+      user_data {"sudo network &"}
+      callback btn_callback
+      xywh {15 100 120 30}
+    }
+    Fl_Button {} {
+      label {System Stats}
+      user_data {"stats &"}
+      callback btn_callback
+      xywh {160 100 120 30}
+    }
+    Fl_Button {} {
+      label {Terminal Server}
+      user_data {"aterm -bg black +sb -T \\"Terminal Server Setup\\" -e sudo /usr/bin/tc-terminal-server &"}
+      callback btn_callback selected
+      xywh {305 100 120 30}
+    }
+    Fl_Button btnWbarConf {
+      label tcWbarConf
+      user_data {"tc-wbarconf &"}
+      callback btn_callback
+      xywh {15 135 120 30} deactivate
+    }
+    Fl_Button {} {
+      label Wallpaper
+      user_data {"wallpaper &"}
+      callback btn_callback
+      xywh {160 135 120 30}
+    }
+    Fl_Button {} {
+      label {SCE Tools}
+      user_data {"sce-tools &"}
+      callback btn_callback
+      xywh {305 135 120 30}
+    }
+  }
+  code {int results = system("which tc-wbarconf >/dev/null 2>&1");
+if ( results == 0 ) btnWbarConf->activate();} {}
+}
+
