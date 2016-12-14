@@ -598,6 +598,18 @@ if [ "$CHECKFS" == "1" ]; then
 
 fi
 
+## If udev does not create and mount below directories in /dev.
+if [ ! -d /dev/pts ]; then
+	mkdir /dev/pts
+	mount -t devpts -o gid=5,mode=620 devpts /dev/pts
+fi
+
+if [ ! -d /dev/shm ]; then
+	mkdir /dev/shm
+	mount -t tmpfs tmpfs /dev/shm
+fi
+##
+
 [ -f /etc/udev/rules.d/60-persistent-storage.rules ] && rm /etc/udev/rules.d/60-persistent-storage.rules
 udevadm trigger  2>&1 >/dev/null &&
 
@@ -605,13 +617,13 @@ MSSG="${BLUE}Loading extensions...${NORMAL}"
 if [ -n "$SHOWAPPS" ]; then
 	touch /etc/sysconfig/showapps
 	echo "$MSSG"
-	/usr/bin/tce-setup "booting" 
+	/usr/bin/tce-setup "booting"
 	[ -n "$ISOFILE" ] && /usr/bin/fromISOfile "$ISOFILE"
 	rm /etc/sysconfig/showapps
 	echo "${GREEN}Done.${NORMAL}"
 else
 	echo -n "$MSSG"
-	/usr/bin/tce-setup "booting" > /dev/null 2>&1 & 
+	/usr/bin/tce-setup "booting" > /dev/null 2>&1
 	/usr/bin/rotdash $!
 	[ -n "$ISOFILE" ] && /usr/bin/fromISOfile "$ISOFILE" > /dev/null 2>&1 &
 	/usr/bin/rotdash $!
@@ -686,7 +698,6 @@ fi
 /bb/addgroup "$USER" audio
 /bb/addgroup "$USER" video
 /bb/addgroup "$USER" plugdev
-
 
 [ -n "$NOAUTOLOGIN" ] && echo "booting" > /etc/sysconfig/noautologin
 	

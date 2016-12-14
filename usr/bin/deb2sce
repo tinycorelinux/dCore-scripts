@@ -440,6 +440,7 @@ if [ -f /tmp/.sceconflict ]; then
 	echo "${YELLOW}WARNING:${NORMAL} "$TARGET" already exists in the dep files of the SCE(s) below,"
 	echo "aborting to prevent circular dependency."
 	cat /tmp/.sceconflict
+	sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1
 	cleanup
 	exit 1
 fi
@@ -448,6 +449,7 @@ if [ -f /tmp/.pkgexists ]; then
 	echo " "
 	echo "${YELLOW}WARNING:${NORMAL} "$TARGET" already exists in below dependency SCE(s), exiting.."
 	cat /tmp/.pkgexists
+	sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1
 	cleanup
 	exit 1
 fi
