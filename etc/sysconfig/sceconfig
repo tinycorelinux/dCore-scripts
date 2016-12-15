@@ -44,6 +44,10 @@ PRESERVEDEBINXMODE=FALSE
 
 # UPDATEDEBINXMODE is default and not needed to be specified here.
 
+# Use SAFEBACKUP=TRUE to backup SCE(s) in /etc/sysconfig/tcedir/sce/backup/
+# during re-import. Ensure adequate freespace, manually purge backups.
+SAFEBACKUP=FALSE
+
 # Use NICE=19 for the most cpu friendly use of sce-import and sce-update.  
 # Use NICE=0 to give sce-import and sce-update high system priority.
 NICE=19

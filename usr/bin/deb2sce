@@ -393,6 +393,18 @@ if [ -f /tmp/.suggests ]; then
 	fi
 fi
 
+## Create safe backup if sceconfig SAFEBACKUP=TRUE
+if cat /etc/sysconfig/sceconfig | grep -v '^#' | grep SAFEBACKUP=TRUE > /dev/null 2>&1; then
+	if [ -f /etc/sysconfig/tcedir/sce/"$TARGET".sce ]; then
+		BkDir="`date +%Y-%m-%d-%H:%M`"_$TARGET""
+		mkdir -p /etc/sysconfig/tcedir/sce/backup/"$BkDir"
+		cp -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep /etc/sysconfig/tcedir/sce/backup/"$BkDir" > /dev/null 2>&1
+		cp -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.lst /etc/sysconfig/tcedir/sce/backup/"$BkDir" > /dev/null 2>&1
+		cp -f /etc/sysconfig/tcedir/sce/"$TARGET".sce /etc/sysconfig/tcedir/sce/backup/"$BkDir"
+		cp -f /etc/sysconfig/tcedir/sce/"$TARGET".sce.md5.txt /etc/sysconfig/tcedir/sce/backup/"$BkDir"
+		echo "* Safe backup created."
+	fi
+fi
 
 ## Get the SCE deps if any and check for duplicates between deps.
 if [ -f /tmp/.importdep ]; then
