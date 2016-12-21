@@ -236,14 +236,15 @@ read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 read DEBINX_SECURITY < /etc/sysconfig/tcedir/import/debinx/debinx_security
 DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
-echo "* Package Index:"
+echo "* Package index:"
 echo "  "$DEBINX""
-echo "* Security Index:"
+echo "* Security index:"
 echo "  "$DEBINX_SECURITY""
 read MIRROR < /opt/debmirror
 read MIRROR_SECURITY < /opt/securitymirror
-echo "* "$DISTRO" Mirror: $MIRROR"
-echo "* "$DISTRO" Security Mirror: $MIRROR"
+echo "* Main mirror: $MIRROR"
+echo "* Security mirror: $MIRROR"
+
 unset META
 
 ## Remove unused debinx files in TCEDIR that will cause confusion if their /opt/debextra entries do not exist.

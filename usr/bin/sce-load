@@ -376,14 +376,18 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 	if [ "$TARGETDIR" == "." ]; then
 		TARGETDIR="`pwd`"
 	fi
-	if [ ! -f "$TARGETDIR"/"$THISSCENAME".sce ]; then
-		if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
+
+ 	if [ ! -f "$TARGETDIR"/"$THISSCENAME".sce ]; then
+		if [ "$BOOTING" == "TRUE" ] && [ "$SHOWAPPS" == "TRUE" ]; then
+			echo -n "${RED}$TARGETAPP not found! ${NORMAL}"
 			continue
-		else
-			echo "* ${YELLOW}"$TARGETDIR"/"$THISSCENAME".sce${NORMAL} does not exist, not loading.."
+		elif [ "$SUPPRESS" ]; then
 			continue
-		fi
-	fi
+ 		else
+ 			echo "* ${YELLOW}"$TARGETDIR"/"$THISSCENAME".sce${NORMAL} does not exist, not loading.."
+			continue
+ 		fi
+ 	fi
 
 	if [ -d /tmp/tcloop/"$THISSCENAME" ] || grep "^$THISSCENAME:" /tmp/.debinstalled > /dev/null 2>&1; then
 		if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
