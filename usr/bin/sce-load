@@ -13,7 +13,11 @@ SAVED_DIR=`pwd`
 HERE=`pwd`
 #ONBOOTNAME="$(getbootparam lst 2>/dev/null)"
 
-[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
+cleanup () {
+	[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans
+}
+
+cleanup
 
 [ -n "$ONBOOTNAME" ] || ONBOOTNAME="onboot.lst"
 
@@ -78,12 +82,14 @@ choose(){
 	fi
 	select2 "Select SCE to load." "$TMP"
 	TARGETAPP="$(cat  /tmp/select.ans)"
+	cleanup
 	rm "$TMP"
 	if [ "$TARGETAPP" == "" ]; then
+		#[ -f /tmp/.sceloadlock ] && rm /tmp/.sceloadlock
+		rm /tmp/.sceloadlock
 		echo "Nothing selected, exiting.."
 		exit 0
 	fi
-
 }
 
 processAPP(){
@@ -431,9 +437,8 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 			exit 1
 		fi
 
+		if ! cat /proc/cmdline | grep "nomd5" > /dev/null 2>&1; then
 		[ "$SUPPRESS" ] || [ "$BOOTING" ] || echo "* Integrity and md5sum check "$I"."
-		
-		if ! cat /proc/cmdline | grep " nomd5 " > /dev/null 2>&1; then
 			if [ -f "$TARGETDIR"/"$THISSCENAME".sce.md5.txt ]; then
 				cd "$TARGETDIR"
 				md5sum -c "$THISSCENAME".sce.md5.txt > /dev/null 2>&1
@@ -452,6 +457,8 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 				echo "    $LIST${NORMAL}"
 				exit 0
 			fi
+		else
+			echo "* Skip "$I".sce md5sum check."
 		fi
 
 		TARGETAPP=`echo "$I" | tr -d ' '`
