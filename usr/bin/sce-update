@@ -64,7 +64,7 @@ do
 done
 
 
-NICE=`grep "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
+NICE=`grep -m 1 "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
 if [ -n "$NICE" ]; then
 	if [ "$NICE" -gt 19 ]; then
 		NICE=19

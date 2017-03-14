@@ -110,7 +110,7 @@ if [ ! "$NOLOCK" == "TRUE" ]; then
 	echo "$$" > /tmp/.scelock
 fi
 
-NICE=`grep "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
+NICE=`grep -m 1 "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
 if [ -n "$NICE" ]; then
 	if [ "$NICE" -gt 19 ]; then
 		NICE=19
@@ -532,13 +532,13 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 	if sudo grep -i "^Package: .*$TARGET" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: .*$TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
 		if [ -f /tmp/.importinteractive ]; then
 			if sudo grep -i "^Package: .*$TARGET$" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1; then
-				DEB=`sudo grep -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}'`
+				DEB=`sudo grep -m 1 -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}'`
 			elif sudo grep -i "^Package: .*$TARGET$" "$DEBINX" > /dev/null 2>&1; then
-				DEB=`sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
+				DEB=`sudo grep -m 1 -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
 			elif sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP > /dev/null 2>&1; then
-				DEB=`sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d:`
+				DEB=`sudo grep -m 1 -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d:`
 			elif sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP  > /dev/null 2>&1; then
-				DEB=`sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d:`
+				DEB=`sudo grep -m 1 -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d:`
 			fi
 			if [ -z "$DEB" ]; then
 				echo " "
@@ -572,13 +572,13 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 	if sudo grep -i "^Package: $TARGET" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1 ||  sudo grep -i "^Package: $TARGET" "$DEBINX" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1 || sudo grep -i "$TARGET" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d: | grep -i "$TARGET" > /dev/null 2>&1; then
 		if [ -f /tmp/.importinteractive ]; then
 			if sudo grep -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1; then
-				DEB=`sudo grep -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}'`
+				DEB=`sudo grep -m 1 -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}'`
 			elif sudo grep -i "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
-				DEB=`sudo grep -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
+				DEB=`sudo grep -m 1-i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
 			elif sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP > /dev/null 2>&1; then
-				DEB=`sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d:`
+				DEB=`sudo grep -m 1 -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d:`
 			elif sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP  > /dev/null 2>&1; then
-				DEB=`sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d:`
+				DEB=`sudo grep -m 1 -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP | cut -f1 -d:`
 			fi
 			if [ -z "$DEB" ]; then
 				echo " "
