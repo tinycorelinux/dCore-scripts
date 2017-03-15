@@ -574,7 +574,7 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 			if sudo grep -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* > /dev/null 2>&1; then
 				DEB=`sudo grep -m 1 -i "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* | head -1 | awk '{print $2}'`
 			elif sudo grep -i "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
-				DEB=`sudo grep -m 1-i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
+				DEB=`sudo grep -m 1 -i "^Package: $TARGET$" "$DEBINX" | awk '{print $2}'`
 			elif sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP > /dev/null 2>&1; then
 				DEB=`sudo grep -m 1 -i "^$TARGET:" "$DEBINXDIR"/PKGADDDEP | cut -f1 -d:`
 			elif sudo grep -i "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP  > /dev/null 2>&1; then
