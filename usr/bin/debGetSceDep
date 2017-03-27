@@ -10,7 +10,7 @@ HERE=`pwd`
 [ -f /tmp/"$1".debdeps ] && sudo rm /tmp/"$1".debdeps
 
 SCE="$1"
-useBusybox
+
 if ls /tmp/*.debs > /dev/null 2>&1; then 
 	sudo rm /tmp/*.debs
 fi

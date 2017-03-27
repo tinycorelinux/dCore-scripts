@@ -122,7 +122,7 @@ echo "${GREEN}Done.${NORMAL}"
 				DEV1=$(blkid -L "$PART")
 				sleep 1
 				[ -n "$DEV1" ] || continue
-				/bb/mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
+				mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
 	  				
 			done
 			umount "$DEV1" > /dev/null 2>&1
@@ -141,7 +141,7 @@ echo "${GREEN}Done.${NORMAL}"
 				DEV1=$(blkid -U "$PART")
 				sleep 1
 				[ -n "$DEV1" ] || continue
-				/bb/mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
+				mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
 	  				
 			done
 			umount "$DEV1" > /dev/null 2>&1
@@ -323,7 +323,7 @@ ln -sf "$TCEDIR" /etc/sysconfig/tcedir
 chgrp staff "$TCEDIR" "$TCEINSTALLED" "$TCLOOP"
 chmod g+w "$TCEDIR" "$TCEINSTALLED" "$TCLOOP"
 
-chmod u+s /bin/busybox /usr/bin/sudo
+chmod u+s /bin/busybox /usr/bin/sudo /bin/mount /bin/umount
 
 get_app() {
 	LOADER=sce-load ; PKG=sce
@@ -440,7 +440,7 @@ if [ -n "$TCVD" ]; then
 	PARTITION="${TCVD_DEVICE##/dev/}"
 	find_mountpoint "$PARTITION"
 	if [ -n "$MOUNTPOINT" ]; then
-		[ "$MOUNTED" == "yes" ] || /bb/mount "$MOUNTPOINT"
+		[ "$MOUNTED" == "yes" ] || mount "$MOUNTPOINT"
 		usleep_progress
 		if [ -f "$MOUNTPOINT"/"$TCVD_LOOPFILE" ]; then
 			[ -d /mnt/tcvd ] || /bb/mkdir /mnt/tcvd

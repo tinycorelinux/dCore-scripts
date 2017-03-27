@@ -3,8 +3,6 @@
 # Contributions by Jason Williams
 . /etc/init.d/tc-functions
 
-useBusybox
-
 sudo chown root:staff /tmp > /dev/null 2>&1
 sudo chmod 1777 /tmp > /dev/null 2>&1
 TCUSER=`cat /etc/sysconfig/tcuser`

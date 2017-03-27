@@ -3,7 +3,7 @@
 # Contributions by Jason Williams
 . /etc/init.d/tc-functions
 
-useBusybox
+
 checknotroot
 PROG_NAME=$(basename $0)
 KERNELVER=$(uname -r)
@@ -145,7 +145,7 @@ done
 shift `expr $OPTIND - 1`
 
 if [ "$BOOTING" != "TRUE" ]; then
-	NICE=`grep "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
+	NICE=`grep -m 1 "^NICE=" /etc/sysconfig/sceconfig | cut -f2 -d=`
 	if [ -n "$NICE" ]; then
 		if [ "$NICE" -gt 19 ]; then
 			NICE=19

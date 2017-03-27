@@ -2,7 +2,7 @@
 # (c) Jason W 2013 
 
 . /etc/init.d/tc-functions
-useBusybox
+
 TCEDIR=/etc/sysconfig/tcedir
 DEBINXDIR="$TCEDIR"/import/debinx
 SCE="$1"
@@ -11,8 +11,8 @@ SCEDIR="$TCEDIR"/sce
 read SSMIRROR < /opt/tcemirror                                                                             
 SSMIRROR="${SSMIRROR%/}/dCore/import"   
 
-if sudo busybox mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then
- sudo busybox umount /tmp/sceupdatetest
+if sudo mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then
+ sudo umount /tmp/sceupdatetest
 fi
 
 
@@ -22,16 +22,16 @@ cd "$SCEDIR"
 ## Determine if SCE exists in SCE dir, SCE/update dir, or is mounted and then mount.
 if [ -f "$SCEDIR"/update/"$SCE".sce ]; then
    [ -d /tmp/sceupdatetest ] || mkdir /tmp/sceupdatetest
-   sudo busybox mount "$SCEDIR"/update/"$SCE".sce /tmp/sceupdatetest
+   sudo mount "$SCEDIR"/update/"$SCE".sce /tmp/sceupdatetest
    DATADIR=/tmp/sceupdatetest/usr/local/sce/"$SCE"
    FILE=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE".md5sum
-elif sudo busybox mount | grep "/tmp/tcloop/$SCE " > /dev/null 2>&1; then
+elif sudo mount | grep "/tmp/tcloop/$SCE " > /dev/null 2>&1; then
    DATADIR=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"
    FILE=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"/"$SCE".md5sum
 elif [ -f "$SCEDIR"/"$SCE".sce ]; then
    DATADIR=/tmp/sceupdatetest/usr/local/sce/"$SCE"
    [ -d /tmp/sceupdatetest ] || mkdir /tmp/sceupdatetest
-   sudo busybox mount "$SCEDIR"/"$SCE".sce /tmp/sceupdatetest
+   sudo mount "$SCEDIR"/"$SCE".sce /tmp/sceupdatetest
    FILE=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE".md5sum
 fi
 ##

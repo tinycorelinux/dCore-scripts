@@ -6,7 +6,6 @@
 #useBusybox
 alias wget='/bb/wget'
 alias md5sum='/bb/md5sum'
-alias mount='/bb/mount'
 > /tmp/.pkglist
 
 TCUSER=`cat /etc/sysconfig/tcuser`
@@ -763,7 +762,7 @@ if [ ! -f /tmp/.scenoconfig ]; then
 fi
 
 sed -i "s:APPNAME:$TARGET:g" "$TARGET"/usr/local/tce.installed/* > /dev/null 2>&1
-if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && busybox mount | grep " /tmp/tcloop/"$TARGET" " > /dev/null 2>&1; then
+if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && mount | grep " /tmp/tcloop/"$TARGET" " > /dev/null 2>&1; then
 	[ -d "$TCEDIR"/sce/update ] || mkdir -p "$TCEDIR"/sce/update
 	createImportSummary
 	mksquashfs "$TARGET" "$TCEDIR"/sce/update/"$TARGET".sce -noappend
