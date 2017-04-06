@@ -105,6 +105,14 @@ process() {
 	done
 }
 
+process_builtin() {
+	if ls /tmp/builtin/*.sce > /dev/null 2>&1; then
+		for I in `ls /tmp/builtin/*.sce`; do
+			su "$USER" -c "sce-load -b "$I""
+		done
+	fi
+}
+
 process_CD() {
 	CD="/mnt/${DEV#/dev/}"
 	mount "$CD" 2>/dev/null
@@ -168,6 +176,9 @@ if [ "$1" == "booting" ] && [ -n "$ONLYBASE" ]; then
 else
 	process_normal_tcedir
 fi
+
+# Now process SCEs in /tmp/builtin
+process_builtin
 
 # Finally check for CD Extensions if requested
 if [ "$CDE" ]; then
