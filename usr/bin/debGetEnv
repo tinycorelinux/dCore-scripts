@@ -225,7 +225,7 @@ cd "$DEBINXDIR"
 /bb/wget -O deb2sce.tar.gz -cq "$PREBUILTMIRROR"/deb2sce.tar.gz 2>/dev/null ||  exit_tcnet
 
 tar xvf deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
-[ -f PKGEXCLUDELIST ] || tar xvf deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
+[ -f PKGEXCLUDELISTCUSTOM ] || tar xvf deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
 tar xvf deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
 tar xvf deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
 tar xvf deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1

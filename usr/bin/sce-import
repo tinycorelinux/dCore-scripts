@@ -207,10 +207,18 @@ elif [ "$NONINTERACTIVE" == "TRUE" ]; then
 	echo "* Using the -n option."
 fi
 
-if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
-	echo " "
-	echo "${YELLOW}Warning:${NORMAL} $TARGET is a blocked package, exiting.."
-	exit 0
+if [ ! -f "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM ]; then	
+	if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
+		echo " "
+		echo "${YELLOW}Warning:${NORMAL} $TARGET is a blocked package, exiting.."
+		exit 0
+	fi
+else
+		if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM > /dev/null 2>&1; then
+		echo " "
+		echo "${YELLOW}Warning:${NORMAL} $TARGET is a blocked package, exiting.."
+		exit 0
+	fi
 fi
 
 # Determine if the size option is being used.
@@ -349,7 +357,7 @@ else
 		fi
 	fi
 	tar xvf deb2sce.tar.gz PKGEXTRAREPODEP >/dev/null 2>&1
-	[ -f PKGEXCLUDELIST ] || tar xvf deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
+	[ -f PKGEXCLUDELISTCUSTOM ] || tar xvf deb2sce.tar.gz PKGEXCLUDELIST >/dev/null 2>&1
 	tar xvf deb2sce.tar.gz PKGADDDEP >/dev/null 2>&1
 	tar xvf deb2sce.tar.gz PKGEXTRAFILES >/dev/null 2>&1
 	tar xvf deb2sce.tar.gz PKGPREBUILTDEP >/dev/null 2>&1
@@ -563,6 +571,19 @@ elif [ "$CHECKALL" == "TRUE" ]; then
   				[ "$DEB" == "q" ] || [ "$DEB" == "" ] && exit 1  
 			fi   
 		fi 
+		if [ ! -f "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM ]; then	
+			if grep -wq "^$DEB$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
+				echo " "
+				echo "${YELLOW}Warning:${NORMAL} $DEB is a blocked package, exiting.."
+				exit 0
+			fi
+		else
+			if grep -wq "^$DEB$" "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM > /dev/null 2>&1; then
+			echo " "
+			echo "${YELLOW}Warning:${NORMAL} $DEB is a blocked package, exiting.."
+			exit 0
+			fi
+		fi
   		echo "* Importing ${YELLOW}$DEB${NORMAL}."
   		mksce "$DEB"
 	fi 
@@ -603,6 +624,19 @@ elif [ "$CHECKALL" != "TRUE" ]; then
   				[ "$DEB" == "q" ] || [ "$DEB" == "" ] && exit 1
 			fi
         
+		fi
+		if [ ! -f "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM ]; then	
+			if grep -wq "^$DEB$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
+				echo " "
+				echo "${YELLOW}Warning:${NORMAL} $DEB is a blocked package, exiting.."
+				exit 0
+			fi
+		else
+			if grep -wq "^$DEB$" "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM > /dev/null 2>&1; then
+			echo " "
+			echo "${YELLOW}Warning:${NORMAL} $DEB is a blocked package, exiting.."
+			exit 0
+			fi
 		fi
   		echo "* Importing ${YELLOW}"$DEB"${NORMAL}."
   		mksce "$DEB"

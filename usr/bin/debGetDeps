@@ -15,9 +15,16 @@ getDeps()
 {
         PKG=${1}
 	[ -e /tmp/work/"$PKG" ] && continue
-	if grep -wq "^$PKG$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
-		echo "$PKG" >> /tmp/.blocked
-		return
+	if [ ! -f "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM ]; then
+		if grep -wq "^$PKG$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
+			echo "$PKG" >> /tmp/.blocked
+			continue
+		fi
+	else
+		if grep -wq "^$PKG$" "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM > /dev/null 2>&1; then
+			echo "$PKG" >> /tmp/.blocked
+			continue
+		fi
 	fi
 	
 	echo "$PKG"
