@@ -483,23 +483,25 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 	if [ -f "$TARGETFILE" ]; then
   		if [ -f /tmp/.importinteractive ]; then
   			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
+			echo " "
   			mksce "$TARGET" 
   		else
 			echo " "
 			echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
-			echo "         Entering (n)o will delete "$TARGETFILE"."
 			echo " "
 			echo "Press Enter to use this package list, (n)o to import a standard"
 			echo -n "'"$TARGET"' package if it exists, (q)uit exits: "
                         read ans
 	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
-	  			sudo rm /tmp/.targetfile
+				sudo rm /tmp/.targetfile
+				echo " "
 				mksce "$TARGET"
 	  		elif [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
 				cleanup
 				exit 0
 			else
 				echo "* Creating "$TARGET".sce from "$TARGETFILE"."
+				echo " "
 				mksce "$TARGET"
 			fi
 		fi
@@ -512,23 +514,25 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
   	if [ -f /tmp/.importinteractive ]; then
   		echo "* Creating "$TARGET".sce from "$TARGETFILE"."
+		echo " "
   		mksce "$TARGET"
   	else
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
-		echo "         Entering (n)o will delete "$TARGETFILE"."
 		echo " "
 		echo "Press Enter to use this package list, (n)o to import a standard"
 		echo -n "'"$TARGET"' package if it exists, (q)uit exits: "
                 read ans
 	  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
-	  		sudo rm /tmp/.targetfile
+			sudo rm /tmp/.targetfile
+			echo " "
 			mksce "$TARGET"
   		elif [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
 			cleanup
 			exit 0
 		else
 			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
+			echo " "
 			mksce "$TARGET"
 		fi
 	fi  
@@ -585,6 +589,7 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 			fi
 		fi
   		echo "* Importing ${YELLOW}$DEB${NORMAL}."
+		echo " "
   		mksce "$DEB"
 	fi 
 elif [ "$CHECKALL" != "TRUE" ]; then  
@@ -639,6 +644,7 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 			fi
 		fi
   		echo "* Importing ${YELLOW}"$DEB"${NORMAL}."
+		echo " "
   		mksce "$DEB"
 	fi
   	

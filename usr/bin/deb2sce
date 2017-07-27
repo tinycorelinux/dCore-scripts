@@ -281,7 +281,22 @@ elif sudo grep -q "^Package: $TARGET$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
 elif sudo grep -q "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
 	echo "* $TARGET is a standard "$DISTRO" "$REPO" package."
 elif sudo grep -q "^$TARGET:" "$DEBINXDIR"/PKGADDDEP; then
-	echo "* $TARGET is a metapackage of related "$DISTRO" ones."
+	if [ ! -f /tmp/.importinteractive ]; then
+		echo " "
+		echo "  ${YELLOW}$TARGET${NORMAL} is specified in dCore's dependency file list and may be"
+		echo "  a metapackage but does not itself exist in our or "$DISTRO"'s repo."
+		echo -n "  To proceed press Enter, (q)uit exits:  "
+		read ans
+		echo " "
+		if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
+			:
+		else
+			cleanup
+			exit 1
+		fi
+	else
+		echo "* ${YELLOW}$TARGET${NORMAL} may be a dCore metapackage of related "$DISTRO" ones."
+	fi	
 	META="$TARGET"
 else
 	echo " "
@@ -512,24 +527,32 @@ for I in `ls /tmp/work/`; do grep "^$I$" /tmp/.scedebs > /dev/null 2>&1 || echo 
 
 ## Function to provide a "less" list of packages that will be imported.
 if [ -f /tmp/.viewpkgs ]; then
-	echo "Press Enter to review the packages "$TARGET".sce will consist of,"
-	echo -n "enter (n)o to skip review: "
-	read ans
-	echo " "
-	if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
-		more /tmp/.pkglist
-		echo " "
-		echo -n "Press Enter to continue with import, (q)uit exits: "
+	if [ ! -f /tmp/.importinteractive ]; then
+		echo "Press Enter to review the packages "$TARGET".sce will consist of,"
+		echo -n "enter (n)o to skip review: "
 		read ans
+		echo " "
 		if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
+			more /tmp/.pkglist
 			echo " "
-			:
-		else
-			cleanup
-			exit 1
+			echo -n "Press Enter to continue with import, (q)uit exits: "
+			read ans
+			if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
+				echo " "
+				:
+			else
+				cleanup
+				exit 1
+			fi
 		fi
+		echo  "*Proceeding to create $TARGET.sce..."
+	else
+		echo ""$TARGET".sce will consist of:"
+		echo " "
+		cat /tmp/.pkglist
+		echo " "
 	fi
-	echo  "*Proceeding to create $TARGET.sce..."
+		
 fi
 ##
 
@@ -782,6 +805,8 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && mount | grep " /tmp/tcloop/"$TARGET" " 
 		[ "$ONDEMAND" ] && su "$TCUSER" -c "ondemand "$TARGET""
 		if [ -s /tmp/.targetfile ]; then
 			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
+		else
+			[ -f "$TCEDIR"/sce/"$TARGET".sce.lst ] && sudo rm "$TCEDIR"/sce/"$TARGET".sce.lst
 		fi
 		echo "* Imported "${YELLOW}""$TARGET".sce"${NORMAL}"."
 	else
@@ -807,6 +832,8 @@ else
 		[ "$ONDEMAND" ] && su "$TCUSER" -c "ondemand "$TARGET""
 		if [ -s /tmp/.targetfile ]; then
 			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
+		else
+			[ -f "$TCEDIR"/sce/"$TARGET".sce.lst ] && sudo rm "$TCEDIR"/sce/"$TARGET".sce.lst
 		fi
 		echo "* Imported "${YELLOW}""$TARGET".sce"${NORMAL}"."
 	else
