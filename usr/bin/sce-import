@@ -208,13 +208,13 @@ elif [ "$NONINTERACTIVE" == "TRUE" ]; then
 fi
 
 if [ ! -f "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM ]; then	
-	if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
+	if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1 && [ ! -z "$TARGET" ]; then
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} $TARGET is a blocked package, exiting.."
 		exit 0
 	fi
 else
-		if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM > /dev/null 2>&1; then
+		if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM > /dev/null 2>&1 && [ ! -z "$TARGET" ]; then
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} $TARGET is a blocked package, exiting.."
 		exit 0
