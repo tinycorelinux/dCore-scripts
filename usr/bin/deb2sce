@@ -119,28 +119,7 @@ createImportSummary () {
 	else
 		echo "Imported "$TARGET".sce on `date`." >> "$IMPORTSUMMARY"
 	fi
-	echo " " >> "$IMPORTSUMMARY"
-	if [ -f /tmp/.recommends ]; then
-		echo "Used -R option, added:" >> "$IMPORTSUMMARY"
-		if [ -f /tmp/sce.recommends ]; then
-			cat /tmp/sce.recommends >> "$IMPORTSUMMARY"
-		else
-			echo "0 packages" >> "$IMPORTSUMMARY"
-		fi
-	else
-		echo "Did not use -R option." >> "$IMPORTSUMMARY"
-	fi
-	echo " " >> "$IMPORTSUMMARY"
-	if [ -f /tmp/.suggests ]; then
-		echo "Used -S option, added:" >> "$IMPORTSUMMARY"
-		if [ -f /tmp/sce.suggests ]; then
-			cat /tmp/sce.suggests >> "$IMPORTSUMMARY"
-		else
-			echo "0 packages" >> "$IMPORTSUMMARY"
-		fi
-	else
-		echo "Did not use -S option." >> "$IMPORTSUMMARY"
-	fi
+	
 	echo " " >> "$IMPORTSUMMARY"
 	if cat /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1; then
 		echo "Dependency SCE(s) selected during import:" >> "$IMPORTSUMMARY"
@@ -363,50 +342,6 @@ if [ -s /tmp/.blocked ] && [ ! -f /tmp/.importinteractive ]; then
 	fi
 fi
 ##
-
-## Determine if 'Recommended' packages are desired.
-if [ -f /tmp/.recommends ]; then
-	if [ -s /tmp/.targetfile ]; then
-		for I in `cat /tmp/.targetfile`; do
-			debGetRecommends "$I" > /dev/null 2>&1 &
-		done 
-	else
-		debGetRecommends "$1" > /dev/null 2>&1 &
-	fi
-	/usr/bin/rotdash $!
-	if [ -s /tmp/sce.recommends ]; then
-		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
-		touch usr/local/sce/"$TARGET"/recommends
-		echo -n "* Gathering Recommended package dependencies."
-		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
-			debGetDeps "$I" > /dev/null 2>&1
-		done &
-	/usr/bin/rotdash $!
-	echo " "
-	fi
-fi
-
-## Determine if 'Suggested' packages are desired.
-if [ -f /tmp/.suggests ]; then
-	if [ -s /tmp/.targetfile ]; then
-		for I in `cat /tmp/.targetfile`; do
-			debGetSuggests "$I" > /dev/null 2>&1 &
-		done 
-	else
-		debGetSuggests "$1" > /dev/null 2>&1 &
-	fi
-	/usr/bin/rotdash $!
-	if [ -s /tmp/sce.suggests ]; then
-		[ -d usr/local/sce/"$TARGET" ] || mkdir -p usr/local/sce/"$TARGET"
-		touch usr/local/sce/"$TARGET"/suggests
-		echo -n "* Gathering Suggested package dependencies."
-		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
-			debGetDeps "$I" > /dev/null 2>&1
-		done &
-		/usr/bin/rotdash $!
-		echo " "
-	fi
-fi
 
 ## Create safe backup if sceconfig SAFEBACKUP=TRUE
 if cat /etc/sysconfig/sceconfig | grep -v '^#' | grep SAFEBACKUP=TRUE > /dev/null 2>&1; then

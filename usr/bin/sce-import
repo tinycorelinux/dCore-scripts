@@ -35,8 +35,6 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "${YELLOW}"sce-import -u PKG"${NORMAL}      (DEFAULT) update mode, sync new DEBINX files."
 	echo "${YELLOW}"sce-import -v PKG"${NORMAL}      View list of packages the imported SCE contains."
 	echo "${YELLOW}"sce-import -z PKG"${NORMAL}      Ignore locale.nopurge, sce.purge, sceconfig files."
-	echo "${YELLOW}"sce-import -R PKG"${NORMAL}      Include recommended Debian packages, warning large SCE."
-	echo "${YELLOW}"sce-import -S PKG"${NORMAL}      Include suggested Debian packages, warning large SCE."
 exit 0
 fi
 
@@ -72,7 +70,7 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 
 
 unset FLAGS PACKAGELIST NOPGREP
-while getopts drsbolknupcvzRSN OPTION
+while getopts drsbolknupcvzSN OPTION
 do
 	case ${OPTION} in
 		c) CHECKALL=TRUE ;;
@@ -88,8 +86,6 @@ do
 		l) PACKAGELIST=TRUE ;;
 		v) VIEWPKGS=TRUE ;;
 		z) NOCONFIG=TRUE ;;
-		R) RECOMMENDS=TRUE ;;
-		S) SUGGESTS=TRUE ;;
 		N) NOLOCK=TRUE ;;
 		*) echo "Run  sce-import --help  for usage information."
                    exit 1 ;;
@@ -263,24 +259,6 @@ if grep -i "^KEEPDOC=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCO
 elif [ "$KEEPDOC" == "TRUE" ]; then
 	touch /tmp/.keepdoc
 	echo "* Using the -k option."
-fi
-
-# Determine if including 'Recommended' packages are desired.
-if grep -i "^RECOMMENDS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
-	touch /tmp/.recommends
-	echo "* Using the -R option."
-elif [ "$RECOMMENDS" == "TRUE" ]; then
-	touch /tmp/.recommends
-	echo "* Using the -R option."
-fi
-
-# Determine if including 'Suggested' packages are desired.
-if grep -i "^SUGGESTS=TRUE" /etc/sysconfig/sceconfig > /dev/null 2>&1 && [ "$NOCONFIG" != "TRUE" ]; then
-	touch /tmp/.suggests
-	echo "* Using the -S option."
-elif [ "$SUGGESTS" == "TRUE" ]; then
-	touch /tmp/.suggests
-	echo "* Using the -S option."
 fi
 
 # Determine if the -d option or the existence of a dep file

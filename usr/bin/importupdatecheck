@@ -179,49 +179,19 @@ if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
 		pgrep sce-update > /dev/null 2>&1 || exit 0
 		sudo debGetDeps "$I" > /dev/null 2>&1
 	done
-	for I in `cat "$FILE" | cut -f1 -d:`; do
-		pgrep sce-update > /dev/null 2>&1 || exit 0
-		sudo debGetDeps "$I" > /dev/null 2>&1
-	done
+	#for I in `cat "$FILE" | cut -f1 -d:`; do
+	#	pgrep sce-update > /dev/null 2>&1 || exit 0
+	#	sudo debGetDeps "$I" > /dev/null 2>&1
+	#done
 		
 else
 	sudo debGetDeps "$SCE" > /dev/null 2>&1
-		for I in `cat "$FILE" | cut -f1 -d:`; do
-			pgrep sce-update > /dev/null 2>&1 || exit 0
-			sudo debGetDeps "$I" > /dev/null 2>&1
-		done
+		#for I in `cat "$FILE" | cut -f1 -d:`; do
+		#	pgrep sce-update > /dev/null 2>&1 || exit 0
+		#	sudo debGetDeps "$I" > /dev/null 2>&1
+		#done
 fi
 ##
-	
-if [ -f "$RECOMMENDS" ]; then
-	if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
-		for I in `cat "$TCEDIR"/sce/"$SCE".sce.lst`; do
-			debGetRecommends "$I" > /dev/null 2>&1
-		done 
-	else
-		debGetRecommends "$SCE" > /dev/null 2>&1
-	fi
-	if [ -s /tmp/sce.recommends ]; then
-		for I in `cat /tmp/sce.recommends | sort | uniq`; do 
-			debGetDeps "$I" > /dev/null 2>&1
-		done 
-	fi
-fi
-
-if [ -f "$SUGGESTS" ]; then
-	if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
-		for I in `cat "$TCEDIR"/sce/"$SCE".sce.lst`; do
-			debGetSuggests "$I" > /dev/null 2>&1
-		done 
-	else
-		debGetSuggests "$SCE" > /dev/null 2>&1
-	fi
-	if [ -s /tmp/sce.suggests ]; then
-		for I in `cat /tmp/sce.suggests | sort | uniq`; do 
-			debGetDeps "$I" > /dev/null 2>&1
-		done 
-	fi
-fi
 
 ## Get md5sum data and list of package dependencies.
 for I in `ls /tmp/work/`; do
@@ -239,30 +209,30 @@ fi
 
 ## No longer useful with recommends and suggests options, but maybe in the future.
 ## Update if pacakges are no longer required that are in the main SCE or it's deps.
-#for I in `cat "$FILE" | cut -f1 -d:`; do
-#	if ! ls /tmp/work/"$I" > /dev/null 2>&1 && [ ! -f /tmp/.updatechanged ]; then
-#		echo "$I" >> /tmp/.importnotneeded
-#	fi
-#done
+for I in `cat "$FILE" | cut -f1 -d:`; do
+	if ! ls /tmp/work/"$I" > /dev/null 2>&1 && [ ! -f /tmp/.updatechanged ]; then
+		echo "$I" >> /tmp/.importnotneeded
+	fi
+done
 ##
 
 ## No longer useful with recommends and suggests options, but maybe in the future.
-#for I in `ls /tmp/work/`; do
-#	if [ ! -s /tmp/work/"$I" ] && ! grep "^$I:" "$DEBINXDIR"/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
-#		continue
-#	fi
-#	if ls "$DATADIR"/*.debs > /dev/null 2>&1; then
-#		if ! grep "^$I:" "$FILE" > /dev/null 2>&1; then
-#			if ! grep "^$I$" "$DATADIR"/*.debs > /dev/null 2>&1; then
-#				echo "$I" >> /tmp/.importmissing
-#			fi
-#		fi
-#	else
-#		if ! grep "^$I:" "$FILE" > /dev/null 2>&1; then
-#			echo "$I" >> /tmp/.importmissing
-#		fi
-#	fi
-#done
+for I in `ls /tmp/work/`; do
+	if [ ! -s /tmp/work/"$I" ] && ! grep "^$I:" "$DEBINXDIR"/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
+		continue
+	fi
+	if ls "$DATADIR"/*.debs > /dev/null 2>&1; then
+		if ! grep "^$I:" "$FILE" > /dev/null 2>&1; then
+			if ! grep "^$I$" "$DATADIR"/*.debs > /dev/null 2>&1; then
+				echo "$I" >> /tmp/.importmissing
+			fi
+		fi
+	else
+		if ! grep "^$I:" "$FILE" > /dev/null 2>&1; then
+			echo "$I" >> /tmp/.importmissing
+		fi
+	fi
+done
 
 while read line; do 
 	pgrep sce-update > /dev/null 2>&1 || exit 0
@@ -348,7 +318,7 @@ done < /tmp/sce.md5new
 if [ -s /tmp/.importnotneeded ]; then
 	for I in `cat /tmp/.importnotneeded | sort | uniq`; do 
 		A=`grep "^$I;" /tmp/.importpkgtype | cut -f1 -d";"`
-		echo ""$I"  "$A" is no longer needed by "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
+		echo ""$I"   "$A"   has been removed as a dependency by "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
 	done
 	echo "$1" >> /tmp/.sceupdatelist
 fi 
@@ -356,16 +326,18 @@ fi
 if [ -s /tmp/.importmissing ]; then
 	for I in `cat /tmp/.importmissing | sort | uniq`; do 
 		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
-		echo ""$I"  "$A" is missing in "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
+		echo ""$I"   "$A"   is a new dependency in "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
  	done  
 	echo "$1" >> /tmp/.sceupdatelist
 fi
 
 if [ -s /tmp/.importupdates ]; then
 	for I in `cat /tmp/.importupdates | sort | uniq`; do
-		if grep "^$I;" /tmp/.importpkgtype > /dev/null 2>&1; then
-			A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
-			echo ""$I"  "$A" " >> /tmp/updateavailable
+		if ! grep "^$I$" /tmp/.importmissing > /dev/null 2>&1; then
+			if grep "^$I;" /tmp/.importpkgtype > /dev/null 2>&1; then
+				A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
+				echo ""$I"   "$A" " >> /tmp/updateavailable
+			fi
 		fi
  	done  
 	echo "$1" >> /tmp/.sceupdatelist
