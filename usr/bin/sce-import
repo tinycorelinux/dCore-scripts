@@ -168,6 +168,7 @@ cleanup () {
 [ -f /tmp/.pkglist ] && sudo rm /tmp/.pkglist
 [ -f /tmp/import.log ] && sudo rm /tmp/import.log
 [ -f /tmp/.sceimportselect ] && sudo rm /tmp/.sceimportselect
+[ -f /tmp/sceimporterror ] && sudo rm /tmp/sceimporterror
 }
 
 cleanup
@@ -207,13 +208,15 @@ if [ ! -f "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM ]; then
 	if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1 && [ ! -z "$TARGET" ]; then
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} $TARGET is a blocked package, exiting.."
-		exit 0
+		echo "$TARGET is a blocked package" >> /tmp/sceimporterror
+		exit 1
 	fi
 else
 		if grep -wq "^$TARGET$" "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM > /dev/null 2>&1 && [ ! -z "$TARGET" ]; then
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} $TARGET is a blocked package, exiting.."
-		exit 0
+		echo "$TARGET is a blocked package" >> /tmp/sceimporterror
+		exit 1
 	fi
 fi
 
@@ -281,6 +284,7 @@ case "$MS_MNTS" in
 				echo " "
 				echo "${YELLOW}Warning:${NORMAL} "$REALDIR" resides on a read only NTFS filesystem,"
 				echo "         ntfs-3g needed to write to NTFS, exiting.."
+				echo "$TARGET: ntfs-3g needed to make use of the NTFS filesystem for the TCE dir." >> /tmp/sceimporterror
 				exit 1					
 			;;
 
@@ -298,6 +302,7 @@ case "$MS_MNTS" in
 					echo " "
 					echo "${YELLOW}Warning:${NORMAL} "$REALDIR" resides on a Windows filesystem."
 					echo "Try again with the -r flag to unpack files in RAM, exiting.."
+					echo "$TARGET: TCE directory on a Windows filesystem, use the -r RAM option." >> /tmp/sceimporterror
 					exit 1
 				fi	
 			;;
@@ -309,6 +314,7 @@ if [ "$PRESERVEDEBINXMODE" != "TRUE" ]; then
 	if [ "$?" != "0" ]; then
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} Error updating DEBINX files, exiting.."
+		echo "$TARGET: Error updating DEBINX files." >> /tmp/sceimporterror
 		exit 1
 	fi
 else
@@ -316,6 +322,7 @@ else
 	if [ ! -s /etc/sysconfig/tcedir/import/debinx/debinx ] || [ ! -f deb2sce.tar.gz ]; then
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} Run sce-import without the -p option to update DEBINX data, exiting.."
+		echo "$TARGET: Need to update the DEBINX data without the -p option." >> /tmp/sceimporterror
 		exit 1
 	
 	else
@@ -323,6 +330,7 @@ else
 		if [ ! -f "$DEBINX" ]; then
 			echo " "
 			echo "${YELLOW}Warning:${NORMAL} Run sce-import without the -p option to update DEBINX data, exiting.."
+			echo "$TARGET: Need to update the DEBINX data without the -p option." >> /tmp/sceimporterror
 			exit 1
 		fi
 	fi
@@ -331,6 +339,7 @@ else
 		if [ ! -f "$DEBINX_SECURITY" ]; then
 			echo " "
 			echo "${YELLOW}Warning:${NORMAL} Run sce-import without the -p option to update DEBINX data, exiting.."
+			echo "$TARGET: Need to update the DEBINX data without the -p option." >> /tmp/sceimporterror
 			exit 1
 		fi
 	fi
@@ -374,6 +383,8 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 		done
 		if [ -s /tmp/.pkglisterror ]; then
 			echo " "
+			echo "$TARGET: Below packages do not exist in the .lst list file:" >> /tmp/sceimporterror
+			cat /tmp/.pkglisterror >> /tmp/sceimporterror
 			cat /tmp/.pkglisterror
 			echo " "
 			if [ ! -f /tmp/.importinteractive ]; then
@@ -403,6 +414,8 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 		done
 		if [ -s /tmp/.pkglisterror ]; then
 			echo " "
+			echo "$TARGET: Below packages do not exist in the .lst list file:" >> /tmp/sceimporterror
+			cat /tmp/.pkglisterror >> /tmp/sceimporterror
 			cat /tmp/.pkglisterror
 			echo " "
 			if [ ! -f /tmp/.importinteractive ]; then
@@ -426,14 +439,18 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 	elif [ ! "$1" ]; then
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} Specify a target file when using the -l option, exiting.."
-		exit 0
+		echo "$TARGET: Specify a target file when using the -l option." >> /tmp/sceimporterror
+		exit 1
 	else
 		echo " "
+		echo "$TARGET: Neither of the below list files exist."  
 		echo ""`pwd`/$1""
+		echo "$TARGET: "`pwd`/$1"" >> /tmp/sceimporterror
 		echo ""$TCEDIR"/sce/"$1".sce.lst"
+		echo "$TARGET: "$TCEDIR"/sce/"$1".sce.lst" >> /tmp/sceimporterror
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} Neither of the above list files exist, exiting.."
-		exit 0
+		exit 1
 	fi
 fi
 
@@ -531,6 +548,7 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 			if [ -z "$DEB" ]; then
 				echo " "
 				echo "${YELLOW}Warning:${NORMAL} '"$TARGET"' is not available as a package, exiting.."
+				echo "$TARGET is not available as a package." >> /tmp/sceimporterror
 				exit 1
 			fi     
 		else
@@ -557,13 +575,15 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 			if grep -wq "^$DEB$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
 				echo " "
 				echo "${YELLOW}Warning:${NORMAL} $DEB is a blocked package, exiting.."
-				exit 0
+				echo "Warning: $DEB is a blocked package." >> /tmp/sceimporterror
+				exit 1
 			fi
 		else
 			if grep -wq "^$DEB$" "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM > /dev/null 2>&1; then
 			echo " "
 			echo "${YELLOW}Warning:${NORMAL} $DEB is a blocked package, exiting.."
-			exit 0
+			echo "Warning: $DEB is a blocked package." >> /tmp/sceimporterror
+			exit 1
 			fi
 		fi
   		echo "* Importing ${YELLOW}$DEB${NORMAL}."
@@ -585,6 +605,7 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 			if [ -z "$DEB" ]; then
 				echo " "
 				echo "${YELLOW}Warning:${NORMAL} '"$TARGET"' is not available as a package, exiting.."
+				echo "$TARGET is not available as a package." >> /tmp/sceimporterror
 				exit 1
 			fi  
 		 else
@@ -612,13 +633,15 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 			if grep -wq "^$DEB$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
 				echo " "
 				echo "${YELLOW}Warning:${NORMAL} $DEB is a blocked package, exiting.."
-				exit 0
+				echo "$DEB is a blocked package." >> /tmp/sceimporterror
+				exit 1
 			fi
 		else
 			if grep -wq "^$DEB$" "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM > /dev/null 2>&1; then
 			echo " "
 			echo "${YELLOW}Warning:${NORMAL} $DEB is a blocked package, exiting.."
-			exit 0
+			echo "$DEB is a blocked package." >> /tmp/sceimporterror
+			exit 1
 			fi
 		fi
   		echo "* Importing ${YELLOW}"$DEB"${NORMAL}."
@@ -630,3 +653,5 @@ fi
 
 echo " "
 echo "${YELLOW}WARNING:${NORMAL} '"$TARGET"' is not available as a package, exiting.."
+echo "$TARGET is not available as a package." >> /tmp/sceimporterror
+

@@ -157,7 +157,8 @@ fi
 [ -f /tmp/updateavailable ] && sudo rm /tmp/updateavailable
 [ -f /tmp/importupdated ] && sudo rm /tmp/importupdated
 [ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
-[ -f /tmp/.updatechecked ] && sudo rm /tmp/.updatechecked
+[ -f /tmp/.updatechecked ] && sudo rm /tmp/.updatechecked   
+[ -f /tmp/updateerrors ] && sudo rm /tmp/updateerrors
 
 cleanup() {
 	sudo chown -R "$TCUSER":staff "$SCEDIR" > /dev/null 2>&1
@@ -306,8 +307,10 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
 						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I", exiting.."
-							exit 1
+							echo "Error in updating "$I"" >> /tmp/updateerrors
+							cat /tmp/sceimporterror >> /tmp/updateerrors
+							echo " " >> /tmp/updateerrors
+							continue
 						fi
 					fi
 					echo "$I" >> /tmp/importupdated
@@ -338,8 +341,10 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
 						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I", exiting.."
-							exit 1
+							echo "Error in updating "$I"" >> /tmp/updateerrors
+							cat /tmp/sceimporterror >> /tmp/updateerrors
+							echo " " >> /tmp/updateerrors
+							continue
 						fi
 					fi
 					echo "$I" >> /tmp/importupdated
@@ -358,12 +363,14 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			fi
 			exit 0
 		fi
+		cd /etc/sysconfig/tcedir/import/debinx
+		sudo mv NEWDEBINX OLDDEBINX > /dev/null 2>&1
 	else
 		echo " "
 		echo "No updates available for main or any dependency SCEs."
+		cd /etc/sysconfig/tcedir/import/debinx
+		sudo mv NEWDEBINX OLDDEBINX > /dev/null 2>&1
 	fi
-	cd /etc/sysconfig/tcedir/import/debinx
-	sudo mv NEWDEBINX OLDDEBINX > /dev/null 2>&1
 	##
 elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 	echo " "
@@ -415,8 +422,10 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
 						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I", exiting.."
-							exit 1
+							echo "Error in updating "$I"" >> /tmp/updateerrors
+							cat /tmp/sceimporterror >> /tmp/updateerrors
+							echo " " >> /tmp/updateerrors
+							continue
 						fi
 					fi
 					echo "$I" >> /tmp/importupdated
@@ -447,8 +456,10 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
 						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I", exiting.."
-							exit 1
+							echo "Error in updating "$I"" >> /tmp/updateerrors
+							cat /tmp/sceimporterror >> /tmp/updateerrors
+							echo " " >> /tmp/updateerrors
+							continue
 						fi
 					fi
 					echo "$I" >> /tmp/importupdated
@@ -538,8 +549,10 @@ elif [ "$SELECT" == "TRUE" ]; then
 						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 							sce-import -"$OPTIONS"Nnp "$I"
 							if [ "$?" != "0" ]; then
-								echo "Error in updating "$I", exiting.."
-								exit 1
+								echo "Error in updating "$I"" >> /tmp/updateerrors
+								cat /tmp/sceimporterror >> /tmp/updateerrors
+								echo " " >> /tmp/updateerrors
+								continue
 							fi
 						fi
 						echo "$I" >> /tmp/importupdated
@@ -571,8 +584,10 @@ elif [ "$SELECT" == "TRUE" ]; then
 						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 							sce-import -"$OPTIONS"Nnp "$I"
 							if [ "$?" != "0" ]; then
-								echo "Error in updating "$I", exiting.."
-								exit 1
+								echo "Error in updating "$I"" >> /tmp/updateerrors
+								cat /tmp/sceimporterror >> /tmp/updateerrors
+								echo " " >> /tmp/updateerrors
+								continue
 							fi
 						fi
 						echo "$I" >> /tmp/importupdated
@@ -648,8 +663,10 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
 						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I", exiting.."
-							exit 1
+							echo "Error in updating "$I"" >> /tmp/updateerrors
+							cat /tmp/sceimporterror >> /tmp/updateerrors
+							echo " " >> /tmp/updateerrors
+							continue
 						fi
 					fi
 					echo "$I" >> /tmp/importupdated
@@ -680,8 +697,10 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
 						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I", exiting.."
-							exit 1
+							echo "Error in updating "$I"" >> /tmp/updateerrors
+							cat /tmp/sceimporterror >> /tmp/updateerrors
+							echo " " >> /tmp/updateerrors
+							continue
 						fi
 					fi
 					echo "$I" >> /tmp/importupdated
@@ -743,8 +762,10 @@ elif [ -f "$UPDATETARGET".sce ]; then
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
 						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I", exiting.."
-							exit 1
+							echo "Error in updating "$I"" >> /tmp/updateerrors
+							cat /tmp/sceimporterror >> /tmp/updateerrors
+							echo " " >> /tmp/updateerrors
+							continue
 						fi
 					fi
 					echo "$I" >> /tmp/importupdated
@@ -775,8 +796,10 @@ elif [ -f "$UPDATETARGET".sce ]; then
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
 						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I", exiting.."
-							exit 1
+							echo "Error in updating "$I"" >> /tmp/updateerrors
+							cat /tmp/sceimporterror >> /tmp/updateerrors
+							echo " " >> /tmp/updateerrors
+							continue
 						fi
 					fi
 					echo "$I" >> /tmp/importupdated
@@ -804,7 +827,13 @@ else
 	echo "${YELLOW}WARNING:${NORMAL} '"$UPDATETARGET"' is not an existing SCE file, exiting.."
 fi
 
-cleanup
+if [ -s /tmp/updateerrors ]; then
+	echo -n "Errors occured during sce-update, press Enter to view them, Ctrl-C aborts:"
+	read ans
+	if [ "$ans" == "" ] || [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+		more -s /tmp/updateavailable
+	fi
+fi
 
 if ls /tmp/*.pkglist > /dev/null 2>&1; then
 	sudo rm /tmp/*.pkglist
@@ -817,3 +846,5 @@ fi
 if ls /tmp/*.deb2sce > /dev/null 2>&1; then
 	sudo rm /tmp/*.deb2sce
 fi
+
+cleanup
