@@ -654,4 +654,5 @@ fi
 echo " "
 echo "${YELLOW}WARNING:${NORMAL} '"$TARGET"' is not available as a package, exiting.."
 echo "$TARGET is not available as a package." >> /tmp/sceimporterror
+exit 1
 

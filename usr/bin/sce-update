@@ -158,7 +158,7 @@ fi
 [ -f /tmp/importupdated ] && sudo rm /tmp/importupdated
 [ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
 [ -f /tmp/.updatechecked ] && sudo rm /tmp/.updatechecked   
-[ -f /tmp/updateerrors ] && sudo rm /tmp/updateerrors
+[ -f /tmp/sceupdateerror ] && sudo rm /tmp/sceupdateerror
 
 cleanup() {
 	sudo chown -R "$TCUSER":staff "$SCEDIR" > /dev/null 2>&1
@@ -306,10 +306,10 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I"" >> /tmp/updateerrors
-							cat /tmp/sceimporterror >> /tmp/updateerrors
-							echo " " >> /tmp/updateerrors
+						if [ -s /tmp/sceimporterror ]; then
+							echo "Error in updating "$I"" >> /tmp/sceupdateerror
+							cat /tmp/sceimporterror >> /tmp/sceupdateerror
+							echo " " >> /tmp/sceupdateerror
 							continue
 						fi
 					fi
@@ -340,10 +340,10 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I"" >> /tmp/updateerrors
-							cat /tmp/sceimporterror >> /tmp/updateerrors
-							echo " " >> /tmp/updateerrors
+						if [ -s /tmp/sceimporterror ]; then
+							echo "Error in updating "$I"" >> /tmp/sceupdateerror
+							cat /tmp/sceimporterror >> /tmp/sceupdateerror
+							echo " " >> /tmp/sceupdateerror
 							continue
 						fi
 					fi
@@ -421,10 +421,10 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I"" >> /tmp/updateerrors
-							cat /tmp/sceimporterror >> /tmp/updateerrors
-							echo " " >> /tmp/updateerrors
+						if [ -s /tmp/sceimporterror ]; then
+							echo "Error in updating "$I"" >> /tmp/sceupdateerror
+							cat /tmp/sceimporterror >> /tmp/sceupdateerror
+							echo " " >> /tmp/sceupdateerror
 							continue
 						fi
 					fi
@@ -455,10 +455,10 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I"" >> /tmp/updateerrors
-							cat /tmp/sceimporterror >> /tmp/updateerrors
-							echo " " >> /tmp/updateerrors
+						if [ -s /tmp/sceimporterror ]; then
+							echo "Error in updating "$I"" >> /tmp/sceupdateerror
+							cat /tmp/sceimporterror >> /tmp/sceupdateerror
+							echo " " >> /tmp/sceupdateerror
 							continue
 						fi
 					fi
@@ -548,10 +548,10 @@ elif [ "$SELECT" == "TRUE" ]; then
 						fi
 						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 							sce-import -"$OPTIONS"Nnp "$I"
-							if [ "$?" != "0" ]; then
-								echo "Error in updating "$I"" >> /tmp/updateerrors
-								cat /tmp/sceimporterror >> /tmp/updateerrors
-								echo " " >> /tmp/updateerrors
+							if [ -s /tmp/sceimporterror ]; then
+								echo "Error in updating "$I"" >> /tmp/sceupdateerror
+								cat /tmp/sceimporterror >> /tmp/sceupdateerror
+								echo " " >> /tmp/sceupdateerror
 								continue
 							fi
 						fi
@@ -583,10 +583,10 @@ elif [ "$SELECT" == "TRUE" ]; then
 						fi
 						if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 							sce-import -"$OPTIONS"Nnp "$I"
-							if [ "$?" != "0" ]; then
-								echo "Error in updating "$I"" >> /tmp/updateerrors
-								cat /tmp/sceimporterror >> /tmp/updateerrors
-								echo " " >> /tmp/updateerrors
+							if [ -s /tmp/sceimporterror ]; then
+								echo "Error in updating "$I"" >> /tmp/sceupdateerror
+								cat /tmp/sceimporterror >> /tmp/sceupdateerror
+								echo " " >> /tmp/sceupdateerror
 								continue
 							fi
 						fi
@@ -662,10 +662,10 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I"" >> /tmp/updateerrors
-							cat /tmp/sceimporterror >> /tmp/updateerrors
-							echo " " >> /tmp/updateerrors
+						if [ -s /tmp/sceimporterror ]; then
+							echo "Error in updating "$I"" >> /tmp/sceupdateerror
+							cat /tmp/sceimporterror >> /tmp/sceupdateerror
+							echo " " >> /tmp/sceupdateerror
 							continue
 						fi
 					fi
@@ -696,10 +696,10 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I"" >> /tmp/updateerrors
-							cat /tmp/sceimporterror >> /tmp/updateerrors
-							echo " " >> /tmp/updateerrors
+						if [ -s /tmp/sceimporterror ]; then
+							echo "Error in updating "$I"" >> /tmp/sceupdateerror
+							cat /tmp/sceimporterror >> /tmp/sceupdateerror
+							echo " " >> /tmp/sceupdateerror
 							continue
 						fi
 					fi
@@ -761,10 +761,10 @@ elif [ -f "$UPDATETARGET".sce ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I"" >> /tmp/updateerrors
-							cat /tmp/sceimporterror >> /tmp/updateerrors
-							echo " " >> /tmp/updateerrors
+						if [ -s /tmp/sceimporterror ]; then
+							echo "Error in updating "$I"" >> /tmp/sceupdateerror
+							cat /tmp/sceimporterror >> /tmp/sceupdateerror
+							echo " " >> /tmp/sceupdateerror
 							continue
 						fi
 					fi
@@ -795,10 +795,10 @@ elif [ -f "$UPDATETARGET".sce ]; then
 					fi
 					if ! grep "^$I$" /tmp/importupdated > /dev/null 2>&1; then
 						sce-import -"$OPTIONS"Nnp "$I"
-						if [ "$?" != "0" ]; then
-							echo "Error in updating "$I"" >> /tmp/updateerrors
-							cat /tmp/sceimporterror >> /tmp/updateerrors
-							echo " " >> /tmp/updateerrors
+						if [ -s /tmp/sceimporterror ]; then
+							echo "Error in updating "$I"" >> /tmp/sceupdateerror
+							cat /tmp/sceimporterror >> /tmp/sceupdateerror
+							echo " " >> /tmp/sceupdateerror
 							continue
 						fi
 					fi
@@ -827,11 +827,11 @@ else
 	echo "${YELLOW}WARNING:${NORMAL} '"$UPDATETARGET"' is not an existing SCE file, exiting.."
 fi
 
-if [ -s /tmp/updateerrors ]; then
+if [ -s /tmp/sceupdateerror ]; then
 	echo -n "Errors occured during sce-update, press Enter to view them, Ctrl-C aborts:"
 	read ans
 	if [ "$ans" == "" ] || [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
-		more -s /tmp/updateavailable
+		more -s /tmp/sceupdateerror
 	fi
 fi
 
