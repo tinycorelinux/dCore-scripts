@@ -267,11 +267,11 @@ elif sudo grep -q "^$TARGET:" "$DEBINXDIR"/PKGADDDEP; then
 		echo -n "  To proceed press Enter, (q)uit exits:  "
 		read ans
 		echo " "
-		if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
-			:
-		else
+		if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 			cleanup
 			exit 1
+		else
+			:
 		fi
 	else
 		echo "* ${YELLOW}$TARGET${NORMAL} may be a dCore metapackage of related "$DISTRO" ones."
@@ -334,11 +334,11 @@ if [ -s /tmp/.blocked ] && [ ! -f /tmp/.importinteractive ]; then
 	echo -n "to proceed anyway press Enter, (q)uit exits: "
 	read ans
 	echo " "
-	if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
-		:
-	else
+	if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 		cleanup
 		exit 1
+	else
+		:
 	fi
 fi
 ##
@@ -375,7 +375,7 @@ if [ -f /tmp/.importdep ]; then
 				echo -n "or enter (n)o to import "$TARGET" without a dependency file: "
 				read ANS
 				echo " "
-				if [ "$ANS" == "n" ] || [ "$ANS" == "N" ]; then
+				if [ "$ANS" == "n" ] || [ "$ANS" == "no" ]; then
 					sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
 				else
 					sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
@@ -446,12 +446,12 @@ if [ -s /tmp/.importfree ]; then
 	echo "${YELLOW}WARNING:${NORMAL} Review warning(s), to import "$TARGET" anyway"
 	echo -n "press Enter, (q)uit exits: "
 	read ans
-	if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
-		echo " "
-		:
-	else
+	if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 		cleanup
 		exit 1
+	else
+		echo " "
+		:
 	fi
 fi
 ##
@@ -467,17 +467,19 @@ if [ -f /tmp/.viewpkgs ]; then
 		echo -n "enter (n)o to skip review: "
 		read ans
 		echo " "
-		if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
+		if [ "$ans" == "n" ] || [ "$ans" == "no" ]; then
+			:
+		else
 			more /tmp/.pkglist
 			echo " "
 			echo -n "Press Enter to continue with import, (q)uit exits: "
 			read ans
-			if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
-				echo " "
-				:
-			else
+			if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 				cleanup
 				exit 1
+			else
+				echo " "
+				:
 			fi
 		fi
 		echo  "*Proceeding to create $TARGET.sce..."

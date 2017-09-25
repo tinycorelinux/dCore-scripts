@@ -110,7 +110,7 @@ if [ -s /tmp/.removesce ]; then
 	echo " "
 	echo -n "Press Enter to confirm removal, (q)uit to exit without changes: "
 	read ans
-	if [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
+	if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 		rm /tmp/.removesce
 		cleanup
 		exit 1

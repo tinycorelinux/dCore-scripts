@@ -85,10 +85,10 @@ if [ "$PURGEALL" == "TRUE" ]; then
         echo " "
         echo -n "Press Enter to proceed, (q)uit exits: "
         read ans
-	if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
-		:
-	else
+	if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 		exit 1
+	else
+		:
 	fi
 	echo " "
         cd /etc/sysconfig/tcedir/import/debs

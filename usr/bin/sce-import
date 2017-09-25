@@ -392,11 +392,11 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 				echo " "
 				echo -n "Press Enter to import the remaining list anyway, (q)uit to exit: "
 				read ans
-				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
-					:
-				else
+				if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 					cleanup
 					exit 1
+				else
+					:
 				fi
 			else
 				echo "${YELLOW}Warning:${NORMAL} The above package(s) in "$TARGETFILE" do not exist,"
@@ -423,11 +423,11 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 				echo " "
 				echo -n "Press Enter to import the remaining list anyway, (q)uit to exit: "
 				read ans
-				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
-					:
-				else
+				if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 					cleanup
 					exit 1
+				else
+					:
 				fi
 			else
 				echo "${YELLOW}Warning:${NORMAL} The above package(s) in "$TARGETFILE" do not exist,"
@@ -487,11 +487,11 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 			echo "Press Enter to use this package list, (n)o to import a standard"
 			echo -n "'"$TARGET"' package if it exists, (q)uit exits: "
                         read ans
-	  		if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
+	  		if [ "$ans" == "n" ] || [ "$ans" == "no" ]; then  
 				sudo rm /tmp/.targetfile
 				echo " "
 				mksce "$TARGET"
-	  		elif [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
+	  		elif [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 				cleanup
 				exit 0
 			else
@@ -518,11 +518,11 @@ elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 		echo "Press Enter to use this package list, (n)o to import a standard"
 		echo -n "'"$TARGET"' package if it exists, (q)uit exits: "
                 read ans
-	  	if [ "$ans" == "n" ] || [ "$ans" == "N" ]; then  
+	  	if [ "$ans" == "n" ] || [ "$ans" == "no" ]; then  
 			sudo rm /tmp/.targetfile
 			echo " "
 			mksce "$TARGET"
-  		elif [ "$ans" == "q" ] || [ "$ans" == "Q" ]; then
+  		elif [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 			cleanup
 			exit 0
 		else
@@ -559,16 +559,16 @@ elif [ "$CHECKALL" == "TRUE" ]; then
 				echo " "
 				echo -n "Press Enter to import ${YELLOW}$DEB${NORMAL}, (q)uit to exit: "
 				read ans
-				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
-					:
-				else
+				if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 					cleanup
 					exit 0
+				else
+					:
 				fi
 			else
 				cat /tmp/.sceimportselect | select "Select package for '"$TARGET"'." "-"
 				read DEB < /tmp/select.ans                                                                           
-  				[ "$DEB" == "q" ] || [ "$DEB" == "" ] && exit 1  
+  				[ "$DEB" == "q" ] || [ "$DEB" == "quit" ] || [ "$DEB" == "" ] && exit 1  
 			fi   
 		fi 
 		if [ ! -f "$DEBINXDIR"/PKGEXCLUDELISTCUSTOM ]; then	
@@ -616,16 +616,16 @@ elif [ "$CHECKALL" != "TRUE" ]; then
 				echo " "
 				echo -n "Press Enter to import ${YELLOW}$DEB${NORMAL}, (q)uit exits: "
 				read ans
-				if [ "$ans" == "y" ] || [ "$ans" == "Y" ] || [ "$ans" == "" ]; then
-					:
-				else
+				if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
 					cleanup
 					exit 0
+				else
+					:
 				fi
 			else
 				cat /tmp/.sceimportselect | select "Select package for '"$TARGET"'." "-"
 				read DEB < /tmp/select.ans                                                                           
-  				[ "$DEB" == "q" ] || [ "$DEB" == "" ] && exit 1
+  				[ "$DEB" == "q" ] || [ "$DEB" == "quit" ] || [ "$DEB" == "" ] && exit 1
 			fi
         
 		fi

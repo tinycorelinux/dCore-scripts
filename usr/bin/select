@@ -37,6 +37,10 @@ END {
 		if ( NR > 20 ) printf ", (n)ext/Enter, (p)revious"
 		printf ": "
 		selection = read_console()
+		if (selection == "quit") {
+			system ("touch /tmp/select.ans") 
+			exit
+		}
 		if (selection == "q") {
 			system ("touch /tmp/select.ans") 
 			exit

@@ -251,7 +251,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			echo -n "(to view DEBINX diff use spacebar and (q)uit): "
 			read ans
 			echo " "
-			if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+			if [ "$ans" == "v" ] || [ "$ans" == "view" ]; then
 				echo -n "Obtaining diff of new and old package data."
 				diff "$DEBINXDIR"/OLDDEBINX "$DEBINXDIR"/NEWDEBINX > /dev/null 2>&1 > /tmp/debinx.diff & /usr/bin/rotdash $!
 				echo " " && echo " "
@@ -324,7 +324,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
                                 echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
 				read ans
 				echo " "
-				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+				if [ "$ans" == "v" ] || [ "$ans" == "view" ]; then
 					more -s /tmp/updateavailable
 					echo " "
 					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
@@ -364,12 +364,12 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			exit 0
 		fi
 		cd /etc/sysconfig/tcedir/import/debinx
-		sudo mv NEWDEBINX OLDDEBINX > /dev/null 2>&1
+		sudo cp NEWDEBINX OLDDEBINX > /dev/null 2>&1
 	else
 		echo " "
 		echo "No updates available for main or any dependency SCEs."
 		cd /etc/sysconfig/tcedir/import/debinx
-		sudo mv NEWDEBINX OLDDEBINX > /dev/null 2>&1
+		sudo cp NEWDEBINX OLDDEBINX > /dev/null 2>&1
 	fi
 	##
 elif [ "$SCEBOOTLIST" == "TRUE" ]; then
@@ -439,7 +439,7 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
                                 echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
 				read ans
 				echo " "
-				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+				if [ "$ans" == "v" ] || [ "$ans" == "view" ]; then
 					more -s /tmp/updateavailable
 					echo " "
 					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
@@ -504,7 +504,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 	echo " "
 	echo -n "Press Enter to update check above SCE(s), (q)uit to exit: "
 	read ANS
-	if [ "$ANS" == "q" ] || [ "$ANS" == "Q" ]; then
+	if [ "$ANS" == "q" ] || [ "$ANS" == "quit" ]; then
 		cleanup
 		exit 0
 	else
@@ -566,7 +566,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 					echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
 					read ans
 					echo " "
-					if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+					if [ "$ans" == "v" ] || [ "$ans" == "view" ]; then
 						VIEWED=TRUE
 						more -s /tmp/updateavailable
 						echo " "
@@ -680,7 +680,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
                                 echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
 				read ans
 				echo " "
-				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+				if [ "$ans" == "v" ] || [ "$ans" == "view" ]; then
 					more -s /tmp/updateavailable
 					echo " "
 					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
@@ -779,7 +779,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 				echo -n "Press Enter to update above SCE(s), (v)iew package updates, Ctrl-C aborts: "
 				read ans
 				echo " "
-				if [ "$ans" == "v" ] || [ "$ans" == "V" ]; then
+				if [ "$ans" == "v" ] || [ "$ans" == "view" ]; then
 					more -s /tmp/updateavailable
 					echo " "
 					echo -n "Press Enter to proceed with updates, Ctrl-C aborts: "
