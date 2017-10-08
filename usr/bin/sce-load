@@ -71,7 +71,7 @@ choose(){
 
 	cat "$SCE" "$MOUNTED" "$MOUNTED" | sort | uniq -u > "$TMP"
 	for I in `cat "$TMP"`; do
-		grep "^$I:" /tmp/.debinstalled > /dev/null 2>&1 && sed -i "/^$I$/d" "$TMP"
+		grep "^$I$" /tmp/.sceinstalled > /dev/null 2>&1 && sed -i "/^$I$/d" "$TMP"
 	done
 	rm "$SCE"
 	rm "$MOUNTED"
@@ -99,7 +99,7 @@ processAPP(){
 	TARGETAPP="${TARGETAPP/-KERNEL.sce/-${KERNELVER}.sce}"
 
 	#THISAPP=`basename $APPNAME .sce`
-	if grep "^$APPNAME:" /tmp/.debinstalled > /dev/null 2>&1; then
+	if grep "^$APPNAME$" /tmp/.sceinstalled > /dev/null 2>&1; then
 		if [ "$BOOTING" ]; then
 			continue
 		else
@@ -333,6 +333,7 @@ install(){
 		done
 	fi
 	[ "$BOOTING" ] && [ "$SHOWAPPS" ] && echo -n "${YELLOW}$APPNAME ${NORMAL}"
+	echo "$APPNAME" >> /tmp/.sceinstalled
 }
 
 
@@ -395,7 +396,7 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
  		fi
  	fi
 
-	if [ -d /tmp/tcloop/"$THISSCENAME" ] || grep "^$THISSCENAME:" /tmp/.debinstalled > /dev/null 2>&1; then
+	if [ -d /tmp/tcloop/"$THISSCENAME" ] || grep "^$THISSCENAME$" /tmp/.sceinstalled > /dev/null 2>&1; then
 		if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
 			continue
 		else
@@ -417,7 +418,7 @@ for TARGETAPP in `echo "$TARGETAPP" "$@"`; do
 
 	for I in `echo "$DEPLIST"`; do
 		
-		if [ -d /tmp/tcloop/"$I" ] || grep "^$I:" /tmp/.debinstalled > /dev/null 2>&1; then
+		if [ -d /tmp/tcloop/"$I" ] || grep "^$I$" /tmp/.sceinstalled > /dev/null 2>&1; then
 			if [ "$BOOTING" ] || [ "$SUPPRESS" ]; then
 				continue
 			else
