@@ -17,6 +17,8 @@ if [ "$BUILD" == "x86" ]; then
 	DEBBUILD="i386"
 elif [ "$BUILD" == "armv7" ]; then
 	DEBBUILD="armhf"
+elif [ "$BUILD" == "x86_64" ]; then
+	DEBBUILD="amd64"
 fi
 
 if [ -f /usr/share/doc/tc/distro.txt ]; then
@@ -26,7 +28,7 @@ else
 fi
 
 if [ -f /usr/share/doc/tc/repo.txt ]; then
-	REPO=`cat /usr/share/doc/tc/repo.txt`
+	REPO=`cat /usr/share/doc/tc/repo.txt | sed 's:64::'`
 else
 	REPO=wheezy
 fi

@@ -14,6 +14,8 @@ if [ "$BUILD" == "x86" ]; then
 	DEBBUILD="i386"
 elif [ "$BUILD" == "armv7" ]; then
 	DEBBUILD="armhf"
+elif [ "$BUILD" == "x86_64" ]; then
+	DEBBUILD="amd64"
 fi
 
 #if ! ps a | grep "/usr/bin/sce-update" | grep -v grep > /dev/null 2>&1; then
@@ -107,12 +109,11 @@ elif sudo grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1
 elif sudo grep "^Package: $1$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
   #DEBINX="$DEBINX_SECURITY"
   DISTRO=`cat /usr/share/doc/tc/distro.txt`
-  REPO=`cat /usr/share/doc/tc/repo.txt` 
+  REPO=`cat /usr/share/doc/tc/repo.txt | sed 's:64::'`
   grep ""$1";" /tmp/.importpkgtype || echo ""$1";   "$DISTRO" "$REPO" security-updates" >> /tmp/.importpkgtype
   getMd5sum2 "$1"
 elif sudo grep "^Package: $1$" "$DEBINX" > /dev/null 2>&1; then
-  DISTRO=`cat /usr/share/doc/tc/distro.txt`
-  REPO=`cat /usr/share/doc/tc/repo.txt` 
+  REPO=`cat /usr/share/doc/tc/repo.txt | sed 's:64::'`
   grep ""$1";" /tmp/.importpkgtype || echo ""$1";   "$DISTRO" "$REPO" main" >> /tmp/.importpkgtype
   getMd5sum1 "$1"
 else

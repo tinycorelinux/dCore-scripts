@@ -59,7 +59,7 @@ else
 fi
 
 if [ -f /usr/share/doc/tc/repo.txt ]; then
-	REPO=`cat /usr/share/doc/tc/repo.txt`
+	REPO=`cat /usr/share/doc/tc/repo.txt | sed 's:64::'`
 else
 	REPO=wheezy
 fi
@@ -98,6 +98,25 @@ x86 )
 		MIRROR_SECURITY1="http://security.ubuntu.com/ubuntu"
 	fi
 	;;
+x86_64 )	
+	BINARY=binary-amd64
+	if [ "$DISTRO" == "debian" ]; then
+		DEBINX=debian_"$REPO"_main_amd64_Packages
+		DEBINX_SECURITY=debian_"$REPO"_security_amd64_Packages
+		zsyncDebianIndex
+		zsyncDebianSecurityIndex
+		MIRROR1="http://ftp.us.debian.org/debian"
+		MIRROR_SECURITY1="http://security.debian.org"
+	elif [ "$DISTRO" == "ubuntu" ]; then
+		DEBINX=ubuntu_"$REPO"_main_amd64_Packages
+		DEBINX_SECURITY=ubuntu_"$REPO"_security_amd64_Packages
+		zsyncDebianIndex
+		zsyncDebianSecurityIndex
+		MIRROR1=http://us.archive.ubuntu.com/ubuntu
+		MIRROR_SECURITY1="http://security.ubuntu.com/ubuntu"
+	fi
+	;;
+
 esac
 
 read MIRROR 2>/dev/null < /opt/debmirror 2>/dev/null || MIRROR="$MIRROR1"

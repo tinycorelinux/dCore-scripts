@@ -4,7 +4,7 @@
 SERVER="http://ppa.launchpad.net"
 ENTRY=`echo "$1" | awk ' BEGIN{FS=":"} { print $2 } '`
 DISTRO=`cat /usr/share/doc/tc/distro.txt`
-VERSION=`cat /usr/share/doc/tc/repo.txt`
+VERSION=`cat /usr/share/doc/tc/repo.txt | sed 's:64::'`
 REPO="$2"
 SOURCESLISTDIR="/opt/debextra"
 
