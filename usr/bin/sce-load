@@ -246,15 +246,19 @@ update_system() {
 		rm /tmp/ss$$.lst
 	fi
 	sudo /sbin/ldconfig 2>/dev/null
-	if [ -f /tmp/tcloop/"$APPNAME"/usr/local/postinst/libglib2.0-0 ]; then
-		sudo /usr/local/postinst/libglib2.0-0
+	if [ -f /usr/local/postinst/libglib2.0-0 ]; then
+		sudo /usr/local/postinst/libglib2.0-0 > /dev/null 2>&1
 	fi
-	if [ -f /tmp/tcloop/"$APPNAME"/usr/local/postinst/libgtk2.0-0 ]; then
-		sudo /usr/local/postinst/libgtk2.0-0
+	if [ -f /usr/local/postinst/libgtk2.0-0 ]; then
+		sudo /usr/local/postinst/libgtk2.0-0 > /dev/null 2>&1
 	fi
-	if [ -f /tmp/tcloop/"$APPNAME"/usr/local/postinst/libgtk-3-0 ]; then
-		sudo /usr/local/postinst/libgtk-3-0
+	if [ -f /usr/local/postinst/libgtk-3-0 ]; then
+		sudo /usr/local/postinst/libgtk-3-0 > /dev/null 2>&1
 	fi
+	if [ -e /usr/local/postinst/libgdk-pixbuf2.0-0 ]; then
+		sudo /usr/local/postinst/libgdk-pixbuf2.0-0 > /dev/null 2>&1
+	fi
+	
 }
 
 install(){
@@ -302,27 +306,27 @@ install(){
 		#if sudo find "$LOADERS_DIR" "$LOADERS_DIR_OLD" -name *.so > /dev/null 2>&1; then
 		#	sudo /usr/local/postinst/libgdk-pixbuf2.0-0 trigger > /dev/null 2>&1
 		#fi
-		if [ -e /usr/local/postinst/libgdk-pixbuf2.0-0 ]; then
-			sudo /usr/local/postinst/libgdk-pixbuf2.0-0 trigger > /dev/null 2>&1
-		fi
+		#if [ -e /usr/local/postinst/libgdk-pixbuf2.0-0 ]; then
+		#	sudo /usr/local/postinst/libgdk-pixbuf2.0-0 trigger > /dev/null 2>&1
+		#fi
 		## Determine if gtk-2.0 immodules are in SCE and update if needed.
 		#IMMODULES_DIR=/usr/lib/i386-linux-gnu/gtk-2.0/2.10.0/immodules
 		#IMMODULES_DIR_OLD=/usr/lib/gtk-2.0/2.10.0/immodules
 		#if sudo find "$IMMODULES_DIR" "$IMMODULES_DIR_OLD" -name *.so > /dev/null 2>&1; then
 		#	sudo /usr/local/postinst/libgtk2.0-0 trigger > /dev/null 2>&1
 		#fi
-		if [ -e /usr/local/postinst/libgtk2.0-0 ]; then
-			sudo /usr/local/postinst/libgtk2.0-0 trigger > /dev/null 2>&1
-		fi
+		#if [ -e /usr/local/postinst/libgtk2.0-0 ]; then
+		#	sudo /usr/local/postinst/libgtk2.0-0 trigger > /dev/null 2>&1
+		#fi
 		## Determine if gtk-3.0 immodules are in SCE and update if needed.
 		#IMMODULES_DIR=/usr/lib/i386-linux-gnu/gtk-3.0/3.0.0/immodules
 		#IMMODULES_DIR_OLD=/usr/lib/gtk-3.0/3.0.0/immodules
 		#if sudo find "$IMMODULES_DIR" "$IMMODULES_DIR_OLD" -name *.so > /dev/null 2>&1; then
 		#	sudo /usr/local/postinst/libgtk-3-0 trigger > /dev/null 2>&1
 		#fi
-		if [ -e /usr/local/postinst/libgtk-3-0 ]; then
-			sudo /usr/local/postinst/libgtk-3-0 trigger > /dev/null 2>&1
-		fi
+		#if [ -e /usr/local/postinst/libgtk-3-0 ]; then
+		#	sudo /usr/local/postinst/libgtk-3-0 trigger > /dev/null 2>&1
+		#fi
 		
 		[ "$SUPPRESS" ] || echo -e "* Update system: \n  "$APPNAME"" && update_system "$THISAPP" "$APPNAME"
 		if [ ! "$BOOTING" ]; then
