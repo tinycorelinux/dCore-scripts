@@ -151,32 +151,32 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
 			if cat /opt/debextra/"$I" | grep "#" > /dev/null 2>&1; then
 				echo "* Not using repo: `cat /opt/debextra/"$I" | sed 's:#::'`"
-			elif wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
+			elif wget --spider "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/"$DIST"/"$POOL"/Packages.bz2 > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/"$DIST"/"$POOL"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/"$DIST"/"$POOL"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/Packages.bz2 > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/Packages.bz2 > /dev/null 2>&1; then
 				echo "* Using repo: "$MIR""
-			elif wget -s "$MIR""$F"/Packages.gz > /dev/null 2>&1; then
+			elif wget --spider "$MIR""$F"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/"$DIST"/"$POOL"/Packages.gz > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/"$DIST"/"$POOL"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/"$DIST"/"$POOL"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/Packages.gz > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR""
-			elif wget -s "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
+			elif wget --spider "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR""$F"/Packages.gen
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/"$DIST"/"$POOL"/Packages.gen > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/"$DIST"/"$POOL"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR"/"$DIST"/"$POOL"/Packages.gen
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/Packages.gen > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" "$MIR"/Packages.gen
 				echo "* Using repo: "$MIR""
@@ -195,33 +195,33 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
 			if cat /opt/debextra/"$I" | grep "#" > /dev/null 2>&1; then
 				echo "* Not using repo: `cat /opt/debextra/"$I" | sed 's:#::'`"
-			elif wget -s "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
+			elif wget --spider "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/"$POOL"/Packages.bz2 > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/"$POOL"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/"$POOL"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/Packages.bz2 > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR""
-			elif wget -s "$MIR""$F"/Packages.gz > /dev/null 2>&1; then
+			elif wget --spider "$MIR""$F"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/"$POOL"/Packages.gz > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/"$POOL"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/"$POOL"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/Packages.gz > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/Packages.gz > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR""
-			elif wget -s "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
+			elif wget --spider "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR""$F"/Packages.gen
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/"$POOL"/Packages.gen > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/"$POOL"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" "$MIR"/"$POOL"/Packages.gen
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
-			elif wget -s "$MIR"/Packages.gen > /dev/null 2>&1; then
+			elif wget --spider "$MIR"/Packages.gen > /dev/null 2>&1; then
 				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR"/Packages.gen
 				echo "* Using repo: "$MIR""
@@ -269,9 +269,9 @@ chown "$USER":staff "$TCEDIR"/import/debinx/* > /dev/null 2>&1
 chmod 664 "$TCEDIR"/import/debinx/* > /dev/null 2>&1
 
 # Test mirror
-if wget -s "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
+if wget --spider "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
 	echo "$MIRROR" > /opt/debmirror
-	if wget -s "$MIRROR_SECURITY"/dists/"$REPO" > /dev/null 2>&1; then
+	if wget --spider "$MIRROR_SECURITY"/dists/"$REPO" > /dev/null 2>&1; then
 		echo "* Using repo: "$MIRROR_SECURITY" "$REPO" main"
 		echo "$MIRROR_SECURITY" > /opt/securitymirror
 	else

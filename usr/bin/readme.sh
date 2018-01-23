@@ -35,7 +35,7 @@ exit_tcnet() {
 	exit 1
 }
 
-if /bb/wget -s "$MIRROR" > /dev/null 2>&1; then
+if /bb/wget --spider "$MIRROR" > /dev/null 2>&1; then
 	:
 else
 	exit_tcnet
@@ -48,7 +48,7 @@ if [ -z "$1" ]; then
 	select2 "Select README. Use Page or Arrow Up/Down keys to read, (q)uit exits README." /tmp/READMELIST	
 	README="$(cat  /tmp/select.ans)"
 	[ -f /tmp/README-"$README".txt ] && rm /tmp/README-"$README".txt
-	if wget -s "$MIRROR"/dCore/"$BUILD"/README/README-"$README".txt > /dev/null 2>&1; then
+	if wget --spider "$MIRROR"/dCore/"$BUILD"/README/README-"$README".txt > /dev/null 2>&1; then
 		wget -q "$MIRROR"/dCore/"$BUILD"/README/README-"$README".txt -O /tmp/README-"$README".txt
 		clear
 		less /tmp/README-"$README".txt
@@ -61,7 +61,7 @@ fi
 }
 
 [ -f /tmp/README-"$README".txt ] && rm /tmp/README-"$README".txt
-if wget -s "$MIRROR"/dCore/"$BUILD"/README/README-"$README".txt > /dev/null 2>&1; then
+if wget --spider "$MIRROR"/dCore/"$BUILD"/README/README-"$README".txt > /dev/null 2>&1; then
    wget -q "$MIRROR"/dCore/"$BUILD"/README/README-"$README".txt -O /tmp/README-"$README".txt
    clear
    more /tmp/README-"$README".txt
