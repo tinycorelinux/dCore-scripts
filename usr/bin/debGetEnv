@@ -116,12 +116,12 @@ x86_64 )
 		MIRROR_SECURITY1="http://security.ubuntu.com/ubuntu"
 	fi
 	;;
-
 esac
 
-read MIRROR 2>/dev/null < /opt/debmirror 2>/dev/null || MIRROR="$MIRROR1"
-read MIRROR_SECURITY 2>/dev/null < /opt/securitymirror 2>/dev/null || MIRROR_SECURITY="$MIRROR_SECURITY1"
-
+read MIRROR  < /opt/debmirror  || MIRROR="$MIRROR1"
+read MIRROR_SECURITY  < /opt/securitymirror  || MIRROR_SECURITY="$MIRROR_SECURITY1"
+echo $MIRROR
+echo $MIRROR_SECURITY
 if [ -z "$DEBINX" ]
 then
 	echo " "
