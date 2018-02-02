@@ -117,15 +117,21 @@ x86_64 )
 	fi
 	;;
 esac
-if [ -f /opt/debmirror ]; then
+
+if [ -s /opt/debmirror ]; then
 	MIRROR=`cat /opt/debmirror`
+else
+	MIRROR="$MIRROR1"
 fi
-[ -z "$MIRROR" ] && MIRROR="$MIRROR1"
+
 #read MIRROR  < /opt/debmirror || MIRROR="$MIRROR1"
-if [ -f /opt/securitymirror ]; then
+
+if [ -s /opt/securitymirror ]; then
 	MIRROR_SECURITY=`cat /opt/securitymirror`
+else
+	MIRROR_SECURITY="$MIRROR_SECURITY1"
 fi
-[ -z "$MIRROR_SECURITY" ] && MIRROR_SECURITY="$MIRROR_SECURITY1"
+
 #read MIRROR_SECURITY  < /opt/securitymirror || MIRROR_SECURITY="$MIRROR_SECURITY1"
 
 
