@@ -390,6 +390,9 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 		getDeps "$I"
 	done
 	for I in `echo "$DEPLIST"`; do
+		if grep "^$I$" /tmp/.updatechecked > /dev/null 2>&1; then
+			continue
+		fi
 		if [ -f update/"$I".sce.debinx ] && [ -f update/"$I".sce.md5.txt ]; then
 			MDNEW=`md5sum /etc/sysconfig/tcedir/import/debinx/NEWDEBINX | cut -f1 -d" "`
 			MDOLD=`cat update/"$I".sce.debinx`
