@@ -112,6 +112,37 @@ getMd5sum1() {
 }
 ##
 
+## Check to see if package is available for dCore port.
+checkextrarepoexists() {
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+				
+				if ( f[1] == "Filename" )
+					{ print f[2]; exit; }
+					
+			}
+		} 
+
+	} ' < "$DEBINX"
+}
+##
+
 ## Create SCE_import_summary file before squashing up extension.
 createImportSummary () {
 	IMPORTSUMMARY=""$TARGET"/usr/local/sce/"$TARGET"/"$TARGET"_import_summary"
@@ -240,13 +271,13 @@ fi
 
 ## Determine which repo the package will come from.
 if [ -s /tmp/.targetfile ]; then
-	echo "* $TARGET is made from your own custom package list."
+	echo "* ${YELLOW}$TARGET${NORMAL} is made from your own custom package list."
 	#echo "`readlink /tmp/.targetfile`"
 	#echo "`readlink /tmp/.targetfile`" > /dev/null 2>&1
 	echo -n "`readlink /tmp/.targetfile`"
 	META="$TARGET"
 elif sudo grep "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
-	echo "* $TARGET is a dCore premade package."
+	echo "* ${YELLOW}$TARGET${NORMAL} is a dCore premade package."
 	META="$TARGET"
 elif sudo grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
 	EXTRAINX=`grep -l "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
@@ -254,13 +285,20 @@ elif sudo grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* > /dev/null
 	EXTRAMIRROR=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $1}'`
 	EXTRAREPO=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $2}'`
 	EXTRAPOOL=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $3}'`
-	echo "* $TARGET is a "$DISTRO" `echo "$EXTRAREPO"` `echo "$EXTRAPOOL"` package from:"
+	echo "* ${YELLOW}$TARGET${NORMAL} is an extra repository package from:"
 	echo "  `echo "$EXTRAMIRROR"`."
+	DEBINX=`grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx* /dev/null | head -n 1 | cut -f1 -d:`
+	if [ -z `checkextrarepoexists "$TARGET"` ]; then
+		echo "* Error: ${YELLOW}$TARGET${NORMAL} is not available for `version | cut -f1 -d:` "$BUILD", exiting.."
+		exit 1
+	fi
+	read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
+	DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 elif sudo grep -q "^Package: $TARGET$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
-	echo "* $TARGET is a "$DISTRO" "$REPO" security update package from:"
+	echo "* ${YELLOW}$TARGET${NORMAL} is a "$DISTRO" "$REPO" security update package from:"
 	echo "  `cat /opt/securitymirror`."
 elif sudo grep -q "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
-	echo "* $TARGET is a standard "$DISTRO" "$REPO" package."
+	echo "* ${YELLOW}$TARGET${NORMAL} is a standard "$DISTRO" "$REPO" package."
 elif sudo grep -q "^$TARGET:" "$DEBINXDIR"/PKGADDDEP; then
 	if [ ! -f /tmp/.importinteractive ]; then
 		echo " "
