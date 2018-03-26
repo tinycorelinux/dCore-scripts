@@ -6,9 +6,20 @@ useBusybox
 HERE=`pwd`
 TCEDIR=/etc/sysconfig/tcedir
 DEBINXDIR="$TCEDIR"/import/debinx
+read DEBINX_SECURITY < /etc/sysconfig/tcedir/import/debinx/debinx_security
+DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
+read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
+DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
 SCE="$1"
 SCEDIR="$TCEDIR"/sce
-#BUILD=`getBuild`
+BUILD=`getBuild`
+if [ "$BUILD" == "x86" ]; then
+	DEBBUILD="i386"
+elif [ "$BUILD" == "armv7" ]; then
+	DEBBUILD="armhf"
+elif [ "$BUILD" == "x86_64" ]; then
+	DEBBUILD="amd64"
+fi
 read SSMIRROR < /opt/tcemirror                                                                             
 SSMIRROR="${SSMIRROR%/}/dCore/import"   
 
@@ -90,6 +101,62 @@ if [ ! -f "$FILE" ]; then
 		sudo busybox umount /tmp/sceupdatetest
 	fi
 	[ -d /tmp/sceupdatetest ] && sudo rmdir /tmp/sceupdatetest
+	exit 0
+fi
+##
+
+## Check to see if package is available for dCore port.
+checkextrarepoexists() {
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: "  '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+				
+				if ( f[1] == "Filename" )
+					{ print f[2]; exit; }
+					
+			}
+		} 
+
+	} ' < "$DEBINX"
+}
+##
+
+## Determine which repo the package will come from.
+if [ -f "$SCEDIR"/"$SCE".sce.lst ]; then
+	:
+elif sudo grep "^$SCE:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
+	:
+elif sudo grep "^Package: $SCE$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
+	DEBINX=`grep "^Package: $SCE$" "$TCEDIR"/import/debinx/debinx* /dev/null | head -n 1 | cut -f1 -d:`
+	if [ -z `checkextrarepoexists "$SCE"` ]; then
+		echo "$SCE is an extra repo package unavailable for `version | cut -f1 -d:` "$BUILD", not updating.." >> /tmp/updateavailable
+		exit 0
+	fi
+	read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
+	DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
+elif sudo grep -q "^Package: $SCE$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
+	:
+elif sudo grep -q "^Package: $SCE$" "$DEBINX" > /dev/null 2>&1; then
+	:
+elif sudo grep -q "^$SCE:" "$DEBINXDIR"/PKGADDDEP; then
+	:
+else
+	echo "$SCE can't be imported from any repo or existing list file, not updating.." >> /tmp/updateavailable
 	exit 0
 fi
 ##
@@ -271,6 +338,7 @@ while read line; do
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			if ! grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 				MD5SSNEW="0"
+				echo "$E" >> /tmp/ssupdates	
 				echo ""$E"  "$E".deb2sce startup script was removed in the repo." >>  /tmp/updateavailable
 			elif [ "$MD5SSNEW" != "$MD5SSOLD" ]; then
 				if ! grep "^$E$" /tmp/ssupdates; then
