@@ -294,7 +294,7 @@ if [ ! -f /tmp/.importram ]; then
 		echo "Specify RAM=TRUE in /etc/sysconfig/sceconfig and make a"
 		echo "backup or invoke sce-import with the '-r' option to use"
 		echo "RAM for Debian/Ubuntu package unpacking.  Press Enter"
-		echo -n "to use ram, or \(n/no\) to not."
+		echo -n "to use ram, or (n/no) to not:  "
 		read ans
 		if [ "$ans" == "n" ] || [ "$ans" == "no" ]; then
 			echo " "
