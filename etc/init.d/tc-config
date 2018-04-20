@@ -117,12 +117,16 @@ echo "${GREEN}Done.${NORMAL}"
 			PART=${ID#*=}
 			mkdir /tmp/testusbdevice
 			while [ $timeout -gt 0 ]; do
-				echo -en "${BLUE}\rWaiting as requested ... ${NORMAL} $timeout "
-				timeout=$(($timeout - 1))
+				echo -en "${BLUE}\rWaiting as requested ... ${YELLOW}$timeout${NORMAL}"
+				timeout=$(($timeout - 2))
 				DEV1=$(blkid -L "$PART")
-				sleep 1
-				[ -n "$DEV1" ] || continue
-				mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
+				sleep 2
+				mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 
+				if /bb/df "$DEV1" > /dev/null 2>&1; then
+					timeout=0
+				else
+					continue
+				fi
 	  				
 			done
 			umount "$DEV1" > /dev/null 2>&1
@@ -136,12 +140,16 @@ echo "${GREEN}Done.${NORMAL}"
 			mkdir /tmp/testusbdevice
 
 			while [ $timeout -gt 0 ]; do
-				echo -en "${BLUE}\rWaiting as requested ... ${NORMAL} $timeout "
-				timeout=$(($timeout - 1))
+				echo -en "${BLUE}\rWaiting as requested ... ${YELLOW}$timeout${NORMAL}"
+				timeout=$(($timeout - 2))
 				DEV1=$(blkid -U "$PART")
-				sleep 1
-				[ -n "$DEV1" ] || continue
-				mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 && timeout=0
+				sleep 2
+				mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 
+				if /bb/df "$DEV1" > /dev/null 2>&1; then
+					timeout=0
+				else
+					continue
+				fi
 	  				
 			done
 			umount "$DEV1" > /dev/null 2>&1
