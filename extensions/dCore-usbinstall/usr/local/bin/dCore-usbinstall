@@ -1,0 +1,383 @@
+#!/bin/busybox ash
+# (c) 2015 Jason Williams
+
+. /etc/init.d/tc-functions
+> /tmp/usbinstalldev
+> /tmp/.dCoreusbinstall
+> /tmp/select.ans
+[ -d /tmp/usbinstall ] && umount -f /tmp/usbinstall > /dev/null 2>&1
+HERE=`pwd`
+TCEDIR="/etc/sysconfig/tcedir"
+BUILD=`getBuild`
+if [ "$BUILD" == "x86" ]; then
+	DEBBUILD="i386"
+elif [ "$BUILD" == "x86_64" ]; then
+	DEBBUILD="amd64"
+fi
+
+. /etc/init.d/tc-functions
+checkroot
+partprobe > /dev/null 2>&1
+
+udevadm trigger
+rebuildfstab
+
+scan(){
+> /tmp/usbinstalldev
+for I in `ls /dev/disk/by-id/ | grep usb`; do E=`readlink /dev/disk/by-id/"$I" | sed 's/[0-9]*//g' | sed "s/[./]//g"`; grep "^$E" /tmp/usbinstalldev || echo ""$E"_"$I""  >> /tmp/usbinstalldev; done
+echo "rescan" >> /tmp/usbinstalldev
+}
+
+scan
+
+echo "x86 
+x86_64" | select "Please choose the dCore port you wish to make a bootable usb from." "-"
+	read BIT < /tmp/select.ans 
+	if [ "$BIT" == "x86" ]; then
+		BUILD=x86
+	elif [ "$BIT" == "x86_64" ]; then
+		BUILD=x86_64
+	else
+		echo " "
+		echo "Exiting..."
+		exit 1
+	fi
+
+echo "UEFI
+LEGACYBIOS" | select "Please choose which form of usb install you want from the below choices." "-"
+	read BIOS < /tmp/select.ans 
+	if [ "$BIOS" == "UEFI" ]; then
+		if version | grep "trusty" > /dev/null 2>&1 || version | grep "wheezy" > /dev/null 2>&1 || version | grep "jessie" > /dev/null 2>&1; then
+		echo " "
+		echo "dCore-usbinstall with UEFI can't be used with dCore-wheezy, dCore-trusty, or dCore-jessie.  Exiting..."
+		echo " "
+		exit 1
+	fi
+		BIOS=UEFI
+	elif [ "$BIOS" == "LEGACYBIOS" ]; then
+		BIOS=LEGACYBIOS
+	else
+		echo " "
+		echo "Exiting..."
+		exit 1
+	fi
+
+
+echo "release
+release_candidates" | select "Please choose from release or release_candidates." "-"
+read RELEASE < /tmp/select.ans 
+
+if [ "$RELEASE" == "release" ]; then
+	RELEASE=release
+elif [ "$RELEASE" == "release_candidates" ]; then
+	RELEASE=release_candidates
+else
+	echo " "
+	echo "Exiting.."
+	exit 1
+fi
+
+if [ -d /tmp/usbinstall ]; then 
+	rm -r /tmp/usbinstall
+fi 
+
+[ -d "$TCEDIR"/dCoreusbinstall ] || mkdir -p "$TCEDIR"/dCoreusbinstall
+
+if [ -f /opt/tcemirror ]; then
+	TCMIRROR=`cat /opt/tcemirror`
+else
+	TCMIRROR="http://repo.tinycorelinux.net"
+fi
+
+exit_tcnet() {
+	echo "Something went wrong connecting to $TCMIRROR.  Exiting.."
+	exit 1
+}
+	
+/bb/wget -O "$TCEDIR"/dCore-"$RELEASE" http://repo.tinycorelinux.net/dCore/"$BUILD"/"$RELEASE"/dCore-"$RELEASE"
+cat "$TCEDIR"/dCore-"$RELEASE" > /tmp/.dCoreusbinstall
+cat "$TCEDIR"/dCore-"$RELEASE" | sed 's:dCore:dCorePlus:' >> /tmp/.dCoreusbinstall
+cat /tmp/.dCoreusbinstall | select "Please choose the dCore port you wish to make a bootable usb from." "-"
+read PORT < /tmp/select.ans 
+if ! echo "$PORT" | grep "dCore" > /dev/null 2>&1; then
+	echo " "
+	echo "Exiting.."
+	exit 1
+fi
+
+REPO=`echo "$PORT" | sed 's:Plus::' | sed 's:dCore-::'`
+DIR=`echo "$PORT" | sed 's:Plus::'`
+KERNEL="vmlinuz-"$REPO""
+USBPORT=`echo "$PORT" | sed 's:-::g'`
+USBKERNEL=`echo "$KERNEL" | sed 's:-::g'`
+if [ "$PORT" == "dCore-wheezy" ] || [ "$PORT" == "dCorePlus-wheezy" ] || [ "$PORT" == "dCore-jessie" ] || [ "$PORT" == "dCorePlus-jessie" ] || [ "$PORT" == "dCore-trusty" ] || [ "$PORT" == "dCorePlus-trusty" ]; then
+	KERNELVERSION="3.16.6-tinycore"
+elif [ "$PORT" == "dCore-xenial" ] || [ "$PORT" == "dCorePlus-xenial" ]; then
+	KERNELVERSION="4.2.9-tinycore"
+elif [ "$PORT" == "dCore-stretch" ] || [ "$PORT" == "dCorePlus-stretch" ]; then
+	KERNELVERSION="4.8.17-tinycore"
+elif [ "$PORT" == "dCore-stretch64" ] || [ "$PORT" == "dCorePlus-stretch64" ]; then
+	KERNELVERSION="4.8.17-tinycore64"
+elif [ "$PORT" == "dCore-bionic64" ] || [ "$PORT" == "dCorePlus-bionic64" ]; then
+	KERNELVERSION="4.14.10-tinycore64"
+elif [ "$PORT" == "dCore-bionic" ] || [ "$PORT" == "dCorePlus-bionic" ]; then
+	KERNELVERSION="4.14.10-tinycore"
+fi
+
+cd "$TCEDIR"/dCoreusbinstall/
+rm "$PORT".gz.md5.txt > /dev/null 2>&1
+wget "$TCMIRROR"/dCore/"$BUILD"/"$RELEASE"/"$DIR"/"$PORT".gz.md5.txt || exit_tcnet
+if md5sum -c "$PORT".gz.md5.txt > /dev/null 2>&1; then
+	:
+else
+	rm  "$PORT".gz* > /dev/null 2>&1
+	wget "$TCMIRROR"/dCore/"$BUILD"/"$RELEASE"/"$DIR"/"$PORT".gz || exit_tcnet
+	wget "$TCMIRROR"/dCore/"$BUILD"/"$RELEASE"/"$DIR"/"$PORT".gz.md5.txt || exit_tcnet
+fi
+
+if md5sum -c "$PORT".gz.md5.txt > /dev/null 2>&1; then
+	:
+else
+	echo "Md5sum failed for "$PORT".gz"
+	exit 1
+fi
+
+rm "$KERNEL".md5.txt > /dev/null 2>&1
+
+wget "$TCMIRROR"/dCore/"$BUILD"/"$RELEASE"/"$DIR"/"$KERNEL".md5.txt || exit_tcnet
+
+if md5sum -c "$KERNEL".md5.txt > /dev/null 2>&1; then
+	:
+else
+	rm  "$KERNEL"* > /dev/null 2>&1
+	wget "$TCMIRROR"/dCore/"$BUILD"/"$RELEASE"/"$DIR"/"$KERNEL" || exit_tcnet
+	wget "$TCMIRROR"/dCore/"$BUILD"/"$RELEASE"/"$DIR"/"$KERNEL".md5.txt || exit_tcnet
+fi
+
+if md5sum -c "$KERNEL".md5.txt > /dev/null 2>&1; then
+	:
+else
+	echo "Md5sum failed for "$KERNEL"."
+	echo " "
+	exit 1
+fi
+
+echo -n "Please enter the LABEL name to specify this USB drive.  "
+read ans
+LABEL="$ans"
+echo " "
+echo " "
+
+
+while true
+do
+uniq /tmp/usbinstalldev | select "Select USB device you want to install dCore to.  \
+If you don't see a device, no valid usb devices are attached to this system.  \
+Plug in your desired USB device and choose rescan to use it if not already. \
+Use Ctrl-C to quit. \ 
+WARNING: This will wipe that USB drive of existing data." "-"
+read USB < /tmp/select.ans  
+if [ "$USB" == "rescan" ]; then
+	echo " "
+	echo -n "Insert desired drive if missing, then press Enter." 
+	read ans
+	udevadm trigger
+	scan
+	continue
+else
+	USB=`echo "$USB" | cut -f1 -d"_"`
+	USBSIZE=`blockdev --getsize64 /dev/"$USB"`
+	SIZE1=`ls -l "$KERNEL" | cut -f5 -d" "`
+	SIZE2=`ls -l "$PORT".gz | cut -f5 -d" "`
+	SIZE3=`expr "$SIZE1" + "$SIZE2"`
+	if [ "$BIOS" == "UEFI" ]; then
+		SIZE3=`expr "$SIZE3" + "20971520"`
+	fi
+	
+	if [ "$SIZE3" -gt "$USBSIZE" ]; then
+		> /tmp/select.ans
+		echo rescan | select "Your chosen usb device may be too small.  The size of you USB device \
+is `echo "$USBSIZE" | awk -v CONVFMT='%.0f' '{ foo = $1 / 1024 / 1024 ; print foo " MB" }'`.  The needed downloads are `echo "$SIZE3" | awk -v CONVFMT='%.0f' '{ foo = $1 / 1024 / 1024 ; print foo " MB" }'`.  Choose rescan or Ctrl-C to quit." "-"
+		read ANS < /tmp/select.ans  
+		if [ "$ANS" == "rescan" ]; then
+			echo " "
+			echo -n "Insert desired drive if missing, then press Enter." 
+			read ans
+			udevadm trigger
+			scan
+			continue
+		fi
+	fi
+	break
+fi
+echo " "
+done
+
+if [ "$SIZE3" -gt "$USBSIZE" ]; then
+	echo "Needed USB size is smaller than the required installation size."
+	echo "Exiting..."
+	exit 1
+fi
+
+if mount | grep /dev/"$USB" > /dev/null 2>&1; then
+	echo " "
+	echo "The device "$USB" contains mounted partitions.  Please unmount and try again."
+	exit 1
+fi
+echo " "
+echo " "
+LEFT=`expr "$USBSIZE" - "$SIZE3"`
+echo "$USBSIZE" | awk -v CONVFMT='%.0f' '{ foo = $1 / 1024 / 1024 ; print foo " MB: Size of USB device." }'
+echo "$SIZE3" | awk -v CONVFMT='%.0f' '{ foo = $1 / 1024 / 1024 ; print foo " MB: Size needed for basic install." }'
+echo "$LEFT" | awk -v CONVFMT='%.0f' '{ foo = $1 / 1024 / 1024 ; print foo " MB: Size remaining on USB after install." }'
+SIZE3k=`expr "$SIZE3" / "1024"`
+
+sleep 5
+echo " "
+echo " "
+
+
+
+##############
+if [ "$BIOS" == "LEGACYBIOS" ]; then 
+cp "$PORT".gz "$USBPORT".gz
+cp "$KERNEL" "$USBKERNEL"
+echo ext2 > "$TCEDIR"/dCoreusbinstall/fs
+FS=ext2
+wipefs -a /dev/"$USB" > /dev/null 2>&1
+#dd if=/dev/zero of=/dev/"$USB" bs=1M count=10  > /dev/null 2>&1
+#sfdisk --delete /dev/"$USB"
+
+echo "n
+p
+1
+
+
+a
+w
+"|fdisk /dev/"$USB" > /dev/null 2>&1 
+	partprobe > /dev/null 2>&1
+	udevadm trigger
+	yes y | mkfs.ext2 /dev/"$USB"1
+
+	tune2fs -L "$LABEL" /dev/"$USB"1
+	mkdir /tmp/usbinstall
+	mount /dev/"$USB"1 /tmp/usbinstall
+	
+	extlinux --install /tmp/usbinstall
+	if [ -f /usr/lib/EXTLINUX/mbr.bin ]; then	
+		dd if=/usr/lib/EXTLINUX/mbr.bin of=/dev/"$USB"
+	else	
+		echo "Cannot install the mbr.bin file from your system.  Exiting.."
+		exit 1
+	fi
+	mv "$TCEDIR"/dCoreusbinstall/"$USBPORT".gz* /tmp/usbinstall/
+	
+	mv "$TCEDIR"/dCoreusbinstall/"$USBKERNEL" /tmp/usbinstall/
+
+	if [ -f /usr/lib/syslinux/modules/bios/menu.c32 ]; then
+		cp -p /usr/lib/syslinux/modules/bios/menu.c32 /tmp/usbinstall/menu.c32
+	else
+		echo "Can't find the file /usr/lib/syslinux/modules/bios/menu.c32."
+		echo "Exiting.."
+		exit 1
+	fi
+
+	if [ -f /usr/lib/syslinux/modules/bios/libutil.c32 ]; then
+		cp -p /usr/lib/syslinux/modules/bios/libutil.c32 /tmp/usbinstall/libutil.c32
+	else
+		echo "Can't find the file /usr/lib/syslinux/modules/bios/libutil.c32."
+		echo "Exiting.."
+		exit 1
+	fi
+
+	if [ -f /usr/lib/syslinux/modules/bios/libcom32.c32 ]; then
+		cp -p /usr/lib/syslinux/modules/bios/libcom32.c32 /tmp/usbinstall/libcom32.c32
+	else
+		echo "Can't find the file /usr/lib/syslinux/modules/bios/libcom32.c32."
+		echo "Exiting.."
+		exit 1
+	fi
+
+	echo "ui menu.c32" > /tmp/usbinstall/extlinux.conf
+	echo "menu title "$PORT" boot screen" >> /tmp/usbinstall/extlinux.conf
+	echo "prompt 0" >> /tmp/usbinstall/extlinux.conf
+	echo "default "$PORT"" >> /tmp/usbinstall/extlinux.conf
+	echo "timeout 100" >> /tmp/usbinstall/extlinux.conf
+	echo " " >> /tmp/usbinstall/extlinux.conf
+	echo "label "$PORT"" >> /tmp/usbinstall/extlinux.conf
+	echo "menu label "$PORT"" >> /tmp/usbinstall/extlinux.conf
+	echo "kernel /"$USBKERNEL"" >> /tmp/usbinstall/extlinux.conf
+	echo "append initrd=/"$USBPORT".gz quiet waitusb=30:LABEL="$LABEL" rd.udev.log-priority=0 net.ifnames=0 tce=LABEL="$LABEL"/"$PORT"" >> /tmp/usbinstall/extlinux.conf
+
+elif [ "$BIOS" == "UEFI" ]; then 
+############
+wipefs -a /dev/"$USB" > /dev/null 2>&1
+#dd if=/dev/zero of=/dev/"$USB" bs=1M count=10  > /dev/null 2>&1
+#sfdisk --delete /dev/"$USB"
+udevadm trigger
+echo "Creating and formatting /dev/"$USB"1 UEFI partition..."
+echo " "
+echo "#!/bin/busybox ash" > /tmp/.dCorefdiskusb
+echo " " >> /tmp/.dCorefdiskusb
+echo 'echo "g' >> /tmp/.dCorefdiskusb
+echo "n" >> /tmp/.dCorefdiskusb
+echo "1" >> /tmp/.dCorefdiskusb
+echo " " >> /tmp/.dCorefdiskusb
+echo +"$SIZE3k"K >> /tmp/.dCorefdiskusb
+echo "t" >> /tmp/.dCorefdiskusb
+echo "1" >> /tmp/.dCorefdiskusb
+echo "w" >> /tmp/.dCorefdiskusb
+echo "\"|fdisk /dev/"$USB" > /dev/null 2>&1"  >> /tmp/.dCorefdiskusb
+sh /tmp/.dCorefdiskusb
+partprobe > /dev/null 2>&1
+udevadm trigger
+sleep 5
+mkfs.vfat /dev/"$USB"1
+echo " "
+echo "Creating and formatting the remaining space as /dev/"$USB"2 with ext2..."
+echo " "
+echo "n
+2
+ 
+ 
+w
+"|fdisk /dev/"$USB" > /dev/null 2>&1 
+	partprobe > /dev/null 2>&1
+	udevadm trigger
+	sleep 5
+	yes y | mkfs.ext2 /dev/"$USB"2
+	tune2fs -L "$LABEL" /dev/"$USB"2
+	rebuildfstab
+	mkdir /tmp/usbinstall
+	mount /dev/"$USB"1 /tmp/usbinstall
+
+	grub-install --target x86_64-efi --efi-directory /tmp/usbinstall/ --removable --boot-directory=/tmp/usbinstall/boot
+	grub-install --target i386-efi --efi-directory /tmp/usbinstall/ --removable --boot-directory=/tmp/usbinstall/boot
+
+	mkdir -p /tmp/usbinstall/EFI/dCore
+	cp "$PORT".gz "$KERNEL" /tmp/usbinstall/EFI/dCore/
+
+
+  echo "menuentry $PORT-UEFI {" > /tmp/usbinstall/boot/grub/grub.cfg
+  echo "insmod part_msdos" >> /tmp/usbinstall/boot/grub/grub.cfg
+  echo "insmod ext2" >> /tmp/usbinstall/boot/grub/grub.cfg
+  echo "insmod part_gpt" >> /tmp/usbinstall/boot/grub/grub.cfg
+  echo "insmod fat" >> /tmp/usbinstall/boot/grub/grub.cfg
+  echo "insmod gzio" >> /tmp/usbinstall/boot/grub/grub.cfg
+  echo "insmod efi_gop" >> /tmp/usbinstall/boot/grub/grub.cfg
+  echo "insmod efi_uga" >> /tmp/usbinstall/boot/grub/grub.cfg
+  echo "linux /EFI/dCore/$KERNEL quiet waitusb=30:LABEL=$LABEL rd.udev.log-priority=0 net.ifnames=0 tce=LABEL=$LABEL/$PORT" >> /tmp/usbinstall/boot/grub/grub.cfg
+  echo "initrd /EFI/dCore/$PORT.gz" >> /tmp/usbinstall/boot/grub/grub.cfg
+  echo "}" >> /tmp/usbinstall/boot/grub/grub.cfg
+
+
+fi
+
+
+umount -f /tmp/usbinstall > /dev/null 2>&1
+rmdir /tmp/usbinstall > /dev/null 2>&1
+rm /tmp/.dCoreusbinstall > /dev/null 2>&1
+rm /tmp/usbinstalldev > /dev/null 2>&1
+rm /tmp/.dCorefdiskusb > /dev/null 2>&1
+rebuildfstab
