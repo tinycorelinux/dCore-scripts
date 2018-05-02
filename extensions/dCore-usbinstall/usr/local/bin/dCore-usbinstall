@@ -165,9 +165,16 @@ fi
 echo -n "Please enter the LABEL name to specify this USB drive.  "
 read ans
 LABEL="$ans"
+if [ -z "$LABEL" ]; then 
+	echo " "
+	echo "No USB device label chosen.  Exiting..."
+	exit 1
+fi
+
 echo " "
 echo " "
 
+> /tmp/select.ans
 
 while true
 do
@@ -176,7 +183,10 @@ If you don't see a device, no valid usb devices are attached to this system.  \
 Plug in your desired USB device and choose rescan to use it if not already. \
 Use Ctrl-C to quit. \ 
 WARNING: This will wipe that USB drive of existing data." "-"
-read USB < /tmp/select.ans  
+read USB < /tmp/select.ans 
+if [ -z "$USB" ]; then
+	break
+fi
 if [ "$USB" == "rescan" ]; then
 	echo " "
 	echo -n "Insert desired drive if missing, then press Enter." 
@@ -194,7 +204,7 @@ else
 		SIZE3=`expr "$SIZE3" + "20971520"`
 	fi
 	
-	if [ "$SIZE3" -gt "$USBSIZE" ]; then
+	if [ -n "$USB" ] && [ "$SIZE3" -gt "$USBSIZE" ]; then
 		> /tmp/select.ans
 		echo rescan | select "Your chosen usb device may be too small.  The size of you USB device \
 is `echo "$USBSIZE" | awk -v CONVFMT='%.0f' '{ foo = $1 / 1024 / 1024 ; print foo " MB" }'`.  The needed downloads are `echo "$SIZE3" | awk -v CONVFMT='%.0f' '{ foo = $1 / 1024 / 1024 ; print foo " MB" }'`.  Choose rescan or Ctrl-C to quit." "-"
@@ -213,8 +223,15 @@ fi
 echo " "
 done
 
+if [ -z "$USB" ]; then
+	echo " "
+	echo "No USB device chosen.  Exiting..."
+	exit 1
+fi
+
 if [ "$SIZE3" -gt "$USBSIZE" ]; then
-	echo "Needed USB size is smaller than the required installation size."
+	echo " "
+	echo "USB device size is smaller than the required installation size."
 	echo "Exiting..."
 	exit 1
 fi
