@@ -375,8 +375,8 @@ w
 	mkdir -p /tmp/usbinstall/EFI/dCore
 	cp "$PORT".gz "$KERNEL" /tmp/usbinstall/EFI/dCore/
 
-
-  echo "menuentry $PORT-UEFI {" > /tmp/usbinstall/boot/grub/grub.cfg
+  echo "set timeout=10" > /tmp/usbinstall/boot/grub/grub.cfg
+  echo "menuentry $PORT-UEFI {" >> /tmp/usbinstall/boot/grub/grub.cfg
   echo "insmod part_msdos" >> /tmp/usbinstall/boot/grub/grub.cfg
   echo "insmod ext2" >> /tmp/usbinstall/boot/grub/grub.cfg
   echo "insmod part_gpt" >> /tmp/usbinstall/boot/grub/grub.cfg
