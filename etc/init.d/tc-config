@@ -119,6 +119,7 @@ echo "${GREEN}Done.${NORMAL}"
 			while [ $timeout -gt 0 ]; do
 				echo -en "${BLUE}\rWaiting as requested ... ${YELLOW}$timeout${NORMAL}"
 				timeout=$(($timeout - 2))
+				udevadm settle
 				DEV1=$(blkid -L "$PART")
 				sleep 2
 				mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 
@@ -142,6 +143,7 @@ echo "${GREEN}Done.${NORMAL}"
 			while [ $timeout -gt 0 ]; do
 				echo -en "${BLUE}\rWaiting as requested ... ${YELLOW}$timeout${NORMAL}"
 				timeout=$(($timeout - 2))
+				udevadm settle
 				DEV1=$(blkid -U "$PART")
 				sleep 2
 				mount "$DEV1" /tmp/testusbdevice > /dev/null 2>&1 
