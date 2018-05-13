@@ -277,35 +277,37 @@ fi
 # Check if TCEDIR is on a USB flash partition, offer the RAM=TRUE option if not already.
 if [ ! -f /tmp/.importram ]; then
 	PART=`readlink /etc/sysconfig/tcedir | cut -f3 -d"/"`
-	for I in `ls /dev/disk/by-id/usb*`; do
-		if readlink "$I" | grep "/$PART$" > /dev/null 2>&1; then
-			USBTCEDIR=TRUE
-		fi
-	done
-	if [ "$USBTCEDIR" == "TRUE" ]; then
-		echo " "
-		echo " "
-		echo " "
-		echo "It appears that your TCE directory is located on $PART" 
-		echo "which is a USB flash partition and the RAM '-r' option"
-		echo "is not being used.  Would you like to use RAM for the" 
-		echo "package file operations which can include thousands of"
-		echo "writes and may prolong the life of the USB flash device?"
-		echo "Specify RAM=TRUE in /etc/sysconfig/sceconfig and make a"
-		echo "backup or invoke sce-import with the '-r' option to use"
-		echo "RAM for Debian/Ubuntu package unpacking.  Press Enter"
-		echo -n "to use ram, or (n/no) to not:  "
-		read ans
-		if [ "$ans" == "n" ] || [ "$ans" == "no" ]; then
+	if ls /dev/disk/by-id/usb* > /dev/null 2>&1; then
+		for I in `ls /dev/disk/by-id/usb*`; do
+			if readlink "$I" | grep "/$PART$" > /dev/null 2>&1; then
+				USBTCEDIR=TRUE
+			fi
+		done
+		if [ "$USBTCEDIR" == "TRUE" ]; then
 			echo " "
+			echo " "
+			echo " "
+			echo "It appears that your TCE directory is located on $PART" 
+			echo "which is a USB flash partition and the RAM '-r' option"
+			echo "is not being used.  Would you like to use RAM for the" 
+			echo "package file operations which can include thousands of"
+			echo "writes and may prolong the life of the USB flash device?"
+			echo "Specify RAM=TRUE in /etc/sysconfig/sceconfig and make a"
+			echo "backup or invoke sce-import with the '-r' option to use"
+			echo "RAM for Debian/Ubuntu package unpacking.  Press Enter"
+			echo -n "to use ram, or (n/no) to not:  "
+			read ans
+			if [ "$ans" == "n" ] || [ "$ans" == "no" ]; then
+				echo " "
+			else
+				touch /tmp/.importram
+				echo " "
+				echo " "
+				echo "* Using the -r option."
+			fi
 		else
-			touch /tmp/.importram
 			echo " "
-			echo " "
-			echo "* Using the -r option."
 		fi
-	else
-		echo " "
 	fi
 fi
 
