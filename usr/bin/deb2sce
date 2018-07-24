@@ -9,8 +9,8 @@ alias md5sum='/bb/md5sum'
 > /tmp/.pkglist
 
 TCUSER=`cat /etc/sysconfig/tcuser`
-sudo chown "$TCUSER":staff /tmp > /dev/null 2>&1
-sudo chmod 1777 /tmp > /dev/null 2>&1
+chown "$TCUSER":staff /tmp > /dev/null 2>&1
+chmod 1777 /tmp > /dev/null 2>&1
 checkroot
 BUILD=`getBuild`
 if [ "$BUILD" == "x86" ]; then
@@ -185,39 +185,39 @@ createImportSummary () {
 
 cleanup() {
 	[ -d /tmp/work ] && rm -rf /tmp/work
-	[ -d "$SCEDIR" ] && sudo chown -R "$TCUSER":staff "$SCEDIR" > /dev/null 2>&1
+	[ -d "$SCEDIR" ] && chown -R "$TCUSER":staff "$SCEDIR" > /dev/null 2>&1
 	[ -d /tmp ] && chmod 1777 /tmp > /dev/null 2>&1
 	[ -d /usr/local/tce.installed ] && chmod 775 /usr/local/tce.installed > /dev/null 2>&1
 	[ -d /usr/local/tce.icons ] && chmod 775 /usr/local/tce.icons > /dev/null 2>&1
 	[ -d /usr/local/tce.installed ] && chgrp staff /usr/local/tce.installed > /dev/null 2>&1
 	[ -d /usr/local/tce.icons ] &&  chgrp staff /usr/local/tce.icons > /dev/null 2>&1
 	if ls /tmp/*.debs > /dev/null 2>&1; then 
-		sudo rm /tmp/*.debs > /dev/null 2>&1
+		rm /tmp/*.debs > /dev/null 2>&1
 	fi
-	[ -f /tmp/.sceconflict ] && sudo rm /tmp/.sceconflict > /dev/null 2>&1
-	[ -f /tmp/.scedeps ] && sudo rm /tmp/.scedeps > /dev/null 2>&1
-	[ -f /tmp/.scedebs ] && sudo rm /tmp/.scedebs > /dev/null 2>&1
-	[ -f /tmp/.scelist ] && sudo rm /tmp/.scelist > /dev/null 2>&1
-	[ -f /tmp/.importfree ] && sudo rm /tmp/.importfree > /dev/null 2>&1
-	[ -f /tmp/.pkgexists ] && sudo rm /tmp/.pkgexists > /dev/null 2>&1
-	[ -f /tmp/.importdep ] && sudo rm /tmp/.importdep > /dev/null 2>&1
-	[ -f /tmp/.newdep ] && sudo rm /tmp/.newdep > /dev/null 2>&1
+	[ -f /tmp/.sceconflict ] && rm /tmp/.sceconflict > /dev/null 2>&1
+	[ -f /tmp/.scedeps ] && rm /tmp/.scedeps > /dev/null 2>&1
+	[ -f /tmp/.scedebs ] && rm /tmp/.scedebs > /dev/null 2>&1
+	[ -f /tmp/.scelist ] && rm /tmp/.scelist > /dev/null 2>&1
+	[ -f /tmp/.importfree ] && rm /tmp/.importfree > /dev/null 2>&1
+	[ -f /tmp/.pkgexists ] && rm /tmp/.pkgexists > /dev/null 2>&1
+	[ -f /tmp/.importdep ] && rm /tmp/.importdep > /dev/null 2>&1
+	[ -f /tmp/.newdep ] && rm /tmp/.newdep > /dev/null 2>&1
 	if ls /tmp/*.debdeps > /dev/null 2>&1; then 
-		sudo rm /tmp/*.debdeps > /dev/null 2>&1
+		rm /tmp/*.debdeps > /dev/null 2>&1
 	fi	 
-	[ -f /tmp/control.tar.gz ] && sudo rm /tmp/control.tar.gz > /dev/null 2>&1
-	[ -f /tmp/data.tar.gz ] && sudo rm /tmp/data.tar.gz > /dev/null 2>&1
-	[ -f /tmp/data.tar.bz2 ] && sudo rm /tmp/data.tar.bz2 > /dev/null 2>&1
-	[ -f /tmp/data.tar.xz ] && sudo rm /tmp/data.tar.xz > /dev/null 2>&1
-	#[ -f /tmp/deb2sce.tar.gz ] && sudo rm /tmp/deb2sce.tar.gz > /dev/null 2>&1
-	[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist > /dev/null 2>&1
-	[ -f /tmp/select.ans ] && sudo rm /tmp/select.ans > /dev/null 2>&1
-	#[ -f /tmp/.nogetdeps ] && sudo rm /tmp/.nogetdeps > /dev/null 2>&1
-	[ -f /tmp/.recommends ] && sudo rm /tmp/.recommends > /dev/null 2>&1
-	[ -f /tmp/.suggests ] && sudo rm /tmp/.suggests > /dev/null 2>&1
-	[ -d "$TCEDIR"/import/"$TARGET" ] && sudo rm -r "$TCEDIR"/import/"$TARGET" > /dev/null 2>&1
-	[ -d  /tmp/import/"$TARGET" ] && sudo rm -r /tmp/import/"$TARGET" > /dev/null 2>&1
-	[ -f /tmp/.scenoconfig ] && sudo rm /tmp/.scenoconfig > /dev/null 2>&1
+	[ -f /tmp/control.tar.gz ] && rm /tmp/control.tar.gz > /dev/null 2>&1
+	[ -f /tmp/data.tar.gz ] && rm /tmp/data.tar.gz > /dev/null 2>&1
+	[ -f /tmp/data.tar.bz2 ] && rm /tmp/data.tar.bz2 > /dev/null 2>&1
+	[ -f /tmp/data.tar.xz ] && rm /tmp/data.tar.xz > /dev/null 2>&1
+	#[ -f /tmp/deb2sce.tar.gz ] && rm /tmp/deb2sce.tar.gz > /dev/null 2>&1
+	[ -f /tmp/.prebuiltmd5sumlist ] && rm /tmp/.prebuiltmd5sumlist > /dev/null 2>&1
+	[ -f /tmp/select.ans ] && rm /tmp/select.ans > /dev/null 2>&1
+	#[ -f /tmp/.nogetdeps ] && rm /tmp/.nogetdeps > /dev/null 2>&1
+	[ -f /tmp/.recommends ] && rm /tmp/.recommends > /dev/null 2>&1
+	[ -f /tmp/.suggests ] && rm /tmp/.suggests > /dev/null 2>&1
+	[ -d "$TCEDIR"/import/"$TARGET" ] && rm -r "$TCEDIR"/import/"$TARGET" > /dev/null 2>&1
+	[ -d  /tmp/import/"$TARGET" ] && rm -r /tmp/import/"$TARGET" > /dev/null 2>&1
+	[ -f /tmp/.scenoconfig ] && rm /tmp/.scenoconfig > /dev/null 2>&1
 	:
 }
 
@@ -276,10 +276,10 @@ if [ -s /tmp/.targetfile ]; then
 	#echo "`readlink /tmp/.targetfile`" > /dev/null 2>&1
 	echo -n "`readlink /tmp/.targetfile`"
 	META="$TARGET"
-elif sudo grep "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
+elif grep "^$TARGET:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
 	echo "* ${YELLOW}$TARGET${NORMAL} is a dCore premade package."
 	META="$TARGET"
-elif sudo grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
+elif grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
 	EXTRAINX=`grep -l "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
 	MIRRORFILE=`echo "$EXTRAINX" | sed "s:"$TCEDIR"/import/debinx/debinx.::"`
 	EXTRAMIRROR=`cat /opt/debextra/"$MIRRORFILE" | awk '{print $1}'`
@@ -294,12 +294,12 @@ elif sudo grep "^Package: $TARGET$" "$TCEDIR"/import/debinx/debinx.* > /dev/null
 	fi
 	read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 	DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
-elif sudo grep -q "^Package: $TARGET$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
+elif grep -q "^Package: $TARGET$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
 	echo "* ${YELLOW}$TARGET${NORMAL} is a "$DISTRO" "$REPO" security update package from:"
 	echo "  `cat /opt/securitymirror`."
-elif sudo grep -q "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
+elif grep -q "^Package: $TARGET$" "$DEBINX" > /dev/null 2>&1; then
 	echo "* ${YELLOW}$TARGET${NORMAL} is a standard "$DISTRO" "$REPO" package."
-elif sudo grep -q "^$TARGET:" "$DEBINXDIR"/PKGADDDEP; then
+elif grep -q "^$TARGET:" "$DEBINXDIR"/PKGADDDEP; then
 	if [ ! -f /tmp/.importinteractive ]; then
 		echo " "
 		echo "  ${YELLOW}$TARGET${NORMAL} is specified in dCore's dependency file list and may be"
@@ -416,9 +416,9 @@ if [ -f /tmp/.importdep ]; then
 				read ANS
 				echo " "
 				if [ "$ANS" == "n" ] || [ "$ANS" == "no" ]; then
-					sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
+					rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
 				else
-					sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
+					rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep
 					debGetSceDep "$TARGET" 
 				fi
 			else
@@ -442,7 +442,7 @@ if [ -f /tmp/.sceconflict ]; then
 	echo "${YELLOW}WARNING:${NORMAL} "$TARGET" already exists in the dep files of the SCE(s) below,"
 	echo "aborting to prevent circular dependency."
 	cat /tmp/.sceconflict
-	sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1
+	rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1
 	cleanup
 	exit 1
 fi
@@ -451,7 +451,7 @@ if [ -f /tmp/.pkgexists ]; then
 	echo " "
 	echo "${YELLOW}WARNING:${NORMAL} "$TARGET" already exists in below dependency SCE(s), exiting.."
 	cat /tmp/.pkgexists
-	sudo rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1
+	rm /etc/sysconfig/tcedir/sce/"$TARGET".sce.dep > /dev/null 2>&1
 	cleanup
 	exit 1
 fi
@@ -624,6 +624,12 @@ for DEBINFO in `ls -t /tmp/work`; do
 				exit 1
 			fi
 			cd "$IMPORT"/"$TARGET"
+		else
+			if ! grep -q "^$DEBINFO:" "$DEBINXDIR"/PKGPREBUILTDEP; then
+				echo ""$pkgNUM"/"$totalPKG" ""${YELLOW}$DEBINFO${NORMAL} is a Debian/Ubuntu meta package or does not exist."
+			else
+				echo ""$pkgNUM"/"$totalPKG" ""${YELLOW}$DEBINFO${NORMAL} is a dCore custom meta package."
+			fi
 		fi	
 	 elif [ "$FULLPATH" != "" ]; then
 	 	THISDEB="${FULLPATH##*/}"
@@ -655,7 +661,7 @@ for DEBINFO in `ls -t /tmp/work`; do
 			DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"	
 			read MIRROR < /opt/debmirror
 		## Third check to see if package is available as security update.
-		elif sudo grep "^Package: $DEBINFO$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
+		elif grep "^Package: $DEBINFO$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
 			DEBINX="$DEBINX_SECURITY"
 			read MIRROR < /opt/securitymirror
 			MD5NEW=$(getMd5sum "$DEBINFO")
@@ -745,7 +751,7 @@ if [ ! -f /tmp/.scenoconfig ]; then
 	if [ -f "$LOCCONFFILE" ]; then
 		echo "* Processing locale.nopurge file."
 		if [ -d "$TARGET"/usr/share/locale ]; then
-			for I in `find "$TARGET"/usr/share/locale -maxdepth 1 -mindepth 1 -type d`; do I=`basename "$I"`; grep "^$I$" "$LOCCONFFILE" > /dev/null 2>&1 || sudo rm -r "$TARGET"/usr/share/locale/"$I" ; done
+			for I in `find "$TARGET"/usr/share/locale -maxdepth 1 -mindepth 1 -type d`; do I=`basename "$I"`; grep "^$I$" "$LOCCONFFILE" > /dev/null 2>&1 || rm -r "$TARGET"/usr/share/locale/"$I" ; done
 		fi
 	fi
 
@@ -767,7 +773,7 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && mount | grep " /tmp/tcloop/"$TARGET" " 
 	createImportSummary
 	mksquashfs "$TARGET" "$TCEDIR"/sce/update/"$TARGET".sce -noappend
 	if [ "$?" == "0" ]; then
-		sudo rm -rf "$TARGET"
+		rm -rf "$TARGET"
 		cd "$TCEDIR"/sce/update/
 		/bb/md5sum "$TARGET".sce > "$TARGET".sce.md5.txt	
 		MD5SUMDEBINX=`md5sum "$TCEDIR"/import/debinx/NEWDEBINX | cut -f1 -d" "`
@@ -783,7 +789,7 @@ if [ -f "$TCEDIR"/sce/"$TARGET".sce ] && mount | grep " /tmp/tcloop/"$TARGET" " 
 		if [ -s /tmp/.targetfile ]; then
 			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
 		else
-			[ -f "$TCEDIR"/sce/"$TARGET".sce.lst ] && sudo rm "$TCEDIR"/sce/"$TARGET".sce.lst
+			[ -f "$TCEDIR"/sce/"$TARGET".sce.lst ] && rm "$TCEDIR"/sce/"$TARGET".sce.lst
 		fi
 		echo "* Imported "${YELLOW}""$TARGET".sce"${NORMAL}"."
 	else
@@ -810,7 +816,7 @@ else
 		if [ -s /tmp/.targetfile ]; then
 			cat /tmp/.targetfile > "$TCEDIR"/sce/"$TARGET".sce.lst
 		else
-			[ -f "$TCEDIR"/sce/"$TARGET".sce.lst ] && sudo rm "$TCEDIR"/sce/"$TARGET".sce.lst
+			[ -f "$TCEDIR"/sce/"$TARGET".sce.lst ] && rm "$TCEDIR"/sce/"$TARGET".sce.lst
 		fi
 		echo "* Imported "${YELLOW}""$TARGET".sce"${NORMAL}"."
 	else

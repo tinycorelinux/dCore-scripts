@@ -49,7 +49,7 @@ unset DEBINX MIRROR
 TCEDIR=/etc/sysconfig/tcedir
 
 
-[ -d "$TCEDIR"/import/debinx ] || sudo mkdir -p "$TCEDIR"/import/debinx
+[ -d "$TCEDIR"/import/debinx ] || mkdir -p "$TCEDIR"/import/debinx
 DEBINXDIR=""$TCEDIR"/import/debinx"
 
 if [ -f /usr/share/doc/tc/distro.txt ]; then
@@ -153,7 +153,7 @@ else
 fi
 
 if ls "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
-	sudo rm "$TCEDIR"/import/debinx/debinx.*
+	rm "$TCEDIR"/import/debinx/debinx.*
 fi
 
 if ls -A /opt/debextra > /dev/null 2>&1; then
@@ -183,15 +183,15 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR""
 			elif wget --spider "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
-				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
+				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR""$F"/Packages.gen
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
 			elif wget --spider "$MIR"/"$DIST"/"$POOL"/Packages.gen > /dev/null 2>&1; then
-				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
+				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR"/"$DIST"/"$POOL"/Packages.gen
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
 			elif wget --spider "$MIR"/Packages.gen > /dev/null 2>&1; then
-				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
+				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" "$MIR"/Packages.gen
 				echo "* Using repo: "$MIR""
 
@@ -228,15 +228,15 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 				wget -q -O - "$MIR"/Packages.gz | gunzip > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR""
 			elif wget --spider "$MIR""$F"/Packages.gen > /dev/null 2>&1; then
-				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
+				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR""$F"/Packages.gen
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
 			elif wget --spider "$MIR"/"$POOL"/Packages.gen > /dev/null 2>&1; then
-				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
+				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" "$MIR"/"$POOL"/Packages.gen
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
 			elif wget --spider "$MIR"/Packages.gen > /dev/null 2>&1; then
-				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && sudo rm "$TCEDIR"/import/debinx/debinx."$I"
+				[ -f "$TCEDIR"/import/debinx/debinx."$I" ] && rm "$TCEDIR"/import/debinx/debinx."$I"
 				wget -O "$TCEDIR"/import/debinx/debinx."$I" -cq "$MIR"/Packages.gen
 				echo "* Using repo: "$MIR""
 			else
@@ -274,9 +274,9 @@ if ls rcksum* > /dev/null 2>&1; then
 fi
 
 if ls debinx.* > /dev/null 2>&1; then
-	sudo cat debinx.* *Packages "$DEBINXDIR"/PKGEXTRAREPODEP "$DEBINXDIR"/PKGPREBUILTDEP "$DEBINXDIR"/PKGADDDEP "$DEBINXDIR"/PREBUILTMD5SUMLIST "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST "$DEBINXDIR"/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+	cat debinx.* *Packages "$DEBINXDIR"/PKGEXTRAREPODEP "$DEBINXDIR"/PKGPREBUILTDEP "$DEBINXDIR"/PKGADDDEP "$DEBINXDIR"/PREBUILTMD5SUMLIST "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST "$DEBINXDIR"/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
 else
-	sudo cat *Packages "$DEBINXDIR"/PKGEXTRAREPODEP "$DEBINXDIR"/PKGPREBUILTDEP "$DEBINXDIR"/PKGADDDEP "$DEBINXDIR"/PREBUILTMD5SUMLIST "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST "$DEBINXDIR"/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
+	cat *Packages "$DEBINXDIR"/PKGEXTRAREPODEP "$DEBINXDIR"/PKGPREBUILTDEP "$DEBINXDIR"/PKGADDDEP "$DEBINXDIR"/PREBUILTMD5SUMLIST "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST "$DEBINXDIR"/PKGEXTRAFILEMD5SUMLIST > NEWDEBINX
 fi
 
 chown "$USER":staff "$TCEDIR"/import/debinx/* > /dev/null 2>&1

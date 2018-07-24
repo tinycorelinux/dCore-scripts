@@ -55,7 +55,7 @@ read IMPORTMIRROR < /opt/tcemirror
 IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"   
 		
 cd "$DEBINXDIR"
-if sudo tar xzf deb2sce.tar.gz "${BASENAME}".deb2sce > /dev/null 2>&1
+if tar xzf deb2sce.tar.gz "${BASENAME}".deb2sce > /dev/null 2>&1
 then
 	[ -d "$PKG"/usr/local/sce/"$BASENAME" ] || mkdir -p "$PKG"/usr/local/sce/"$BASENAME"
 	## Merging:
@@ -67,7 +67,7 @@ then
 	echo ""$BASENAME"-deb2sce: `md5sum ${BASENAME}.deb2sce | cut -f1 -d" "`" >> "$PKG"/usr/local/sce/"$TARGET"/"$TARGET"-data.md5sum
 	chmod -R 775 "$PKG/usr/local/tce.installed/"
 	chown -R root.staff "$PKG/usr/local/tce.installed/"
-	sudo rm "${BASENAME}.deb2sce"
+	rm "${BASENAME}.deb2sce"
 fi
 
 if grep "^$BASENAME"-data: PKGDATAFILEMD5SUMLIST >/dev/null; then
