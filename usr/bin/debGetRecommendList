@@ -83,7 +83,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
     #[ ! -z "$RECOMMENDS" ] && echo " "
     echo "$RECOMMENDS"
     exit
-  elif sudo grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null; then
+  elif grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null; then
     DEBINX="$DEBINX_SECURITY"
     RECOMMENDS="$(getRecommends1 $1)"
     #[ -z "$RECOMMENDS" ] && exit 1
@@ -96,7 +96,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
     echo "$RECOMMENDS"
   fi
   
-elif sudo grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
+elif grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
     DEBINX="$DEBINX_SECURITY"
     RECOMMENDS="$(getRecommends1 $1)"
     #[ -z "$RECOMMENDS" ] && exit 1

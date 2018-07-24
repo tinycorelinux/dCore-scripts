@@ -83,7 +83,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
     #[ ! -z "$DEPS" ] && echo " "
     echo "$DEPS"
     exit
-  elif sudo grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null; then
+  elif grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null; then
     DEBINX="$DEBINX_SECURITY"
     DEPS="$(getDeps1 $1)"
     [ -z "$DEPS" ] && exit 1
@@ -96,7 +96,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
     echo "$DEPS"
   fi
   
-elif sudo grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null; then
+elif grep "^Package: "$1"$" "$DEBINX_SECURITY" > /dev/null; then
     DEBINX="$DEBINX_SECURITY"
     DEPS="$(getDeps1 $1)"
     [ -z "$DEPS" ] && exit 1

@@ -122,7 +122,7 @@ if grep ^"$I": /tmp/.importsizelist >/dev/null; then
    	echo $ISIZE >> /tmp/.importisize
 else  
    	if grep "^Package: $I$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then 
-       		DEBINX1=`sudo grep -l "^Package: $I$" "$TCEDIR"/import/debinx/debinx.* | head -n 1 | cut -f1 -d:`
+       		DEBINX1=`grep -l "^Package: $I$" "$TCEDIR"/import/debinx/debinx.* | head -n 1 | cut -f1 -d:`
        		read FULLPATH < /tmp/work/"$I"
        		THISDEB="${FULLPATH##*/}"
    		DSIZEBYTE=`getdsize_extra "$I"`
