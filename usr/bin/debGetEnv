@@ -165,6 +165,12 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
 			if cat /opt/debextra/"$I" | grep "#" > /dev/null 2>&1; then
 				echo "* Not using repo: `cat /opt/debextra/"$I" | sed 's:#::'`"
+			elif wget --spider "$MIR""$F"/Packages.xz > /dev/null 2>&1; then
+				wget -q -O - "$MIR""$F"/Packages.xz | xz -d > "$TCEDIR"/import/debinx/debinx."$I"
+				echo "* Using repo: "$MIR" "$DIST" "$POOL""
+			elif wget --spider "$MIR"/"$DIST"/"$POOL"/Packages.xz > /dev/null 2>&1; then
+				wget -q -O - "$MIR"/"$DIST"/"$POOL"/Packages.xz | xz -d > "$TCEDIR"/import/debinx/debinx."$I"
+				echo "* Using repo: "$MIR" "$DIST" "$POOL""
 			elif wget --spider "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
@@ -209,6 +215,12 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
 			if cat /opt/debextra/"$I" | grep "#" > /dev/null 2>&1; then
 				echo "* Not using repo: `cat /opt/debextra/"$I" | sed 's:#::'`"
+			elif wget --spider "$MIR""$F"/Packages.xz > /dev/null 2>&1; then
+				wget -q -O - "$MIR""$F"/Packages.xz | xz -d > "$TCEDIR"/import/debinx/debinx."$I"
+				echo "* Using repo: "$MIR" "$DIST" "$POOL""
+			elif wget --spider "$MIR"/"$POOL"/Packages.xz > /dev/null 2>&1; then
+				wget -q -O - "$MIR"/"$POOL"/Packages.xz | xz -d > "$TCEDIR"/import/debinx/debinx."$I"
+				echo "* Using repo: "$MIR" "$DIST" "$POOL""	
 			elif wget --spider "$MIR""$F"/Packages.bz2 > /dev/null 2>&1; then
 				wget -q -O - "$MIR""$F"/Packages.bz2 | bunzip2 > "$TCEDIR"/import/debinx/debinx."$I"
 				echo "* Using repo: "$MIR" "$DIST" "$POOL""
