@@ -23,28 +23,28 @@ fi
 read SSMIRROR < /opt/tcemirror                                                                             
 SSMIRROR="${SSMIRROR%/}/dCore/import"   
 
-if ! ps a | grep "/usr/bin/sce-update" | grep -v grep > /dev/null 2>&1; then
-	exit 1
-fi
+#if ! ps a | grep "/usr/bin/sce-update" | grep -v grep > /dev/null 2>&1; then
+#	exit 1
+#fi
 
-if sudo busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
-     sudo busybox umount /tmp/sceupdatetest
+if busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
+     busybox umount /tmp/sceupdatetest
 fi
-[ -f /tmp/sce.md5new ] && sudo rm /tmp/sce.md5new
-[ -f /tmp/.updatechanged ] && sudo rm /tmp/.updatechanged
-[ -f /tmp/.lstchanged ] && sudo rm /tmp/.lstchanged
-[ -f /tmp/file.lst ] && sudo rm /tmp/file.lst
-[ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
-ls /tmp/*.deb2sce > /dev/null 2>&1 && sudo rm /tmp/*.deb2sce
-[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
-[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
-[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
-[ -f /tmp/.updateavailable ] && sudo rm /tmp/.updateavailable
-[ -f/tmp/.importupdates ] && sudo rm /tmp/.importupdates
-[ -d /tmp/work ] && sudo rm -r /tmp/work
-[ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
-[ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
-#[ -f /tmp/.updatemd5failed ] && sudo rm /tmp/.updatemd5failed
+[ -f /tmp/sce.md5new ] && rm /tmp/sce.md5new
+[ -f /tmp/.updatechanged ] && rm /tmp/.updatechanged
+[ -f /tmp/.lstchanged ] && rm /tmp/.lstchanged
+[ -f /tmp/file.lst ] && rm /tmp/file.lst
+[ -f /tmp/ssupdates ] && rm /tmp/ssupdates
+ls /tmp/*.deb2sce > /dev/null 2>&1 && rm /tmp/*.deb2sce
+[ -f /tmp/.pkgprebuilt ] && rm /tmp/.pkgprebuilt
+[ -f /tmp/.importmissing ] && rm /tmp/.importmissing
+[ -f /tmp/.importnotneeded ] && rm /tmp/.importnotneeded
+[ -f /tmp/.updateavailable ] && rm /tmp/.updateavailable
+[ -f/tmp/.importupdates ] && rm /tmp/.importupdates
+[ -d /tmp/work ] && rm -r /tmp/work
+[ -f /tmp/sce.recommends ] && rm /tmp/sce.recommends
+[ -f /tmp/sce.suggests ] && rm /tmp/sce.suggests
+#[ -f /tmp/.updatemd5failed ] && rm /tmp/.updatemd5failed
 
 exit_tcnet() {
 	echo " "
@@ -61,19 +61,19 @@ fi
 
 echo "====  "$SCE" updates  ====" >> /tmp/updateavailable
 
-if sudo busybox mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then
- sudo busybox umount /tmp/sceupdatetest
+if busybox mount | grep "/tmp/sceupdatetest " > /dev/null 2>&1; then
+ busybox umount /tmp/sceupdatetest
 fi
 ## Determine if SCE exists in SCE dir, SCE/update dir, or is mounted and then mount.
 if [ -f "$SCEDIR"/update/"$SCE".sce ]; then
    [ -d /tmp/sceupdatetest ] || mkdir /tmp/sceupdatetest
-   sudo busybox mount "$SCEDIR"/update/"$SCE".sce /tmp/sceupdatetest
+   busybox mount "$SCEDIR"/update/"$SCE".sce /tmp/sceupdatetest
    DATADIR=/tmp/sceupdatetest/usr/local/sce/"$SCE"
    FILE=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE".md5sum
    FILEDATA=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE"-data.md5sum
    RECOMMENDS=/tmp/sceupdatetest/usr/local/sce/"$SCE"/recommends
    SUGGESTS=/tmp/sceupdatetest/usr/local/sce/"$SCE"/suggests
-elif sudo busybox mount | grep "/tmp/tcloop/$SCE " > /dev/null 2>&1; then
+elif busybox mount | grep "/tmp/tcloop/$SCE " > /dev/null 2>&1; then
    DATADIR=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"
    FILE=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"/"$SCE".md5sum
    FILEDATA=/tmp/tcloop/"$SCE"/usr/local/sce/"$SCE"/"$SCE"-data.md5sum
@@ -82,7 +82,7 @@ elif sudo busybox mount | grep "/tmp/tcloop/$SCE " > /dev/null 2>&1; then
 elif [ -f "$SCEDIR"/"$SCE".sce ]; then
    DATADIR=/tmp/sceupdatetest/usr/local/sce/"$SCE"
    [ -d /tmp/sceupdatetest ] || mkdir /tmp/sceupdatetest
-   sudo busybox mount "$SCEDIR"/"$SCE".sce /tmp/sceupdatetest
+   busybox mount "$SCEDIR"/"$SCE".sce /tmp/sceupdatetest
    FILE=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE".md5sum
    FILEDATA=/tmp/sceupdatetest/usr/local/sce/"$SCE"/"$SCE"-data.md5sum
    RECOMMENDS=/tmp/sceupdatetest/usr/local/sce/"$SCE"/recommends
@@ -97,10 +97,10 @@ if [ ! -f "$FILE" ]; then
 	echo " " >> /tmp/updateavailable
 	echo " " >> /tmp/updateavailable
 	echo " "
-	if sudo busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
-		sudo busybox umount /tmp/sceupdatetest
+	if busybox mount | grep "/tmp/sceupdatetest" > /dev/null 2>&1; then
+		busybox umount /tmp/sceupdatetest
 	fi
-	[ -d /tmp/sceupdatetest ] && sudo rmdir /tmp/sceupdatetest
+	[ -d /tmp/sceupdatetest ] && rmdir /tmp/sceupdatetest
 	exit 0
 fi
 ##
@@ -139,9 +139,9 @@ checkextrarepoexists() {
 ## Determine which repo the package will come from.
 if [ -f "$SCEDIR"/"$SCE".sce.lst ]; then
 	:
-elif sudo grep "^$SCE:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
+elif grep "^$SCE:" "$DEBINXDIR"/PKGPREBUILTDEP > /dev/null 2>&1; then
 	:
-elif sudo grep "^Package: $SCE$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
+elif grep "^Package: $SCE$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
 	DEBINX=`grep "^Package: $SCE$" "$TCEDIR"/import/debinx/debinx* /dev/null | head -n 1 | cut -f1 -d:`
 	if [ -z `checkextrarepoexists "$SCE"` ]; then
 		echo "$SCE is an extra repo package not available for `version | cut -f1 -d:` "$BUILD", not updating.." >> /tmp/updateavailable
@@ -151,11 +151,11 @@ elif sudo grep "^Package: $SCE$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>
 	fi
 	read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
 	DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
-elif sudo grep -q "^Package: $SCE$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
+elif grep -q "^Package: $SCE$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
 	:
-elif sudo grep -q "^Package: $SCE$" "$DEBINX" > /dev/null 2>&1; then
+elif grep -q "^Package: $SCE$" "$DEBINX" > /dev/null 2>&1; then
 	:
-elif sudo grep -q "^$SCE:" "$DEBINXDIR"/PKGADDDEP; then
+elif grep -q "^$SCE:" "$DEBINXDIR"/PKGADDDEP; then
 	:
 else
 	echo "$SCE can't be imported from any repo or existing list file, not updating.." >> /tmp/updateavailable
@@ -175,6 +175,7 @@ if [ -f "$SCEDIR"/"$SCE".sce.md5.txt ]; then
 		echo "$SCE" >>/tmp/.updatemd5failed
 		echo "$SCE did not pass the md5sum check, needs re-importing." >> /tmp/updateavailable
 		echo " " >> /tmp/updateavailable
+		echo " " >> /tmp/updateavailable
 		echo "$SCE" >> /tmp/.updatechecked
 		cd "$HERE"
 		exit 0
@@ -184,6 +185,7 @@ else
 	echo "$SCE" >>/tmp/.updatemd5failed
 	echo "$SCE has no $SCE.md5.txt file, needs re-importing." >> /tmp/updateavailable
 	echo " " >> /tmp/updateavailable
+	echo " " >> /tmp/updateavailable
 	echo "$SCE" >> /tmp/.updatechecked
 	exit 0
 fi
@@ -191,7 +193,7 @@ fi
 
 unset DEPLIST
 		
-[ -d /tmp/work ] && sudo rm -r /tmp/work
+[ -d /tmp/work ] && rm -r /tmp/work
 
 
 if [ -f "$DATADIR"/"$SCE".dep ]; then
@@ -213,6 +215,7 @@ if [ -f "$DATADIR"/"$SCE".dep ]; then
 		else
 			echo "Dep file does not exist: /etc/sysconfig/tcedir/sce/"$SCE".sce.dep." >> /tmp/updateavailable
 		fi
+		echo " " >> /tmp/updateavailable
 		echo " " >> /tmp/updateavailable
 		echo "$1" >> /tmp/.sceupdatelist
 		exit 0
@@ -239,6 +242,7 @@ if [ -f "$DATADIR"/"$SCE".lst ]; then
 			echo "List file does not exist: /etc/sysconfig/tcedir/sce/"$SCE".sce.lst." >> /tmp/updateavailable
 		fi
 		echo " " >> /tmp/updateavailable
+		echo " " >> /tmp/updateavailable
 		echo "$1" >> /tmp/.sceupdatelist
 		exit 0
 	fi
@@ -248,25 +252,25 @@ fi
 if [ -f "$TCEDIR"/sce/"$SCE".sce.lst ]; then
 	for I in `cat "$TCEDIR"/sce/"$SCE".sce.lst`; do 
 		pgrep sce-update > /dev/null 2>&1 || exit 0
-		sudo debGetDeps "$I" > /dev/null 2>&1
+		debGetDeps "$I" > /dev/null 2>&1
 	done
 	#for I in `cat "$FILE" | cut -f1 -d:`; do
 	#	pgrep sce-update > /dev/null 2>&1 || exit 0
-	#	sudo debGetDeps "$I" > /dev/null 2>&1
+	#	debGetDeps "$I" > /dev/null 2>&1
 	#done
 		
 else
-	sudo debGetDeps "$SCE" > /dev/null 2>&1
+	debGetDeps "$SCE" > /dev/null 2>&1
 		#for I in `cat "$FILE" | cut -f1 -d:`; do
 		#	pgrep sce-update > /dev/null 2>&1 || exit 0
-		#	sudo debGetDeps "$I" > /dev/null 2>&1
+		#	debGetDeps "$I" > /dev/null 2>&1
 		#done
 fi
 ##
 
 ## Get md5sum data and list of package dependencies.
 for I in `ls /tmp/work/`; do
-	sudo debGetUpdateList "$I"
+	debGetUpdateList "$I"
 done 
 ##
 
@@ -287,6 +291,17 @@ for I in `cat "$FILE" | cut -f1 -d:`; do
 done
 ##
 
+if [ -s /tmp/.importnotneeded ]; then
+	for I in `cat /tmp/.importnotneeded | sort | uniq`; do 
+		A=`grep "^$I;" /tmp/.importpkgtype | cut -f1 -d";"`
+		echo ""$I"   "$A"   has been removed as a dependency by "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
+	done
+	echo " " >> /tmp/updateavailable
+	echo " " >> /tmp/updateavailable
+	echo "$1" >> /tmp/.sceupdatelist
+	exit 0
+fi 
+
 ## No longer useful with recommends and suggests options, but maybe in the future.
 for I in `ls /tmp/work/`; do
 	if [ ! -s /tmp/work/"$I" ] && ! grep "^$I:" "$DEBINXDIR"/PREBUILTMD5SUMLIST > /dev/null 2>&1; then
@@ -305,6 +320,19 @@ for I in `ls /tmp/work/`; do
 	fi
 done
 
+if [ -s /tmp/.importmissing ]; then
+	for I in `cat /tmp/.importmissing | sort | uniq`; do 
+		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
+		echo ""$I"   "$A"   is a new dependency in "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
+	done  
+	echo " " >> /tmp/updateavailable
+	echo " " >> /tmp/updateavailable
+	echo "$1" >> /tmp/.sceupdatelist
+	exit 
+fi
+
+
+
 while read line; do 
 	pgrep sce-update > /dev/null 2>&1 || exit 0
 	E=`echo $line | cut -f1 -d:`
@@ -321,13 +349,16 @@ while read line; do
 	## Update if md5sum of existing package and one on the server differ.
      	if [[ "$F" != "$G" ]] && ! grep "^$E$" "$DEBINXDIR"/PKGEXCLUDELIST > /dev/null 2>&1; then
      		echo "$E" >> /tmp/.importupdates
+		[ ! -f /tmp/sceupdatefull ] && break
         fi
 	##
 	NAME="$E"
 		## Get updated or deleted startup script or data files info.
 		if grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1 && ! grep "^$E-deb2sce:" "$FILEDATA"; then
 			echo ""$E"  New "$E".deb2sce startup script available." >>  /tmp/updateavailable
+			echo " " >> /tmp/updateavailable
 			echo "$E" >> /tmp/ssupdates
+			[ ! -f /tmp/sceupdatefull ] && break
 		elif grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
 			MD5SSNEW=`grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
 			MD5SSOLD=`grep "^$E-deb2sce:" "$FILEDATA" | awk '{print $2}' | awk '{ if (a[$1]++ == 0) print $0; }'`
@@ -335,6 +366,7 @@ while read line; do
 				if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates	
 					echo ""$E"  Updated "$E".deb2sce startup script available." >>  /tmp/updateavailable 
+					[ ! -f /tmp/sceupdatefull ] && break
 				fi
 			fi
 		elif grep "^$E-deb2sce:" "$FILEDATA" && ! grep "^$E-deb2sce:" "$DEBINXDIR"/PKGDATAFILEMD5SUMLIST > /dev/null 2>&1; then
@@ -344,11 +376,13 @@ while read line; do
 				MD5SSNEW="0"
 				echo "$E" >> /tmp/ssupdates	
 				echo ""$E"  "$E".deb2sce startup script was removed in the repo." >>  /tmp/updateavailable
+				[ ! -f /tmp/sceupdatefull ] && break
 			elif [ "$MD5SSNEW" != "$MD5SSOLD" ]; then
 				if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates 
 					echo ""$E"  Updated "$E".deb2sce startup script available." >>  /tmp/updateavailable
 				fi
+				[ ! -f /tmp/sceupdatefull ] && break
 			fi
 		
 		fi
@@ -366,8 +400,9 @@ while read line; do
 	        	if [ "$MD5DATANEW" != "$MD5DATAOLD" ]; then
 			 	if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates
-			   		echo ""$E"  New "$E"-data.tar.gz extra files available." >>  /tmp/updateavailable 
-	        		fi	
+			   		echo ""$E"  New "$E"-data.tar.gz extra files available." >>  /tmp/updateavailable 	
+	        			[ ! -f /tmp/sceupdatefull ] && break
+				fi	
 			fi
 		
 		elif grep "^$E-data:" "$FILEDATA" > /dev/null 2>&1; then
@@ -380,28 +415,13 @@ while read line; do
 			 	#if ! grep "^$E$" /tmp/ssupdates; then
 					echo "$E" >> /tmp/ssupdates
 			   		echo ""$E"  "$E"-data.tar.gz was removed on the server." >>  /tmp/updateavailable 
-	        		#fi	
+	        			[ ! -f /tmp/sceupdatefull ] && break
+				#fi	
 			fi
 		fi	
 		##
 done < /tmp/sce.md5new
 
-
-if [ -s /tmp/.importnotneeded ]; then
-	for I in `cat /tmp/.importnotneeded | sort | uniq`; do 
-		A=`grep "^$I;" /tmp/.importpkgtype | cut -f1 -d";"`
-		echo ""$I"   "$A"   has been removed as a dependency by "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
-	done
-	echo "$1" >> /tmp/.sceupdatelist
-fi 
-
-if [ -s /tmp/.importmissing ]; then
-	for I in `cat /tmp/.importmissing | sort | uniq`; do 
-		A=`grep "^$I;" /tmp/.importpkgtype | cut -f2 -d";"`
-		echo ""$I"   "$A"   is a new dependency in "$SCE".sce or it's SCE deps." >> /tmp/updateavailable
- 	done  
-	echo "$1" >> /tmp/.sceupdatelist
-fi
 
 if [ -s /tmp/.importupdates ]; then
 	for I in `cat /tmp/.importupdates | sort | uniq`; do
@@ -423,9 +443,9 @@ if [ ! -s /tmp/.importupdates ] && [ ! -s /tmp/ssupdates ] && [ ! -s /tmp/.impor
 	echo "None" >> /tmp/updateavailable
 	MD5SUMDEBINX=`md5sum "$TCEDIR"/import/debinx/NEWDEBINX | cut -f1 -d" "`
 	if [ -f "$SCEDIR"/update/"$SCE".sce ]; then
-		echo "$MD5SUMDEBINX" | sudo tee "$SCEDIR"/update/"$SCE".sce.debinx > /dev/null 2>&1
+		echo "$MD5SUMDEBINX" | tee "$SCEDIR"/update/"$SCE".sce.debinx > /dev/null 2>&1
 	elif [ -f "$SCEDIR"/"$SCE".sce ]; then
-		echo "$MD5SUMDEBINX" | sudo tee "$SCEDIR"/"$SCE".sce.debinx > /dev/null 2>&1
+		echo "$MD5SUMDEBINX" | tee "$SCEDIR"/"$SCE".sce.debinx > /dev/null 2>&1
 	fi
 fi
 
@@ -433,23 +453,23 @@ echo " " >> /tmp/updateavailable
 echo " " >> /tmp/updateavailable
 echo "$SCE" >> /tmp/.updatechecked
 
-busybox mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && sudo busybox umount /tmp/sceupdatetest
-[ -f /tmp/sce.md5new ] &&   sudo rm /tmp/sce.md5new
-[ -f /tmp/.updatechanged ] && sudo rm /tmp/.updatechanged
-[ -f /tmp/.lstchanged ] && sudo rm /tmp/.lstchanged
-[ -f /tmp/ssupdates ] && sudo rm /tmp/ssupdates
-[ -f "/tmp/.*deb2sce" ] && sudo rm /tmp/.*deb2sce
-[ -f "/tmp/*.md5sum" ] && sudo rm /tmp/*.md5sum
-[ -f "/tmp/*.pkglist" ] && sudo rm /tmp/*.pkglist
-[ -f /tmp/.prebuiltmd5sumlist ] && sudo rm /tmp/.prebuiltmd5sumlist
-[ -f /tmp/.pkgextrafilemd5sumlist ] && sudo rm /tmp/.pkgextrafilemd5sumlist
-[ -f /tmp/.pkgprebuilt ] && sudo rm /tmp/.pkgprebuilt
-[ -f /tmp/.importmissing ] && sudo rm /tmp/.importmissing
-[ -f /tmp/.importnotneeded ] && sudo rm /tmp/.importnotneeded
-[ -f /tmp/.updateavailable ] && sudo rm /tmp/.updateavailable
-[ -f/tmp/.importupdates ] && sudo rm /tmp/.importupdates
-[ -f /tmp/sce.recommends ] && sudo rm /tmp/sce.recommends
-[ -f /tmp/sce.suggests ] && sudo rm /tmp/sce.suggests
+busybox mount | grep /tmp/sceupdatetest > /dev/null 2>&1 && busybox umount /tmp/sceupdatetest
+[ -f /tmp/sce.md5new ] &&   rm /tmp/sce.md5new
+[ -f /tmp/.updatechanged ] && rm /tmp/.updatechanged
+[ -f /tmp/.lstchanged ] && rm /tmp/.lstchanged
+[ -f /tmp/ssupdates ] && rm /tmp/ssupdates
+[ -f "/tmp/.*deb2sce" ] && rm /tmp/.*deb2sce
+[ -f "/tmp/*.md5sum" ] && rm /tmp/*.md5sum
+[ -f "/tmp/*.pkglist" ] && rm /tmp/*.pkglist
+[ -f /tmp/.prebuiltmd5sumlist ] && rm /tmp/.prebuiltmd5sumlist
+[ -f /tmp/.pkgextrafilemd5sumlist ] && rm /tmp/.pkgextrafilemd5sumlist
+[ -f /tmp/.pkgprebuilt ] && rm /tmp/.pkgprebuilt
+[ -f /tmp/.importmissing ] && rm /tmp/.importmissing
+[ -f /tmp/.importnotneeded ] && rm /tmp/.importnotneeded
+[ -f /tmp/.updateavailable ] && rm /tmp/.updateavailable
+[ -f/tmp/.importupdates ] && rm /tmp/.importupdates
+[ -f /tmp/sce.recommends ] && rm /tmp/sce.recommends
+[ -f /tmp/sce.suggests ] && rm /tmp/sce.suggests
 
-sudo chmod 1777 /tmp
+chmod 1777 /tmp
 cd "$SCEDIR" || exit 0

@@ -1,0 +1,125 @@
+#!/bin/busybox ash
+# (c) Jason W 2013 
+# Based on debGetPkgList by Robert Shingledecker
+
+. /etc/init.d/tc-functions
+#useBusybox
+BUILD=`getBuild`
+TCEDIR=/etc/sysconfig/tcedir
+DEBINXDIR="$TCEDIR"/import/debinx
+SCE="$1"
+FULLPATH="$TCEDIR"/sce
+BUILD=`getBuild`
+if [ "$BUILD" == "x86" ]; then
+	DEBBUILD="i386"
+elif [ "$BUILD" == "armv7" ]; then
+	DEBBUILD="armhf"
+elif [ "$BUILD" == "x86_64" ]; then
+	DEBBUILD="amd64"
+fi
+
+#if ! ps a | grep "/usr/bin/sce-update" | grep -v grep > /dev/null 2>&1; then
+#	exit 1
+#fi
+
+getMd5sum() {
+> /tmp/"$1".pkglist
+> /tmp/"$1".md5new 
+grep -m 1 -B 1 -A 10 "^Package: $1$" "$DEBINX" |  grep -B10 "^$" > /tmp/"$1".pkglist
+grep "^MD5sum:" /tmp/"$1".pkglist | cut -f2 -d" " >> /tmp/"$1".md5new
+echo ""$1": `cat /tmp/"$1".md5new`" >> /tmp/sce.md5new
+rm /tmp/"$1".pkglist
+rm /tmp/"$1".md5new 
+}
+
+getMd5sum1() {
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: " -v md5sum="/tmp/sce.md5new" '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+			
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+				
+				if ( f[1] == "MD5sum" )
+					{ print FIELD f[2] >> md5sum; exit; } 
+			}
+		}
+		
+	} ' < "$DEBINX"
+} 
+
+getMd5sum2() {
+	awk -v package="Package: $1" -v build="$DEBBUILD" -v FIELD="$1: " -v md5sum="/tmp/sce.md5new" '
+	BEGIN {
+		RS=""
+		FS="\n"
+	}
+	{
+		if ($1 == package) {
+			for (i=2; i <= NF; i++) {
+				split($i,f,": ")
+			
+				if ( f[1] == "Architecture" ) {
+					if ( f[2] == "all" )
+						{}
+					else if ( f[2] == build )
+						{}
+					else
+						break
+					}
+				
+				if ( f[1] == "MD5sum" )
+					{ print FIELD f[2] >> md5sum; exit; } 
+			}
+		}	
+	} ' < "$DEBINX_SECURITY"
+}
+
+read IMPORTMIRROR < /opt/tcemirror                                                                             
+PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
+read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
+read DEBINX_SECURITY < /etc/sysconfig/tcedir/import/debinx/debinx_security
+DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
+if [ -f /etc/sysconfig/tcedir/import/debinx/"$DEBINX_SECURITY" ]; then
+	read DEBINX_SECURITY < /etc/sysconfig/tcedir/import/debinx/debinx_security
+	DEBINX_SECURITY="/etc/sysconfig/tcedir/import/debinx/$DEBINX_SECURITY"
+fi
+
+if grep "^$1:" "$DEBINXDIR"/PKGPREBUILTDEP >/dev/null ; then
+ echo "$1: `grep "^$1": "$DEBINXDIR"/PREBUILTMD5SUMLIST | head -n1 | cut -f2 -d" "`" >> /tmp/sce.md5new
+ grep "^$1;" /tmp/.importpkgtype || echo "$1;   dCore custom prebuilt" >> /tmp/.importpkgtype
+elif grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1; then
+ DEBINX=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`
+ MIRRORFILE=`grep "^Package: $1$" "$TCEDIR"/import/debinx/debinx* /dev/null | head -n 1 | cut -f1 -d: | sed "s:"$TCEDIR"/import/debinx/debinx.::"`
+ REPO=`cat /opt/debextra/"$MIRRORFILE"`
+ grep "^$1;" /tmp/.importpkgtype || echo ""$1";   "$REPO"" >> /tmp/.importpkgtype
+ getMd5sum1 "$1"
+elif grep "^Package: $1$" "$DEBINX_SECURITY" > /dev/null 2>&1; then
+  DEBINX="$DEBINX_SECURITY"
+  DISTRO=`cat /usr/share/doc/tc/distro.txt`
+  REPO=`cat /usr/share/doc/tc/repo.txt | sed 's:64::'`
+  grep ""$1";" /tmp/.importpkgtype || echo ""$1";   "$DISTRO" "$REPO" security-updates" >> /tmp/.importpkgtype
+  getMd5sum "$1"
+  read DEBINX < /etc/sysconfig/tcedir/import/debinx/debinx
+  DEBINX="/etc/sysconfig/tcedir/import/debinx/$DEBINX"
+elif grep "^Package: $1$" "$DEBINX" > /dev/null 2>&1; then
+  REPO=`cat /usr/share/doc/tc/repo.txt | sed 's:64::'`
+  grep ""$1";" /tmp/.importpkgtype || echo ""$1";   "$DISTRO" "$REPO" main" >> /tmp/.importpkgtype
+  getMd5sum "$1"
+else
+   echo ""$1" is not in the package database, skipping."
+fi
+
+

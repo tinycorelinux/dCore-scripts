@@ -32,9 +32,14 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
 	echo "                   re-import, warn as needed."
 	echo "${YELLOW}"sce-update -z"${NORMAL}      Ignore /etc/sysconfig/sceconfig preferences, use only"
         echo "                   current command line options."
+	echo "${YELLOW}"sce-update -f"${NORMAL}      Full check mode, all packages and data contained in the"
+        echo "                   SCE will be checked for updates.  Default is the SCE is"
+	echo "                   flagged for need of update on the first found item in"
+	echo "                   need of update and checking mode for that SCE then exits."
 	exit 0
 fi
 
+[ -f /tmp/sceupdatefull ] && sudo rm /tmp/sceupdatefull
 
 if [ ! "$NOLOCK" == "TRUE" ]; then
 	if [ -f /tmp/.scelock ]; then
@@ -48,7 +53,7 @@ if [ ! "$NOLOCK" == "TRUE" ]; then
 	echo "$$" > /tmp/.scelock
 fi
 
-while getopts canrszb OPTION
+while getopts canrszbf OPTION
 do
 	case ${OPTION} in
 		r) RAM=TRUE;;
@@ -58,6 +63,7 @@ do
 		s) SIZE=TRUE ;;
 		z) NOCONFIG=TRUE ;;
 		b) SCEBOOTLIST=TRUE ;;
+		f) SCEUPDATEFULL=TRUE ;;
                 *) echo "Run  sce-update --help  for usage information."
                    exit 1 ;;
 	esac
@@ -112,6 +118,10 @@ if [ "$CHECKONLY" == "TRUE" ]; then
 	echo "* Using the -c option."
 fi
 
+if [ "$SCEUPDATEFULL" == "TRUE" ]; then
+	echo "* Using the -f option."
+fi
+
 if [ "$NONINTERACTIVE" == "TRUE" ]; then
 	echo "* Using the -n option."
 fi
@@ -132,6 +142,10 @@ fi
 
 if [ -z "$1" ] && [ "$SCEBOOTLIST" != "TRUE" ]; then
 	SELECT=TRUE
+fi
+
+if [ "$SCEUPDATEFULL" == "TRUE" ]; then
+	touch /tmp/sceupdatefull
 fi
 
 if [ "$SCEBOOTLIST" == "TRUE" ] && [ "$UPDATEALL" == "TRUE" ]; then
@@ -159,6 +173,7 @@ fi
 [ -f /tmp/.importpkgtype ] && sudo rm /tmp/.importpkgtype
 [ -f /tmp/.updatechecked ] && sudo rm /tmp/.updatechecked   
 [ -f /tmp/sceupdateerror ] && sudo rm /tmp/sceupdateerror
+
 
 cleanup() {
 	sudo chown -R "$TCUSER":staff "$SCEDIR" > /dev/null 2>&1
@@ -291,7 +306,7 @@ if [ "$UPDATEALL" == "TRUE" ]; then
 			fi
 		fi
 		echo -n "         ${YELLOW}"$I".sce${NORMAL} update check."
-		importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
+		sudo importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 		echo " "
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
@@ -409,7 +424,7 @@ elif [ "$SCEBOOTLIST" == "TRUE" ]; then
 			fi
 		fi
 		echo -n "         ${YELLOW}"$I".sce${NORMAL} update check."
-		importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
+		sudo importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 		echo " "
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
@@ -535,7 +550,7 @@ elif [ "$SELECT" == "TRUE" ]; then
 					fi
 				fi
 				echo -n "         ${YELLOW}"$I".sce${NORMAL} update check."
-				importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
+				sudo importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 				echo " "
 			done
 		done
@@ -650,7 +665,7 @@ elif [ -f update/"$UPDATETARGET".sce ]; then
 			fi
 		fi
 		echo -n "         ${YELLOW}"$I".sce${NORMAL} update check."
-		importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
+		sudo importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 		echo " "
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
@@ -749,7 +764,7 @@ elif [ -f "$UPDATETARGET".sce ]; then
 			fi
 		fi
 		echo -n "         ${YELLOW}"$I".sce${NORMAL} update check."
-		importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
+		sudo importupdatecheck "$I" > /dev/null 2>&1 & /usr/bin/rotdash $!
 		echo " "
 	done
 	if [ -s /tmp/.sceupdatelist ]; then
