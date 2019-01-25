@@ -262,6 +262,21 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 	done
 fi
  
+cd "$TCEDIR"/import/debinx/
+for I in `ls debinx.*`; do 
+	cat "$I" | sed -e '/^Supported:/d' \
+-e '/^Task:/d' -e '/^Recommends:/d' -e '/^Suggests:/d' -e '/^Built-Using:/d' -e 's/|/,/g' -e 's/:any//g' -e '/^Origin:/d' -e '/^Bugs:/d' -e '/^Original-Maintainer:/d' -e '/^Conflicts:/d' -e '/^Breaks:/d' \
+-e '/^Source:/d' -e '/^Enhances:/d' -e '/^SHA1:/d' -e '/^Replaces:/d' -e '/^Provides:/d' -e '/^Version:/d' \
+-e '/^Python-Version:/d' -e '/^Ghc-Package:/d' -e '/^SHA256:/d' -e '/^Priority:/d' -e '/^Section/d' -e '/^Tag:/d' \
+-e '/^Description:/d' -e '/^Description-md5:/d' -e '/^Homepage:/d' -e '/^Pre-Depends:/d' \
+-e '/^Maintainer:/d' -e '/^ interface:/d' -e '/^ suite:/d' -e '/^ uitoolkit:/d' -e '/^ security:/d' \
+-e '/^ network:/d' -e '/^ made-of:/d' -e '/^ science:/d' -e '/^ system:/d' -e '/^ hardware:/d' \
+-e '/^ field:/d' -e '/^ use:/d' -e '/^ implemented-in:/d' -e '/^ protocol:/d' -e '/^ x11:/d' -e '/^ role:/d' \
+-e '/^ works-with-format:/d' -e '/^ works-with:/d' -e '/^ scope:/d' -e '/^ culture:/d' -e '/^Multi-Arch:/d' -e '/^Gstreamer/d' > "$I".new
+mv "$I".new "$I"
+sed -i '/^ .*/d' "$I"
+done
+
 read IMPORTMIRROR < /opt/tcemirror
 PREBUILTMIRROR="${IMPORTMIRROR%/}/dCore/"$BUILD"/import"
 

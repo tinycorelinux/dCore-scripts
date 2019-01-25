@@ -36,15 +36,21 @@ IMPORTMIRROR="${IMPORTMIRROR%/}/dCore/import"
 getdsize_main() {
 > /tmp/"$1".pkgdsizelist
 grep -m 1 -B 1 -A 10 "^Package: $1$" "$DEBINX" | grep -B10 "^$" > /tmp/"$1".pkgdsizelist
-grep "^Size:" /tmp/"$1".pkgdsizelist | cut -f2 -d":"
+#grep "^Size:" /tmp/"$1".pkgdsizelist | cut -f2 -d":"
+DEBINX1=/tmp/"$1".pkgdsizelist
+getdsize_extra $1
 rm /tmp/"$1".pkgdsizelist
+DEBINX1="/etc/sysconfig/tcedir/import/debinx/debinx1"
 }
 
 getisize_main() {
 > /tmp/"$1".pkgisizelist
 grep -m 1 -B 1 -A 10 "^Package: $1$" "$DEBINX" | grep -B10 "^$" > /tmp/"$1".pkgisizelist
-grep "^Installed-Size:" /tmp/"$1".pkgisizelist | cut -f2 -d":"
+#grep "^Installed-Size:" /tmp/"$1".pkgisizelist | cut -f2 -d":"
+DEBINX1=/tmp/"$1".pkgisizelist
+getisize_extra $1
 rm /tmp/"$1".pkgisizelist
+DEBINX1="/etc/sysconfig/tcedir/import/debinx/debinx1"
 }
 
 getdsize_extra() {
@@ -125,14 +131,14 @@ else
        		DEBINX1=`grep -l "^Package: $I$" "$TCEDIR"/import/debinx/debinx.* | head -n 1 | cut -f1 -d:`
        		read FULLPATH < /tmp/work/"$I"
        		THISDEB="${FULLPATH##*/}"
-   		DSIZEBYTE=`getdsize_extra "$I"`
+   		DSIZEBYTE=`getdsize_main "$I"`
 		if [ ! -z "$DSIZEBYTE" ]; then 
 			if [ "$DSIZEBYTE" -eq "$DSIZEBYTE" ]; then 
    				echo "$DSIZEBYTE" >> /tmp/.importarchsize
 			fi
 		fi
    		[ -f "$DEBDIR"/"$THISDEB" ] || echo "$DSIZEBYTE" >> /tmp/.importdsize
-   		ISIZEKB=`getisize_extra "$I"` 
+   		ISIZEKB=`getisize_main "$I"` 
 		if [ ! -z "$ISIZEKB" ]; then 
 			if [ "$ISIZEKB" -eq "$ISIZEKB" ]; then 
    				echo $((ISIZEKB * 1024)) >> /tmp/.importisize
