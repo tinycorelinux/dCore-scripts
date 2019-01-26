@@ -244,7 +244,7 @@ if ls *.deb > /dev/null 2>&1; then
 
     if sudo grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* > /dev/null 2>&1 ; then
 	DEBINX=`sudo grep "^Package: $DEBINFO$" "$TCEDIR"/import/debinx/debinx.* /dev/null | head -n 1 | cut -f1 -d:`		
-	NAMENEW=$(getName1 "$DEBINFO")
+	NAMENEW=$(getName "$DEBINFO")
 	NAMENEW="${NAMENEW##*/}"
 	NAMEOLD="$I"
 	if [ "$NAMENEW" != "$NAMEOLD" ]; then
@@ -257,7 +257,7 @@ if ls *.deb > /dev/null 2>&1; then
 	fi			
     elif sudo grep "^Package: $DEBINFO$" "$DEBINX_SECURITY" > /dev/null 2>&1 ; then
 	DEBINX="$DEBINX_SECURITY"	
-	NAMENEW=$(getName1 "$DEBINFO")
+	NAMENEW=$(getName "$DEBINFO")
 	NAMENEW="${NAMENEW##*/}"
 	NAMEOLD="$I"
 	if [ "$NAMENEW" != "$NAMEOLD" ]; then
