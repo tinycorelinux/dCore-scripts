@@ -23,7 +23,6 @@ cleanup() {
 	for k in `ps | awk '/'${WIFI}'/{print $1}'`; do kill $k 2>/dev/null; done
 }
 
-killall wpa_supplicant > /dev/null 2>&1
 checkroot
 read TCUSER < /etc/sysconfig/tcuser
 DB=/home/"$TCUSER"/wifi.db
@@ -76,6 +75,10 @@ if [ ${MODE} == "menu" ]; then
 			sleep 5
 		fi
 	fi
+fi
+
+if [ ${MODE} == "auto" ]; then
+	pgrep wpa_supplicant > /dev/null 2>&1 && killall wpa_supplicant
 fi
 
 echo "Standby for scan of available networks..."
