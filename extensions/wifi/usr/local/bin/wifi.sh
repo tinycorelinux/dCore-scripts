@@ -19,6 +19,7 @@ help() {
 }
 
 cleanup() {
+	killall wpa_supplicant > /dev/null 2>&1
 	ifconfig "$WIFI" down 2>/dev/null
 	for k in `ps | awk '/'${WIFI}'/{print $1}'`; do kill $k 2>/dev/null; done
 }
@@ -78,11 +79,12 @@ if [ ${MODE} == "menu" ]; then
 fi
 
 if [ ${MODE} == "auto" ]; then
-	pgrep wpa_supplicant > /dev/null 2>&1 && killall wpa_supplicant
+	cleanup
+	sleep 5
 fi
 
 echo "Standby for scan of available networks..."
-ifconfig "$WIFI" up 2>/dev/null
+ifconfig "$WIFI" up 2>/dev/null 
 (for i in `seq 5`
 do
 	iwlist "$WIFI" scanning
