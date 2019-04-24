@@ -410,11 +410,15 @@ checklist() {
 }
 
 
-
 # Determine if .lst file is being used or list specified, copy to /tmp/.targetfile
-if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
-	if [ -f "$1" ] && [ "$PACKAGELIST" == "TRUE" ]; then
+if [ "$PACKAGELIST" == "TRUE" ]; then
+	if [ -f "$1" ] ; then
 		TARGETFILE=`readlink -f "$1"`
+		if [ -s "$TCEDIR"/sce/"$TARGET".sce.lst ] && [ `pwd` == "/etc/sysconfig/tcedir/sce" ]; then
+			TARGETFILE=""$TCEDIR"/sce/"$TARGET".sce.lst"
+		fi
+		echo " "
+		echo "* Checking integrity of "$TARGETFILE".."
 		for I in `cat "$TARGETFILE"`; do
 			checklist "$I"
 		done
@@ -441,11 +445,13 @@ if [ "$PACKAGELIST" == "TRUE" ] || [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 				echo " "
 			fi
 		fi
-		sudo cp $TARGETFILE /tmp/.targetfile
+		sudo cp "$TARGETFILE" /tmp/.targetfile
 		#TARGET=`basename $1 .sce.lst`
 	elif [ -s "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 		echo "* Existing list file found."
 		TARGETFILE=""$TCEDIR"/sce/"$TARGET".sce.lst"
+		echo " "
+		echo "* Checking integrity of "$TARGETFILE".."
 		for I in `cat "$TARGETFILE"`; do
 			checklist "$I"
 		done
@@ -542,13 +548,101 @@ if [ "$PACKAGELIST" ] && [ ! -f "$TCEDIR"/sce/"$1".sce.lst ]; then
 		echo "${YELLOW}Warning:${NORMAL} Specify a target file when using the -l option, exiting.."
 		exit 1
 	fi  
+elif [ "$PACKAGELIST" ] && [ -f "$TCEDIR"/sce/"$1".sce.lst ]; then
+	if [ -f "$TARGETFILE" ]; then
+  		if [ -f /tmp/.importinteractive ]; then
+  			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
+			echo " "
+  			mksce "$TARGET" 
+  		else
+			echo " "
+			echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
+			echo " "
+			echo "Press Enter to use this package list, (n)o to import a standard"
+			echo -n "'"$TARGET"' package if it exists, (q)uit exits: "
+                        read ans
+	  		if [ "$ans" == "n" ] || [ "$ans" == "no" ]; then  
+				sudo rm /tmp/.targetfile
+				echo " "
+				mksce "$TARGET"
+	  		elif [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
+				cleanup
+				exit 0
+			else
+				echo "* Creating "$TARGET".sce from "$TARGETFILE"."
+				echo " "
+				mksce "$TARGET"
+			fi
+		fi
+	elif [ ! -f "$TARGETFILE" ] && [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
+  		if [ -f /tmp/.importinteractive ]; then
+  			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
+			echo " "
+  			mksce "$TARGET" 
+  		else
+			echo " "
+			echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
+			echo " "
+			echo "Press Enter to use this package list, (n)o to import a standard"
+			echo -n "'"$TARGET"' package if it exists, (q)uit exits: "
+                        read ans
+	  		if [ "$ans" == "n" ] || [ "$ans" == "no" ]; then  
+				sudo rm /tmp/.targetfile
+				echo " "
+				mksce "$TARGET"
+	  		elif [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
+				cleanup
+				exit 0
+			else
+				echo "* Creating "$TARGET".sce from "$TARGETFILE"."
+				echo " "
+				mksce "$TARGET"
+			fi
+		fi
+		
+	else
+		echo " "
+		echo "${YELLOW}Warning:${NORMAL} Specify a target file when using the -l option, exiting.."
+		exit 1
+	fi  
 # Below is where an existing .lst file is found in sce dir.
 elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
   	if [ -f /tmp/.importinteractive ]; then
+		TARGETFILE=""$TCEDIR"/sce/"$TARGET".sce.lst"
+		echo " "
+		echo "* Checking integrity of "$TARGETFILE".."
+		for I in `cat "$TARGETFILE"`; do
+			checklist "$I"
+		done
+		sudo cp "$TCEDIR"/sce/"$TARGET".sce.lst /tmp/.targetfile
+		if [ -s /tmp/.pkglisterror ]; then
+			echo " "
+			echo "$TARGET: Below packages do not exist in the .lst list file:" >> /tmp/sceimporterror
+			cat /tmp/.pkglisterror >> /tmp/sceimporterror
+			cat /tmp/.pkglisterror
+			echo " "
+			if [ ! -f /tmp/.importinteractive ]; then
+				echo "${YELLOW}Warning:${NORMAL} The above package(s) in "$TARGETFILE" do not exist."
+				echo " "
+				echo -n "Press Enter to import the remaining list anyway, (q)uit to exit: "
+				read ans
+				if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
+					cleanup
+					exit 1
+				else
+					:
+				fi
+			else
+				echo "${YELLOW}Warning:${NORMAL} The above package(s) in "$TARGETFILE" do not exist,"
+				echo "         proceeding to import remaining list."
+				echo " "
+			fi
+		fi
   		echo "* Creating "$TARGET".sce from "$TARGETFILE"."
 		echo " "
   		mksce "$TARGET"
   	else
+		TARGETFILE=""$TCEDIR"/sce/"$TARGET".sce.lst"
 		echo " "
 		echo "${YELLOW}Warning:${NORMAL} Create "$TARGET".sce from "$TARGETFILE"?"
 		echo " "
@@ -563,6 +657,35 @@ elif [ -f "$TCEDIR"/sce/"$TARGET".sce.lst ]; then
 			cleanup
 			exit 0
 		else
+			echo " "
+			echo "* Checking integrity of "$TARGETFILE".."
+			for I in `cat "$TARGETFILE"`; do
+				checklist "$I"
+			done
+			sudo cp "$TCEDIR"/sce/"$TARGET".sce.lst /tmp/.targetfile
+			if [ -s /tmp/.pkglisterror ]; then
+				echo " "
+				echo "$TARGET: Below packages do not exist in the .lst list file:" >> /tmp/sceimporterror
+				cat /tmp/.pkglisterror >> /tmp/sceimporterror
+				cat /tmp/.pkglisterror
+				echo " "
+				if [ ! -f /tmp/.importinteractive ]; then
+					echo "${YELLOW}Warning:${NORMAL} The above package(s) in "$TARGETFILE" do not exist."
+					echo " "
+					echo -n "Press Enter to import the remaining list anyway, (q)uit to exit: "
+					read ans
+					if [ "$ans" == "q" ] || [ "$ans" == "quit" ]; then
+						cleanup
+						exit 1
+					else
+						:
+					fi
+				else
+					echo "${YELLOW}Warning:${NORMAL} The above package(s) in "$TARGETFILE" do not exist,"
+					echo "         proceeding to import remaining list."
+					echo " "
+				fi
+			fi
 			echo "* Creating "$TARGET".sce from "$TARGETFILE"."
 			echo " "
 			mksce "$TARGET"

@@ -219,14 +219,11 @@ if [ -f /tmp/.importram ]; then
   else
 	echo " "
     	echo ""$HDNEEDED" MB of `readlink /etc/sysconfig/tcedir` space needed / "$HDFREE" MB available."
-  	echo ""$ISIZEFINAL" MB of RAM needed / "$RAM".00 MB available." 
+  	#echo ""$ISIZEFINAL" MB of RAM needed / "$RAM".00 MB available." 
   	echo " "
 	ISIZEFINAL=` echo "$ISIZEFINAL" | awk '{printf("%.0f\n", $1)}'`
 	HDNEEDED=`echo "$HDNEEDED" | awk '{printf("%.0f\n", $1)}'`
 	HDFREE=`echo "$HDFREE" | awk '{printf("%.0f\n", $1)}'`
-  	if [ "$ISIZEFINAL" -gt "$RAM" ]; then
-		echo "${YELLOW}WARNING:${NORMAL} Not enough free RAM, recommend do not proceed." >> /tmp/.importfree
-	fi
 	if [ "$HDNEEDED" -gt "$HDFREE" ]; then
 		echo "${YELLOW}WARNING:${NORMAL} Not enough `readlink /etc/sysconfig/tcedir` space, recommend do not proceed." >> /tmp/.importfree
 	fi
@@ -254,7 +251,7 @@ else
   		#echo ""$ISIZEFINAL" MB needed for unpacking archives."
   		#echo ""$ARCHSIZEFINAL" MB of compressed archives will be used."
 		echo "Downloads required:               "$DSIZEFINAL" MB" 
-		echo "Required RAM to unpack archives:  "$ISIZEFINAL" MB"
+		echo "Required HD space to unpack archives:  "$ISIZEFINAL" MB"
 		echo "Compressed archives utilized:     "$ARCHSIZEFINAL" MB"
 		echo " "
   		echo ""$FULLSIZE" MB of `readlink /etc/sysconfig/tcedir` space needed / "$HDFREE" MB available."

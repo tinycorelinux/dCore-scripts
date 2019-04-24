@@ -318,6 +318,7 @@ chmod 664 "$TCEDIR"/import/debinx/* > /dev/null 2>&1
 
 # Test mirror
 if wget --spider "$MIRROR"/dists/"$REPO" > /dev/null 2>&1; then
+	echo "* Using repo: "$MIRROR" "$REPO" main"
 	echo "$MIRROR" > /opt/debmirror
 	if wget --spider "$MIRROR_SECURITY"/dists/"$REPO" > /dev/null 2>&1; then
 		echo "* Using repo: "$MIRROR_SECURITY" "$REPO" main"
