@@ -103,6 +103,7 @@ fi
 
 # Start Udev to populate /dev and handle hotplug events
 echo -n "${BLUE}Starting udev daemon for hotplug support...${NORMAL}"
+/sbin/depmod -a
 udevd --daemon 2>&1 >/dev/null
 udevadm trigger --action=add 2>&1 >/dev/null &
 [ -x /etc/init.d/tc-mkdev ] && /etc/init.d/tc-mkdev
@@ -711,6 +712,8 @@ fi
 
 [ -n "$NOAUTOLOGIN" ] && echo "booting" > /etc/sysconfig/noautologin
 	
+/sbin/depmod -a
+udevadm trigger 2>&1 >/dev/null &
 
 if [ -n "$PAUSE" ]; then
 	echo -n "${BLUE}Boot time configuration completed. Press <Enter> to continue.${NORMAL}"

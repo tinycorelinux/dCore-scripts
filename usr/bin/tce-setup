@@ -197,7 +197,7 @@ fi
 
 # Wrap up by performing updates as may be needed.
 if [ -e /etc/sysconfig/newmodules ]; then
-	depmod -a 2>/dev/null
+	/sbin/depmod -a 2>/dev/null
 	/sbin/udevadm trigger
 fi
 /sbin/ldconfig 2>/dev/null
