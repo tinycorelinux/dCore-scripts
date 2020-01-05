@@ -160,7 +160,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			MIR=`cat /opt/debextra/"$I" | awk '{print $1}'`
 			DIST=`cat /opt/debextra/"$I" | awk '{print $2}'`
 			POOL=`cat /opt/debextra/"$I" | awk '{print $3}'`
-			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
+			F="/dists/"$DIST"/"$POOL"/"$BINARY""
 			if cat /opt/debextra/"$I" | grep "#" > /dev/null 2>&1; then
 				echo "* Not using repo: `cat /opt/debextra/"$I" | sed 's:#::'`"
 			elif wget --spider "$MIR""$F"/Packages.xz > /dev/null 2>&1; then
@@ -214,7 +214,7 @@ if ls -A /opt/debextra > /dev/null 2>&1; then
 			MIR=`cat /opt/debextra/"$I" | awk '{print $1}'`
 			DIST="$REPO"
 			POOL=`cat /opt/debextra/"$I" | awk '{print $2}'`
-			F="/dists/"$DIST"/"$POOL"/"$BINARY"/"
+			F="/dists/"$DIST"/"$POOL"/"$BINARY""
 			if cat /opt/debextra/"$I" | grep "#" > /dev/null 2>&1; then
 				echo "* Not using repo: `cat /opt/debextra/"$I" | sed 's:#::'`"
 			elif wget --spider "$MIR""$F"/Packages.xz > /dev/null 2>&1; then

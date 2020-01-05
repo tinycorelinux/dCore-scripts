@@ -713,7 +713,8 @@ fi
 [ -n "$NOAUTOLOGIN" ] && echo "booting" > /etc/sysconfig/noautologin
 	
 /sbin/depmod -a
-udevadm trigger 2>&1 >/dev/null &
+/sbin/udevadm control --reload-rules
+/sbin/udevadm trigger 2>&1 >/dev/null 
 
 if [ -n "$PAUSE" ]; then
 	echo -n "${BLUE}Boot time configuration completed. Press <Enter> to continue.${NORMAL}"

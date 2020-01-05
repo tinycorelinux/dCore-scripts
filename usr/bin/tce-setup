@@ -197,7 +197,8 @@ fi
 
 # Wrap up by performing updates as may be needed.
 if [ -e /etc/sysconfig/newmodules ]; then
-	/sbin/depmod -a 2>/dev/null
+	/sbin/depmod -a 
+	/sbin/udevadm control --reload-rules
 	/sbin/udevadm trigger
 fi
 /sbin/ldconfig 2>/dev/null
