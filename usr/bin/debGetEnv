@@ -23,7 +23,7 @@ zsyncDebianIndex()
 	else
 		echo "* Connecting to: "$MIRROR"/"
 		echo "  "$DEBINX""
-		wget -q -O "$TCEDIR"/import/debinx/"$DEBINX" "$MIRROR"/"$DEBINX" || exit_tcnet
+		wget -q -O "$TCEDIR"/import/debinx/"$DEBINX" "$MIRROR"/"$DEBINX" #|| exit_tcnet
 	fi
 	cd - > /dev/null
 }
@@ -40,7 +40,7 @@ zsyncDebianSecurityIndex()
 	else
 		echo "* Connecting to: "$MIRROR"/"
 		echo "  "$DEBINX_SECURITY""
-		wget -q -O "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" "$MIRROR"/"$DEBINX_SECURITY" || exit_tcnet
+		wget -q -O "$TCEDIR"/import/debinx/"$DEBINX_SECURITY" "$MIRROR"/"$DEBINX_SECURITY" #|| exit_tcnet
 	fi
 	cd - > /dev/null
 }
