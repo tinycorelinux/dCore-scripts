@@ -275,7 +275,7 @@ install(){
 	[ "$SUPPRESS" ] || echo "* Mount /tmp/tcloop/"$APPNAME"/."
 	[ -d /tmp/tcloop/"$APPNAME" ] || sudo mkdir -p /tmp/tcloop/"$APPNAME"
 	awk -v appname="/tmp/tcloop/$APPNAME" ' { if ( $2 == appname )  exit 1 }' /etc/mtab
-	[ "$?" == 1 ] || sudo mount "$TARGETDIR"/"$APPNAME".sce /tmp/tcloop/"$APPNAME" -t squashfs -o loop,ro,bs=4096 2>&1
+	[ "$?" == 1 ] || sudo mount "$TARGETDIR"/"$APPNAME".sce /tmp/tcloop/"$APPNAME" -t squashfs -o loop,ro 2>&1
 	[ "$?" == 0 ] || abort_to_saved_dir
 	[ -z "`ls /tmp/tcloop/${APPNAME}`" ] && EMPTYEXT=1
 	[ "`sudo find /tmp/tcloop/${APPNAME} -mindepth 1 -maxdepth 2 | wc -l`" -le 1 ] && EMPTYEXT=1
